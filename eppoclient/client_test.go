@@ -17,15 +17,15 @@ var mockVariations = []Variation{
 func Test_AssignBlankExperiment(t *testing.T) {
 	InitClient(testConfig)
 	var mockConfigRequestor = NewExperimentConfigurationRequestor()
-
 	client.New(&mockConfigRequestor, mockLogger)
+
+	// No need to check whether `recover()` is nil. Just turn off the panic.
+	defer func() { _ = recover() }()
+
 	client.GetAssignment("subject-1", "", Dictionary{})
 
-	// with pytest.raises(Exception) as exc_info:
-	//
-	//	client.get_assignment("subject-1", "")
-	//
-	// assert exc_info.value.args[0] == "Invalid value for experiment_key: cannot be blank"
+	// Never reaches here if `OtherFunctionThatPanics` panics.
+	t.Errorf("did not panic")
 }
 
 type MockConfigRequestor struct {
