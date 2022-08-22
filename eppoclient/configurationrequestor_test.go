@@ -5,7 +5,7 @@ import "testing"
 // todo remove
 
 func Test_FetchAndStoreConfigurations(t *testing.T) {
-	var requestor = ExperimentConfigurationRequestor{}
+	var requestor = NewExperimentConfigurationRequestor()
 
 	var httpClient = HttpClient{}
 	var sdkParams = SDKParams{apiKey: "tgcwcyYqosYfRpA5V3khTnsH8o2MlauhxSTyst6mDUM", sdkName: "", sdkVersion: ""}

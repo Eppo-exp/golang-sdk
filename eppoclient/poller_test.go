@@ -9,7 +9,7 @@ func Test_PollerPoll_InvokesCallbackUntilStoped(t *testing.T) {
 	callCount := 0
 	expected := 5
 
-	var poller = Poller{}
+	var poller = NewPoller()
 	poller.New(1, func() {
 		callCount++
 	})
@@ -28,7 +28,7 @@ func Test_PollerPoll_StopsOnError(t *testing.T) {
 	callCount := 0
 	expected := 3
 
-	var poller = Poller{}
+	var poller = NewPoller()
 	poller.New(1, func() {
 		callCount++
 		if callCount == 3 {

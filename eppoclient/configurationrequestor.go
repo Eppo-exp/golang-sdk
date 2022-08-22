@@ -18,27 +18,31 @@ type ExperimentConfigurationRequestor struct {
 	configStore ConfigurationStore
 }
 
+func NewExperimentConfigurationRequestor() ExperimentConfigurationRequestor {
+	return ExperimentConfigurationRequestor{}
+}
+
 func (ecr *ExperimentConfigurationRequestor) New(httpClient HttpClient, configStore ConfigurationStore) {
 	ecr.httpClient = httpClient
 	ecr.configStore = configStore
 }
 
-func (ect *ExperimentConfigurationRequestor) GetConfiguration(experimentKey string) (ExperimentConfiguration, error) {
-	if ect.httpClient.isUnauthorized {
+func (ecr *ExperimentConfigurationRequestor) GetConfiguration(experimentKey string) (ExperimentConfiguration, error) {
+	if ecr.httpClient.isUnauthorized {
 		// should we panic here or return an error?
 		panic("Unauthorized: please check your API key")
 	}
 
-	result, err := ect.configStore.GetConfiguration(experimentKey)
+	result, err := ecr.configStore.GetConfiguration(experimentKey)
 
 	return result, err
 }
 
-func (ect *ExperimentConfigurationRequestor) FetchAndStoreConfigurations() {
+func (ecr *ExperimentConfigurationRequestor) FetchAndStoreConfigurations() {
 	var responseBody map[string]json.RawMessage
 
 	configs := Dictionary{}
-	result := ect.httpClient.Get(RAC_ENDPOINT)
+	result := ecr.httpClient.Get(RAC_ENDPOINT)
 
 	err := json.Unmarshal([]byte(result), &responseBody)
 
@@ -52,5 +56,5 @@ func (ect *ExperimentConfigurationRequestor) FetchAndStoreConfigurations() {
 		fmt.Println(err)
 	}
 
-	ect.configStore.SetConfigurations(configs)
+	ecr.configStore.SetConfigurations(configs)
 }
