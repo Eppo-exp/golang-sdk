@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+eppo-golang-sdk*
 
 # Test binary, built with `go test -c`
 *.test
