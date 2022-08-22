@@ -4,9 +4,9 @@ import "testing"
 
 // todo remove
 
-var requestor = ExperimentConfigurationRequestor{}
+func Test_FetchAndStoreConfigurations(t *testing.T) {
+	var requestor = ExperimentConfigurationRequestor{}
 
-func init() {
 	var httpClient = HttpClient{}
 	var sdkParams = SDKParams{apiKey: "tgcwcyYqosYfRpA5V3khTnsH8o2MlauhxSTyst6mDUM", sdkName: "", sdkVersion: ""}
 
@@ -16,8 +16,6 @@ func init() {
 	configStore.New(20)
 
 	requestor.New(httpClient, configStore)
-}
 
-func Test_FetchAndStoreConfigurations(t *testing.T) {
 	requestor.FetchAndStoreConfigurations()
 }
