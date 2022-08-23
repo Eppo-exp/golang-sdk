@@ -1,6 +1,8 @@
 package eppoclient
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -41,9 +43,14 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 	}
 
 	experimentConfig, err := ec.configRequestor.GetConfiguration(experimentKey)
-
 	if err != nil {
 		return "", err
+	}
+
+	override := getSubjectVariationOverride(experimentConfig, subjectKey)
+
+	if override != "" {
+		return override, err
 	}
 
 	if !experimentConfig.Enabled ||
@@ -87,6 +94,28 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 
 	return assignedVariation, err
 }
+
+func getSubjectVariationOverride(experimentConfig ExperimentConfiguration, subject string) string {
+	hash := md5.Sum([]byte(subject))
+	hashOutput := hex.EncodeToString(hash[:])
+
+	if val, ok := experimentConfig.Overrides[hashOutput]; ok {
+		return val.(string)
+	}
+
+	return ""
+}
+
+// def _get_subject_variation_override(
+// 	self, experiment_config: Optional[ExperimentConfigurationDto], subject: str
+// ) -> Optional[str]:
+// 	subject_hash = hashlib.md5(subject.encode("utf-8")).hexdigest()
+// 	if (
+// 			experiment_config is not None
+// 			and subject_hash in experiment_config.overrides
+// 	):
+// 			return experiment_config.overrides[subject_hash]
+// 	return None
 
 func subjectAttributesSatisfyRules(subjectAttributes Dictionary, rules []Rule) bool {
 	if len(rules) == 0 {
