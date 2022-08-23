@@ -15,13 +15,8 @@ var testExp = ExperimentConfiguration{
 
 const TEST_MAX_SIZE = 10
 
-var store = ConfigurationStore{}
-
-func init() {
-	store.New(TEST_MAX_SIZE)
-}
-
 func Test_GetConfiguration_unknownKey(t *testing.T) {
+	var store = NewConfigurationStore(TEST_MAX_SIZE)
 	store.SetConfigurations(Dictionary{"randomization_algo": testExp})
 	result, err := store.GetConfiguration("unknown_exp")
 
@@ -31,6 +26,7 @@ func Test_GetConfiguration_unknownKey(t *testing.T) {
 }
 
 func Test_GetConfiguration_knownKey(t *testing.T) {
+	var store = NewConfigurationStore(TEST_MAX_SIZE)
 	store.SetConfigurations(Dictionary{"randomization_algo": testExp})
 	result, err := store.GetConfiguration("randomization_algo")
 
@@ -46,6 +42,7 @@ func Test_GetConfiguration_knownKey(t *testing.T) {
 }
 
 func Test_GetConfiguration_evictsOldEntriesWhenMaxSizeExceeded(t *testing.T) {
+	var store = NewConfigurationStore(TEST_MAX_SIZE)
 	store.SetConfigurations(Dictionary{"item_to_be_evicted": testExp})
 	result, err := store.GetConfiguration("item_to_be_evicted")
 

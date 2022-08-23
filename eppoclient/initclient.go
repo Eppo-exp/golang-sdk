@@ -8,11 +8,10 @@ func InitClient(config Config) EppoClient {
 
 	httpClient := NewHttpClient(config.baseUrl, sdkParams)
 
-	configStore := ConfigurationStore{}
-	configStore.New(MAX_CACHE_ENTRIES)
+	configStore := NewConfigurationStore(MAX_CACHE_ENTRIES)
 
 	requestor := NewExperimentConfigurationRequestor()
-	requestor.New(*httpClient, configStore)
+	requestor.New(*httpClient, *configStore)
 
 	var assignmentLogger = NewAssignmentLogger()
 

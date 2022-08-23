@@ -11,10 +11,9 @@ func Test_FetchAndStoreConfigurations(t *testing.T) {
 
 	var httpClient = NewHttpClient("http://localhost:4000/api", sdkParams)
 
-	var configStore = ConfigurationStore{}
-	configStore.New(20)
+	var configStore = NewConfigurationStore(20)
 
-	requestor.New(*httpClient, configStore)
+	requestor.New(*httpClient, *configStore)
 
 	requestor.FetchAndStoreConfigurations()
 }
