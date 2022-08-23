@@ -8,7 +8,6 @@ import (
 const RAC_ENDPOINT = "/randomized_assignment/config"
 
 type IConfigRequestor interface {
-	New(httpClient HttpClient, configStore ConfigurationStore)
 	GetConfiguration(key string) (ExperimentConfiguration, error)
 	FetchAndStoreConfigurations()
 }
@@ -18,13 +17,13 @@ type ExperimentConfigurationRequestor struct {
 	configStore ConfigurationStore
 }
 
-func NewExperimentConfigurationRequestor() ExperimentConfigurationRequestor {
-	return ExperimentConfigurationRequestor{}
-}
+func NewExperimentConfigurationRequestor(httpClient HttpClient, configStore ConfigurationStore) *ExperimentConfigurationRequestor {
+	var ecr = &ExperimentConfigurationRequestor{}
 
-func (ecr *ExperimentConfigurationRequestor) New(httpClient HttpClient, configStore ConfigurationStore) {
 	ecr.httpClient = httpClient
 	ecr.configStore = configStore
+
+	return ecr
 }
 
 func (ecr *ExperimentConfigurationRequestor) GetConfiguration(experimentKey string) (ExperimentConfiguration, error) {

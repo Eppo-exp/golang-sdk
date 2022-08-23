@@ -16,7 +16,7 @@ var mockVariations = []Variation{
 
 func Test_AssignBlankExperiment(t *testing.T) {
 	InitClient(testConfig)
-	var mockConfigRequestor = NewExperimentConfigurationRequestor()
+	var mockConfigRequestor = ExperimentConfigurationRequestor{}
 	client.New(&mockConfigRequestor, mockLogger)
 
 	// No need to check whether `recover()` is nil. Just turn off the panic.
