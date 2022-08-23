@@ -3,6 +3,8 @@ package eppoclient
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_PollerPoll_InvokesCallbackUntilStoped(t *testing.T) {
@@ -16,11 +18,7 @@ func Test_PollerPoll_InvokesCallbackUntilStoped(t *testing.T) {
 	time.Sleep(5 * time.Second)
 	poller.Stop()
 
-	if callCount != expected {
-		t.Errorf("\"Poller\" FAILED, expected -> %v, got -> %v", expected, callCount)
-	} else {
-		t.Logf("\"Poller\" SUCCEDED, expected -> %v, got -> %v", expected, callCount)
-	}
+	assert.Equal(t, expected, callCount)
 }
 
 func Test_PollerPoll_StopsOnError(t *testing.T) {
@@ -36,10 +34,5 @@ func Test_PollerPoll_StopsOnError(t *testing.T) {
 	poller.Start()
 
 	time.Sleep(5 * time.Second)
-
-	if callCount != expected {
-		t.Errorf("\"Poller\" FAILED, expected -> %v, got -> %v", expected, callCount)
-	} else {
-		t.Logf("\"Poller\" SUCCEDED, expected -> %v, got -> %v", expected, callCount)
-	}
+	assert.Equal(t, expected, callCount)
 }
