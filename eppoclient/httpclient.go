@@ -32,13 +32,15 @@ type Experiments struct {
 	Results []*Experiment
 }
 
-func (hc *HttpClient) New(baseUrl string, sdkParams SDKParams) {
+func NewHttpClient(baseUrl string, sdkParams SDKParams) *HttpClient {
+	var hc = &HttpClient{}
 	hc.baseUrl = baseUrl
 	hc.sdkParams = sdkParams
 	hc.isUnauthorized = false
 	hc.client = *resty.New()
 
 	hc.client.SetTimeout(REQUEST_TIMEOUT_SECONDS)
+	return hc
 }
 
 func (hc *HttpClient) Get(resource string) string {

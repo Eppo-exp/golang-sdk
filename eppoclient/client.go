@@ -20,10 +20,8 @@ type AssignmentEvent struct {
 }
 
 func (ec *EppoClient) New(configRequestor IConfigRequestor, assignmentLogger AssignmentLogger) {
-	var poller = NewPoller()
-	poller.New(10, configRequestor.FetchAndStoreConfigurations)
-
-	ec.poller = poller
+	var poller = NewPoller(10, configRequestor.FetchAndStoreConfigurations)
+	ec.poller = *poller
 	ec.configRequestor = configRequestor
 	ec.logger = assignmentLogger
 
