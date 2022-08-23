@@ -5,20 +5,29 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
+type CallbackMock struct {
+	mock.Mock
+}
+
+func (m *CallbackMock) CallbackFn() {
+	m.Called()
+}
+
 func Test_PollerPoll_InvokesCallbackUntilStoped(t *testing.T) {
-	callCount := 0
 	expected := 5
 
-	var poller = NewPoller(1, func() {
-		callCount++
-	})
+	callbackMock := CallbackMock{}
+	callbackMock.On("CallbackFn").Return()
+
+	var poller = NewPoller(1, callbackMock.CallbackFn)
 	poller.Start()
 	time.Sleep(5 * time.Second)
 	poller.Stop()
 
-	assert.Equal(t, expected, callCount)
+	callbackMock.AssertNumberOfCalls(t, "CallbackFn", expected)
 }
 
 func Test_PollerPoll_StopsOnError(t *testing.T) {
@@ -35,4 +44,21 @@ func Test_PollerPoll_StopsOnError(t *testing.T) {
 
 	time.Sleep(5 * time.Second)
 	assert.Equal(t, expected, callCount)
+}
+
+func Test_PollerPoll_ManualStop(t *testing.T) {
+	expected := 3
+
+	callbackMock := CallbackMock{}
+	callbackMock.On("CallbackFn").Return()
+
+	var poller = NewPoller(1, callbackMock.CallbackFn)
+	poller.Start()
+
+	time.Sleep(3 * time.Second)
+
+	poller.Stop()
+
+	time.Sleep(2 * time.Second)
+	callbackMock.AssertNumberOfCalls(t, "CallbackFn", expected)
 }
