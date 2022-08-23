@@ -8,7 +8,7 @@ import (
 type EppoClient struct {
 	configRequestor IConfigRequestor
 	poller          Poller
-	logger          AssignmentLogger
+	logger          IAssignmentLogger
 }
 
 type AssignmentEvent struct {
@@ -19,7 +19,7 @@ type AssignmentEvent struct {
 	SubjectAttributes Dictionary
 }
 
-func NewEppoClient(configRequestor IConfigRequestor, assignmentLogger AssignmentLogger) *EppoClient {
+func NewEppoClient(configRequestor IConfigRequestor, assignmentLogger IAssignmentLogger) *EppoClient {
 	var ec = &EppoClient{}
 
 	var poller = NewPoller(10, configRequestor.FetchAndStoreConfigurations)

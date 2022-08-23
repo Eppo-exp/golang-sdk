@@ -4,26 +4,42 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func Test_AssignBlankExperiment(t *testing.T) {
-	var mockConfigRequestor = &MockConfigRequestor{}
-
+	var mockConfigRequestor = new(MockConfigRequestor)
+	var mockLogger = new(MockLogger)
 	client := NewEppoClient(mockConfigRequestor, mockLogger)
 
 	assert.Panics(t, func() { client.GetAssignment("subject-1", "", Dictionary{}) })
 }
 
 func Test_AssignBlankSubject(t *testing.T) {
-	var mockConfigRequestor = &MockConfigRequestor{}
-
+	var mockConfigRequestor = new(MockConfigRequestor)
+	var mockLogger = new(MockLogger)
 	client := NewEppoClient(mockConfigRequestor, mockLogger)
 
 	assert.Panics(t, func() { client.GetAssignment("", "experiment-1", Dictionary{}) })
 }
 
 func Test_SubjectNotInSample(t *testing.T) {
-	var mockConfigRequestor = &MockConfigRequestor{}
+	var mockLogger = new(MockLogger)
+	var mockConfigRequestor = new(MockConfigRequestor)
+	overrides := make(Dictionary)
+	var mockVariations = []Variation{
+		{Name: "control", ShardRange: ShardRange{Start: 0, End: 10000}},
+	}
+	mockResult := ExperimentConfiguration{
+		Name:            "recommendation_algo",
+		PercentExposure: 0,
+		Enabled:         true,
+		SubjectShards:   1000,
+		Overrides:       overrides,
+		Variations:      mockVariations,
+	}
+
+	mockConfigRequestor.Mock.On("GetConfiguration", mock.Anything).Return(mockResult, nil)
 
 	client := NewEppoClient(mockConfigRequestor, mockLogger)
 
@@ -33,7 +49,24 @@ func Test_SubjectNotInSample(t *testing.T) {
 }
 
 func Test_LogAssignment(t *testing.T) {
-	var mockConfigRequestor = &MockConfigRequestor100PercentExposure{}
+	var mockLogger = new(MockLogger)
+	mockLogger.Mock.On("LogAssignment", mock.AnythingOfType("string")).Return()
+
+	var mockConfigRequestor = new(MockConfigRequestor)
+	overrides := make(Dictionary)
+
+	var mockVariations = []Variation{
+		{Name: "control", ShardRange: ShardRange{Start: 0, End: 10000}},
+	}
+	mockResult := ExperimentConfiguration{
+		Name:            "recommendation_algo",
+		PercentExposure: 100,
+		Enabled:         true,
+		SubjectShards:   1000,
+		Overrides:       overrides,
+		Variations:      mockVariations,
+	}
+	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(mockResult, nil)
 
 	client := NewEppoClient(mockConfigRequestor, mockLogger)
 
@@ -45,4 +78,5 @@ func Test_LogAssignment(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, assignment)
+	mockLogger.AssertNumberOfCalls(t, "LogAssignment", 1)
 }

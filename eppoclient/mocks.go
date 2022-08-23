@@ -1,60 +1,26 @@
 package eppoclient
 
-var mockVariations = []Variation{
-	{Name: "control", ShardRange: ShardRange{Start: 0, End: 34}},
-	{Name: "variant-1", ShardRange: ShardRange{Start: 34, End: 67}},
-	{Name: "variant-2", ShardRange: ShardRange{Start: 67, End: 100}},
+import (
+	"github.com/stretchr/testify/mock"
+)
+
+type MockLogger struct {
+	mock.Mock
 }
 
-var mockLogger = NewAssignmentLogger()
-var testConfig = Config{apiKey: "dummy", baseUrl: "http://127.0.0.1:4000", assignmentLogger: mockLogger}
+func (ml *MockLogger) LogAssignment(event string) {
+	ml.Called(event)
+}
 
 type MockConfigRequestor struct {
+	mock.Mock
 }
 
 func (mcr *MockConfigRequestor) GetConfiguration(experimentKey string) (ExperimentConfiguration, error) {
-	overrides := make(Dictionary)
+	args := mcr.Called(experimentKey)
 
-	var mockVariations = []Variation{
-		{Name: "control", ShardRange: ShardRange{Start: 0, End: 10000}},
-	}
-
-	result := ExperimentConfiguration{
-		Name:            "recommendation_algo",
-		PercentExposure: 0,
-		Enabled:         true,
-		SubjectShards:   1000,
-		Overrides:       overrides,
-		Variations:      mockVariations,
-	}
-
-	return result, nil
+	return args.Get(0).(ExperimentConfiguration), args.Error(1)
 }
 
 func (mcr *MockConfigRequestor) FetchAndStoreConfigurations() {
-}
-
-type MockConfigRequestor100PercentExposure struct {
-}
-
-func (mcr *MockConfigRequestor100PercentExposure) GetConfiguration(experimentKey string) (ExperimentConfiguration, error) {
-	overrides := make(Dictionary)
-
-	var mockVariations = []Variation{
-		{Name: "control", ShardRange: ShardRange{Start: 0, End: 10000}},
-	}
-
-	result := ExperimentConfiguration{
-		Name:            "recommendation_algo",
-		PercentExposure: 100,
-		Enabled:         true,
-		SubjectShards:   1000,
-		Overrides:       overrides,
-		Variations:      mockVariations,
-	}
-
-	return result, nil
-}
-
-func (mcr *MockConfigRequestor100PercentExposure) FetchAndStoreConfigurations() {
 }

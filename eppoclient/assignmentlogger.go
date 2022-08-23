@@ -2,11 +2,15 @@ package eppoclient
 
 import "fmt"
 
+type IAssignmentLogger interface {
+	LogAssignment(event string)
+}
+
 type AssignmentLogger struct {
 }
 
-func NewAssignmentLogger() AssignmentLogger {
-	return AssignmentLogger{}
+func NewAssignmentLogger() IAssignmentLogger {
+	return &AssignmentLogger{}
 }
 
 func (al *AssignmentLogger) LogAssignment(event string) {
