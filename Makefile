@@ -2,7 +2,7 @@ BINARY_NAME=eppo-golang-sdk
 default: help
 
 build:
-	GOARCH=amd64 GOOS=darwin go build -o ${BINARY_NAME}-darwin doc.go
+	GOARCH=amd64 GOOS=darwin go build -o ${BINARY_NAME}-darwin ./eppoclient
 
 clean:
 	go clean
