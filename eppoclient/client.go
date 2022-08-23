@@ -2,6 +2,7 @@ package eppoclient
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -74,7 +75,15 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 
 	aeJson, _ := json.Marshal(assignmentEvent)
 
-	ec.logger.LogAssignment(string(aeJson))
+	func() {
+		// need to catch panics from Logger and continue
+		defer func() {
+			r := recover()
+			fmt.Println("panic occurred:", r)
+		}()
+
+		ec.logger.LogAssignment(string(aeJson))
+	}()
 
 	return assignedVariation, err
 }

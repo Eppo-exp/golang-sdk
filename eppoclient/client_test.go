@@ -80,3 +80,31 @@ func Test_LogAssignment(t *testing.T) {
 	assert.Equal(t, expected, assignment)
 	mockLogger.AssertNumberOfCalls(t, "LogAssignment", 1)
 }
+
+func Test_GetAssignmentHandlesLoggingException(t *testing.T) {
+	var mockLogger = new(MockLogger)
+	mockLogger.Mock.On("LogAssignment", mock.AnythingOfType("string")).Panic("logging panic")
+
+	var mockConfigRequestor = new(MockConfigRequestor)
+	overrides := make(Dictionary)
+
+	var mockVariations = []Variation{
+		{Name: "control", ShardRange: ShardRange{Start: 0, End: 10000}},
+	}
+	mockResult := ExperimentConfiguration{
+		Name:            "recommendation_algo",
+		PercentExposure: 100,
+		Enabled:         true,
+		SubjectShards:   1000,
+		Overrides:       overrides,
+		Variations:      mockVariations,
+	}
+	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(mockResult, nil)
+
+	client := NewEppoClient(mockConfigRequestor, mockLogger)
+
+	assignment, _ := client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
+	expected := "control"
+
+	assert.Equal(t, expected, assignment)
+}
