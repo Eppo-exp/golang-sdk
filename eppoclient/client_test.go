@@ -18,14 +18,55 @@ func Test_AssignBlankExperiment(t *testing.T) {
 	defer func() { _ = recover() }()
 
 	InitClient(testConfig)
-	var mockConfigRequestor = ExperimentConfigurationRequestor{}
+	var mockConfigRequestor = &MockConfigRequestor{}
 
-	client := NewEppoClient(&mockConfigRequestor, mockLogger)
+	client := NewEppoClient(mockConfigRequestor, mockLogger)
 
 	client.GetAssignment("subject-1", "", Dictionary{})
 	// Never reaches here if `GetAssignment` panics.
 	t.Errorf("did not panic")
 }
+
+func Test_AssignBlankSubject(t *testing.T) {
+	// No need to check whether `recover()` is nil. Just turn off the panic.
+	defer func() { _ = recover() }()
+
+	InitClient(testConfig)
+	var mockConfigRequestor = &MockConfigRequestor{}
+
+	client := NewEppoClient(mockConfigRequestor, mockLogger)
+
+	client.GetAssignment("", "experiment-1", Dictionary{})
+	// Never reaches here if `GetAssignment` panics.
+	t.Errorf("did not panic")
+}
+
+// func Test_SubjectNotInSample(t *testing.T) {
+// 	InitClient(testConfig)
+// 	var mockConfigRequestor = &MockConfigRequestor{}
+
+// 	client := NewEppoClient(mockConfigRequestor, mockLogger)
+
+// 	client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
+// 	// Never reaches here if `GetAssignment` panics.
+// 	t.Errorf("did not panic")
+// }
+
+// def test_assign_subject_not_in_sample(mock_config_requestor):
+//     mock_config_requestor.get_configuration.return_value = ExperimentConfigurationDto(
+//         subjectShards=10000,
+//         percentExposure=0,
+//         enabled=True,
+//         variations=[
+//             VariationDto(name="control", shardRange=ShardRange(start=0, end=10000))
+//         ],
+//         name="recommendation_algo",
+//         overrides=dict(),
+//     )
+//     client = EppoClient(
+//         config_requestor=mock_config_requestor, assignment_logger=AssignmentLogger()
+//     )
+//     assert client.get_assignment("user-1", "experiment-key-1") is None
 
 type MockConfigRequestor struct {
 }
