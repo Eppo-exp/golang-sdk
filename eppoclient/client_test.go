@@ -4,7 +4,6 @@ import (
 	"testing"
 )
 
-var client = EppoClient{}
 var mockLogger = NewAssignmentLogger()
 var testConfig = Config{apiKey: "dummy", baseUrl: "http://127.0.0.1:4000", assignmentLogger: mockLogger}
 
@@ -15,16 +14,16 @@ var mockVariations = []Variation{
 }
 
 func Test_AssignBlankExperiment(t *testing.T) {
-	InitClient(testConfig)
-	var mockConfigRequestor = ExperimentConfigurationRequestor{}
-	client.New(&mockConfigRequestor, mockLogger)
-
 	// No need to check whether `recover()` is nil. Just turn off the panic.
 	defer func() { _ = recover() }()
 
-	client.GetAssignment("subject-1", "", Dictionary{})
+	InitClient(testConfig)
+	var mockConfigRequestor = ExperimentConfigurationRequestor{}
 
-	// Never reaches here if `OtherFunctionThatPanics` panics.
+	client := NewEppoClient(&mockConfigRequestor, mockLogger)
+
+	client.GetAssignment("subject-1", "", Dictionary{})
+	// Never reaches here if `GetAssignment` panics.
 	t.Errorf("did not panic")
 }
 

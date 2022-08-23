@@ -19,13 +19,15 @@ type AssignmentEvent struct {
 	SubjectAttributes Dictionary
 }
 
-func (ec *EppoClient) New(configRequestor IConfigRequestor, assignmentLogger AssignmentLogger) {
+func NewEppoClient(configRequestor IConfigRequestor, assignmentLogger AssignmentLogger) *EppoClient {
+	var ec = &EppoClient{}
+
 	var poller = NewPoller(10, configRequestor.FetchAndStoreConfigurations)
 	ec.poller = *poller
 	ec.configRequestor = configRequestor
 	ec.logger = assignmentLogger
 
-	poller.Start()
+	return ec
 }
 
 func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, subjectAttributes Dictionary) (string, error) {

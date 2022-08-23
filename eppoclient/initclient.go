@@ -2,7 +2,7 @@ package eppoclient
 
 var __version__ = "1.0.0"
 
-func InitClient(config Config) EppoClient {
+func InitClient(config Config) *EppoClient {
 	config.validate()
 	sdkParams := SDKParams{apiKey: config.apiKey, sdkName: "go", sdkVersion: __version__}
 
@@ -11,8 +11,7 @@ func InitClient(config Config) EppoClient {
 	requestor := NewExperimentConfigurationRequestor(*httpClient, *configStore)
 	assignmentLogger := NewAssignmentLogger()
 
-	var client EppoClient
-	client.New(requestor, assignmentLogger)
+	client := NewEppoClient(requestor, assignmentLogger)
 
 	return client
 }
