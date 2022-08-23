@@ -106,17 +106,6 @@ func getSubjectVariationOverride(experimentConfig ExperimentConfiguration, subje
 	return ""
 }
 
-// def _get_subject_variation_override(
-// 	self, experiment_config: Optional[ExperimentConfigurationDto], subject: str
-// ) -> Optional[str]:
-// 	subject_hash = hashlib.md5(subject.encode("utf-8")).hexdigest()
-// 	if (
-// 			experiment_config is not None
-// 			and subject_hash in experiment_config.overrides
-// 	):
-// 			return experiment_config.overrides[subject_hash]
-// 	return None
-
 func subjectAttributesSatisfyRules(subjectAttributes Dictionary, rules []Rule) bool {
 	if len(rules) == 0 {
 		return true
