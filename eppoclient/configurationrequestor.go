@@ -18,12 +18,10 @@ type ExperimentConfigurationRequestor struct {
 }
 
 func NewExperimentConfigurationRequestor(httpClient HttpClient, configStore ConfigurationStore) *ExperimentConfigurationRequestor {
-	var ecr = &ExperimentConfigurationRequestor{}
-
-	ecr.httpClient = httpClient
-	ecr.configStore = configStore
-
-	return ecr
+	return &ExperimentConfigurationRequestor{
+		httpClient:  httpClient,
+		configStore: configStore,
+	}
 }
 
 func (ecr *ExperimentConfigurationRequestor) GetConfiguration(experimentKey string) (ExperimentConfiguration, error) {
@@ -46,12 +44,14 @@ func (ecr *ExperimentConfigurationRequestor) FetchAndStoreConfigurations() {
 	err := json.Unmarshal([]byte(result), &responseBody)
 
 	if err != nil {
+		fmt.Println("Failed to unmarshal RAC response json", result)
 		fmt.Println(err)
 	}
 
 	err = json.Unmarshal(responseBody["experiments"], &configs)
 
 	if err != nil {
+		fmt.Println("Failed to unmarshal RAC response json", result)
 		fmt.Println(err)
 	}
 
