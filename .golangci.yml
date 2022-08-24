@@ -1,3 +1,5 @@
+linters:
+  enable-all: true
 run:
   # If set we pass it to "go list -mod={option}". From "go help modules":
   # If invoked with -mod=readonly, the go command is disallowed from the implicit
