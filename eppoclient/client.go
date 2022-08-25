@@ -87,7 +87,9 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 		// need to catch panics from Logger and continue
 		defer func() {
 			r := recover()
-			fmt.Println("panic occurred:", r)
+			if r != nil {
+				fmt.Println("panic occurred:", r)
+			}
 		}()
 
 		event := map[string]string{}
