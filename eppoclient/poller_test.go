@@ -3,33 +3,38 @@ package eppoclient
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
+type CallbackMock struct {
+	mock.Mock
+}
+
+func (m *CallbackMock) CallbackFn() {
+	m.Called()
+}
+
 func Test_PollerPoll_InvokesCallbackUntilStoped(t *testing.T) {
-	callCount := 0
 	expected := 5
 
-	var poller = Poller{}
-	poller.New(1, func() {
-		callCount++
-	})
+	callbackMock := CallbackMock{}
+	callbackMock.On("CallbackFn").Return()
+
+	var poller = NewPoller(1, callbackMock.CallbackFn)
 	poller.Start()
 	time.Sleep(5 * time.Second)
 	poller.Stop()
 
-	if callCount != expected {
-		t.Errorf("\"Poller\" FAILED, expected -> %v, got -> %v", expected, callCount)
-	} else {
-		t.Logf("\"Poller\" SUCCEDED, expected -> %v, got -> %v", expected, callCount)
-	}
+	callbackMock.AssertNumberOfCalls(t, "CallbackFn", expected)
 }
 
 func Test_PollerPoll_StopsOnError(t *testing.T) {
 	callCount := 0
 	expected := 3
 
-	var poller = Poller{}
-	poller.New(1, func() {
+	var poller = NewPoller(1, func() {
 		callCount++
 		if callCount == 3 {
 			panic("some_error")
@@ -38,10 +43,22 @@ func Test_PollerPoll_StopsOnError(t *testing.T) {
 	poller.Start()
 
 	time.Sleep(5 * time.Second)
+	assert.Equal(t, expected, callCount)
+}
 
-	if callCount != expected {
-		t.Errorf("\"Poller\" FAILED, expected -> %v, got -> %v", expected, callCount)
-	} else {
-		t.Logf("\"Poller\" SUCCEDED, expected -> %v, got -> %v", expected, callCount)
-	}
+func Test_PollerPoll_ManualStop(t *testing.T) {
+	expected := 3
+
+	callbackMock := CallbackMock{}
+	callbackMock.On("CallbackFn").Return()
+
+	var poller = NewPoller(1, callbackMock.CallbackFn)
+	poller.Start()
+
+	time.Sleep(2500 * time.Millisecond)
+
+	poller.Stop()
+
+	time.Sleep(2 * time.Second)
+	callbackMock.AssertNumberOfCalls(t, "CallbackFn", expected)
 }

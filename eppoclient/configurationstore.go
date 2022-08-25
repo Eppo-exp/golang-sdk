@@ -25,13 +25,17 @@ type ExperimentConfiguration struct {
 	Overrides       Dictionary  `json:"overrides"`
 }
 
-func (cs *ConfigurationStore) New(maxEnties int) {
-	lruCache, err := lru.New(maxEnties)
-	cs.cache = *lruCache
+func NewConfigurationStore(maxEntries int) *ConfigurationStore {
+	var configStore = &ConfigurationStore{}
+
+	lruCache, err := lru.New(maxEntries)
+	configStore.cache = *lruCache
 
 	if err != nil {
 		panic(err)
 	}
+
+	return configStore
 }
 
 func (cs *ConfigurationStore) GetConfiguration(key string) (expConfig ExperimentConfiguration, err error) {

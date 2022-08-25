@@ -2,26 +2,24 @@ package eppoclient
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_getShard(t *testing.T) {
-	input := "test-string"
-	var expected int64 = 0
-	result := getShard(input, 5)
-
-	if result != expected {
-		t.Errorf("\"getShard('%s')\" FAILED, expected -> %v, got -> %v", input, expected, result)
-	} else {
-		t.Logf("\"getShard('%s')\" SUCCEDED, expected -> %v, got -> %v", input, expected, result)
+	var tests = []struct {
+		a    string
+		b    int64
+		want int64
+	}{
+		{"test-string", 5, 0},
+		{"test-string", 2, 1},
 	}
 
-	expected = 1
-	result = getShard(input, 2)
+	for _, tt := range tests {
+		result := getShard(tt.a, tt.b)
 
-	if result != expected {
-		t.Errorf("\"getShard('%s')\" FAILED, expected -> %v, got -> %v", input, expected, result)
-	} else {
-		t.Logf("\"getShard('%s')\" SUCCEDED, expected -> %v, got -> %v", input, expected, result)
+		assert.Equal(t, tt.want, result)
 	}
 }
 
@@ -31,11 +29,7 @@ func Test_isShardInRange_Fail(t *testing.T) {
 	expected := false
 	result := isShardInRange(input, inputRange)
 
-	if result != expected {
-		t.Errorf("\"isShardInRange(%v,  %+v)\" FAILED, expected -> %t, got -> %t", input, inputRange, expected, result)
-	} else {
-		t.Logf("\"isShardInRange(%v,  %+v)\" SUCCEDED, expected -> %t, got -> %t", input, inputRange, expected, result)
-	}
+	assert.Equal(t, expected, result)
 }
 
 func Test_isShardInRange_Success(t *testing.T) {
@@ -44,9 +38,5 @@ func Test_isShardInRange_Success(t *testing.T) {
 	expected := true
 	result := isShardInRange(input, inputRange)
 
-	if result != expected {
-		t.Errorf("\"isShardInRange(%v,  %+v)\" FAILED, expected -> %t, got -> %t", input, inputRange, expected, result)
-	} else {
-		t.Logf("\"isShardInRange(%v,  %+v)\" SUCCEDED, expected -> %t, got -> %t", input, inputRange, expected, result)
-	}
+	assert.Equal(t, expected, result)
 }

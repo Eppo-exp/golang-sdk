@@ -11,9 +11,13 @@ type Poller struct {
 	isStopped bool `default:"false"`
 }
 
-func (p *Poller) New(interval int, callback func()) {
-	p.interval = interval
-	p.callback = callback
+func NewPoller(interval int, callback func()) *Poller {
+	var poller = &Poller{}
+
+	poller.interval = interval
+	poller.callback = callback
+
+	return poller
 }
 
 func (p *Poller) Start() {
