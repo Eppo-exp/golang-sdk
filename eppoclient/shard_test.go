@@ -7,16 +7,20 @@ import (
 )
 
 func Test_getShard(t *testing.T) {
-	input := "test-string"
-	var expected int64 = 0
-	result := getShard(input, 5)
+	var tests = []struct {
+		a    string
+		b    int64
+		want int64
+	}{
+		{"test-string", 5, 0},
+		{"test-string", 2, 1},
+	}
 
-	assert.Equal(t, expected, result)
+	for _, tt := range tests {
+		result := getShard(tt.a, tt.b)
 
-	expected = 1
-	result = getShard(input, 2)
-
-	assert.Equal(t, expected, result)
+		assert.Equal(t, tt.want, result)
+	}
 }
 
 func Test_isShardInRange_Fail(t *testing.T) {

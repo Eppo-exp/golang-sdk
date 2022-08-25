@@ -95,149 +95,137 @@ func Test_matchesAnyRule_NumericValueAndRegex(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+type MatchesAnyRuleTest []struct {
+	a    Dictionary
+	b    []Rule
+	want bool
+}
+
 func Test_matchesAnyRule_oneOfOperatorWithBoolean(t *testing.T) {
 	oneOfRule := Rule{conditions: []Condition{{operator: "ONE_OF", value: []string{"true"}, attribute: "enabled"}}}
 	notOneOfRule := Rule{conditions: []Condition{{operator: "NOT_ONE_OF", value: []string{"True"}, attribute: "enabled"}}}
 
-	subjectAttributes := make(Dictionary)
-	subjectAttributes["enabled"] = "true"
+	subjectAttributesEnabled := make(Dictionary)
+	subjectAttributesEnabled["enabled"] = "true"
 
-	expected := true
-	result := matchesAnyRule(subjectAttributes, []Rule{oneOfRule})
+	subjectAttributesDisabled := make(Dictionary)
+	subjectAttributesDisabled["enabled"] = "false"
 
-	assert.Equal(t, expected, result)
+	var tests = MatchesAnyRuleTest{
+		{subjectAttributesEnabled, []Rule{oneOfRule}, true},
+		{subjectAttributesDisabled, []Rule{oneOfRule}, false},
+		{subjectAttributesEnabled, []Rule{notOneOfRule}, false},
+		{subjectAttributesDisabled, []Rule{notOneOfRule}, true},
+	}
 
-	subjectAttributes["enabled"] = "false"
+	for _, tt := range tests {
+		result := matchesAnyRule(tt.a, tt.b)
 
-	expected = false
-	result = matchesAnyRule(subjectAttributes, []Rule{oneOfRule})
-
-	assert.Equal(t, expected, result)
-
-	subjectAttributes["enabled"] = "true"
-
-	expected = false
-	result = matchesAnyRule(subjectAttributes, []Rule{notOneOfRule})
-
-	assert.Equal(t, expected, result)
-
-	subjectAttributes["enabled"] = "false"
-
-	expected = true
-	result = matchesAnyRule(subjectAttributes, []Rule{notOneOfRule})
-
-	assert.Equal(t, expected, result)
+		assert.Equal(t, tt.want, result)
+	}
 }
 
 func Test_matchesAnyRule_OneOfOperatorCaseInsensitive(t *testing.T) {
 	oneOfRule := Rule{conditions: []Condition{{operator: "ONE_OF", value: []string{"1Ab", "Ron"}, attribute: "name"}}}
-	expected := true
+	subjectAttributes0 := make(Dictionary)
+	subjectAttributes0["name"] = "ron"
 
-	subjectAttributes := make(Dictionary)
-	subjectAttributes["name"] = "ron"
+	subjectAttributes1 := make(Dictionary)
+	subjectAttributes1["name"] = "1AB"
 
-	result := matchesAnyRule(subjectAttributes, []Rule{oneOfRule})
+	var tests = MatchesAnyRuleTest{
+		{subjectAttributes0, []Rule{oneOfRule}, true},
+		{subjectAttributes1, []Rule{oneOfRule}, true},
+	}
 
-	assert.Equal(t, expected, result)
+	for _, tt := range tests {
+		result := matchesAnyRule(tt.a, tt.b)
 
-	subjectAttributes["name"] = "1AB"
-	result = matchesAnyRule(subjectAttributes, []Rule{oneOfRule})
-
-	assert.Equal(t, expected, result)
+		assert.Equal(t, tt.want, result)
+	}
 }
 
 func Test_matchesAnyRule_NotOneOfOperatorCaseInsensitive(t *testing.T) {
 	notOneOfRule := Rule{conditions: []Condition{{operator: "NOT_ONE_OF", value: []string{"bbB", "1.1.ab"}, attribute: "name"}}}
-	expected := false
+	subjectAttributes0 := make(Dictionary)
+	subjectAttributes0["name"] = "BBB"
 
-	subjectAttributes := make(Dictionary)
-	subjectAttributes["name"] = "BBB"
+	subjectAttributes1 := make(Dictionary)
+	subjectAttributes1["name"] = "1.1.AB"
 
-	result := matchesAnyRule(subjectAttributes, []Rule{notOneOfRule})
+	var tests = MatchesAnyRuleTest{
+		{subjectAttributes0, []Rule{notOneOfRule}, false},
+		{subjectAttributes1, []Rule{notOneOfRule}, false},
+	}
 
-	assert.Equal(t, expected, result)
+	for _, tt := range tests {
+		result := matchesAnyRule(tt.a, tt.b)
 
-	subjectAttributes["name"] = "1.1.AB"
-	result = matchesAnyRule(subjectAttributes, []Rule{notOneOfRule})
-
-	assert.Equal(t, expected, result)
+		assert.Equal(t, tt.want, result)
+	}
 }
 
 func Test_matchesAnyRule_OneOfOperatorWithString(t *testing.T) {
 	oneOfRule := Rule{conditions: []Condition{{operator: "ONE_OF", value: []string{"john", "ron"}, attribute: "name"}}}
 	notOneOfRule := Rule{conditions: []Condition{{operator: "NOT_ONE_OF", value: []string{"ron"}, attribute: "name"}}}
 
-	subjectAttributes := make(Dictionary)
-	subjectAttributes["name"] = "john"
+	subjectAttributesJohn := make(Dictionary)
+	subjectAttributesJohn["name"] = "john"
 
-	expected := true
-	result := matchesAnyRule(subjectAttributes, []Rule{oneOfRule})
+	subjectAttributesRon := make(Dictionary)
+	subjectAttributesRon["name"] = "ron"
 
-	assert.Equal(t, expected, result)
+	subjectAttributesSam := make(Dictionary)
+	subjectAttributesSam["name"] = "sam"
 
-	subjectAttributes["name"] = "ron"
-	result = matchesAnyRule(subjectAttributes, []Rule{oneOfRule})
+	var tests = MatchesAnyRuleTest{
+		{subjectAttributesJohn, []Rule{oneOfRule}, true},
+		{subjectAttributesRon, []Rule{oneOfRule}, true},
+		{subjectAttributesSam, []Rule{oneOfRule}, false},
+		{subjectAttributesRon, []Rule{notOneOfRule}, false},
+		{subjectAttributesSam, []Rule{notOneOfRule}, true},
+	}
 
-	assert.Equal(t, expected, result)
+	for _, tt := range tests {
+		result := matchesAnyRule(tt.a, tt.b)
 
-	expected = false
-	subjectAttributes["name"] = "sam"
-	result = matchesAnyRule(subjectAttributes, []Rule{oneOfRule})
-
-	assert.Equal(t, expected, result)
-
-	expected = false
-	subjectAttributes["name"] = "ron"
-	result = matchesAnyRule(subjectAttributes, []Rule{notOneOfRule})
-
-	assert.Equal(t, expected, result)
-
-	expected = true
-	subjectAttributes["name"] = "sam"
-	result = matchesAnyRule(subjectAttributes, []Rule{notOneOfRule})
-
-	assert.Equal(t, expected, result)
+		assert.Equal(t, tt.want, result)
+	}
 }
 
 func Test_matchesAnyRule_OneOfOperatorWithNumber(t *testing.T) {
 	oneOfRule := Rule{conditions: []Condition{{operator: "ONE_OF", value: []string{"14", "15.11", "15"}, attribute: "number"}}}
 	notOneOfRule := Rule{conditions: []Condition{{operator: "NOT_ONE_OF", value: []string{"10"}, attribute: "number"}}}
 
-	subjectAttributes := make(Dictionary)
-	subjectAttributes["number"] = "14"
+	subjectAttributes0 := make(Dictionary)
+	subjectAttributes0["number"] = "14"
 
-	expected := true
-	result := matchesAnyRule(subjectAttributes, []Rule{oneOfRule})
+	subjectAttributes1 := make(Dictionary)
+	subjectAttributes1["number"] = 15.11
 
-	assert.Equal(t, expected, result)
+	subjectAttributes2 := make(Dictionary)
+	subjectAttributes2["number"] = 15
 
-	subjectAttributes["number"] = 15.11
-	result = matchesAnyRule(subjectAttributes, []Rule{oneOfRule})
+	subjectAttributes3 := make(Dictionary)
+	subjectAttributes3["number"] = "10"
 
-	assert.Equal(t, expected, result)
+	subjectAttributes4 := make(Dictionary)
+	subjectAttributes4["number"] = 11
 
-	subjectAttributes["number"] = 15
-	result = matchesAnyRule(subjectAttributes, []Rule{oneOfRule})
+	var tests = MatchesAnyRuleTest{
+		{subjectAttributes0, []Rule{oneOfRule}, true},
+		{subjectAttributes1, []Rule{oneOfRule}, true},
+		{subjectAttributes2, []Rule{oneOfRule}, true},
+		{subjectAttributes3, []Rule{oneOfRule}, false},
+		{subjectAttributes3, []Rule{notOneOfRule}, false},
+		{subjectAttributes4, []Rule{notOneOfRule}, true},
+	}
 
-	assert.Equal(t, expected, result)
+	for _, tt := range tests {
+		result := matchesAnyRule(tt.a, tt.b)
 
-	expected = false
-	subjectAttributes["number"] = "10"
-	result = matchesAnyRule(subjectAttributes, []Rule{oneOfRule})
-
-	assert.Equal(t, expected, result)
-
-	expected = false
-	subjectAttributes["number"] = "10"
-	result = matchesAnyRule(subjectAttributes, []Rule{notOneOfRule})
-
-	assert.Equal(t, expected, result)
-
-	expected = true
-	subjectAttributes["number"] = 11
-	result = matchesAnyRule(subjectAttributes, []Rule{notOneOfRule})
-
-	assert.Equal(t, expected, result)
+		assert.Equal(t, tt.want, result)
+	}
 }
 
 func Test_getMatchingStringValues_Success(t *testing.T) {
