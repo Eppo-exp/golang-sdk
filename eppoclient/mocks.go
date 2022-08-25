@@ -8,7 +8,7 @@ type MockLogger struct {
 	mock.Mock
 }
 
-func (ml *MockLogger) LogAssignment(event string) {
+func (ml *MockLogger) LogAssignment(event map[string]string) {
 	ml.Called(event)
 }
 

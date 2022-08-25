@@ -90,7 +90,10 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 			fmt.Println("panic occurred:", r)
 		}()
 
-		ec.logger.LogAssignment(string(aeJson))
+		event := map[string]string{}
+		json.Unmarshal([]byte(aeJson), &event)
+
+		ec.logger.LogAssignment(event)
 	}()
 
 	return assignedVariation, nil

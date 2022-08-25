@@ -51,7 +51,7 @@ func Test_SubjectNotInSample(t *testing.T) {
 
 func Test_LogAssignment(t *testing.T) {
 	var mockLogger = new(MockLogger)
-	mockLogger.Mock.On("LogAssignment", mock.AnythingOfType("string")).Return()
+	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
 	var mockConfigRequestor = new(MockConfigRequestor)
 	overrides := make(Dictionary)
