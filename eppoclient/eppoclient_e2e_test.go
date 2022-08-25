@@ -17,14 +17,16 @@ const TEST_DATA_DIR = "test-data/assignment"
 const BUCKET_NAME = "sdk-test-data"
 
 func Test_e2e(t *testing.T) {
-	initTestData()
+	downloadTestData()
 }
 
-func initTestData() {
+func downloadTestData() {
 	if _, err := os.Stat(TEST_DATA_DIR); os.IsNotExist(err) {
 		if err := os.MkdirAll(TEST_DATA_DIR, os.ModePerm); err != nil {
 			log.Fatal(err)
 		}
+	} else {
+		return
 	}
 
 	ctx := context.Background()
