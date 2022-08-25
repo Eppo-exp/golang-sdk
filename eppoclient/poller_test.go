@@ -55,7 +55,7 @@ func Test_PollerPoll_ManualStop(t *testing.T) {
 	var poller = NewPoller(1, callbackMock.CallbackFn)
 	poller.Start()
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(2500 * time.Millisecond)
 
 	poller.Stop()
 
