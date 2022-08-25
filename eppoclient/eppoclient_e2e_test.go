@@ -28,7 +28,7 @@ var testData = []TestData{}
 func Test_e2e(t *testing.T) {
 	serverUrl := initFixture()
 
-	client := InitClient(Config{baseUrl: serverUrl, apiKey: "dummy", assignmentLogger: AssignmentLogger{}})
+	client := InitClient(Config{BaseUrl: serverUrl, ApiKey: "dummy", AssignmentLogger: AssignmentLogger{}})
 
 	time.Sleep(2 * time.Second)
 
