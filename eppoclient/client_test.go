@@ -43,9 +43,10 @@ func Test_SubjectNotInSample(t *testing.T) {
 
 	client := NewEppoClient(mockConfigRequestor, mockLogger)
 
-	assignment, _ := client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
+	assignment, err := client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
 
 	assert.Equal(t, "", assignment)
+	assert.NotNil(t, err)
 }
 
 func Test_LogAssignment(t *testing.T) {
@@ -73,10 +74,7 @@ func Test_LogAssignment(t *testing.T) {
 	assignment, err := client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
 	expected := "control"
 
-	if err != nil {
-		t.Errorf("\"EppoClient.GetAssignment()\" FAILED, expected -> %v, got -> %v", expected, assignment)
-	}
-
+	assert.Nil(t, err)
 	assert.Equal(t, expected, assignment)
 	mockLogger.AssertNumberOfCalls(t, "LogAssignment", 1)
 }
@@ -103,9 +101,10 @@ func Test_GetAssignmentHandlesLoggingPanic(t *testing.T) {
 
 	client := NewEppoClient(mockConfigRequestor, mockLogger)
 
-	assignment, _ := client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
+	assignment, err := client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
 	expected := "control"
 
+	assert.Nil(t, err)
 	assert.Equal(t, expected, assignment)
 }
 
@@ -203,7 +202,9 @@ func Test_WithSubjectInOverridesExpDisabled(t *testing.T) {
 	client := NewEppoClient(mockConfigRequestor, mockLogger)
 
 	expected := "override-variation"
-	assignment, _ := client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
+	assignment, err := client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
+
+	assert.Nil(t, err)
 	assert.Equal(t, expected, assignment)
 }
 
@@ -217,7 +218,8 @@ func Test_WithNullExpConfig(t *testing.T) {
 	client := NewEppoClient(mockConfigRequestor, mockLogger)
 
 	expected := ""
-	assignment, _ := client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
+	assignment, err := client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
 
+	assert.NotNil(t, err)
 	assert.Equal(t, expected, assignment)
 }
