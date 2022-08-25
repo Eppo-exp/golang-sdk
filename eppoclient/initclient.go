@@ -15,5 +15,7 @@ func InitClient(config Config) *EppoClient {
 
 	client := NewEppoClient(requestor, assignmentLogger)
 
+	client.poller.Start()
+
 	return client
 }
