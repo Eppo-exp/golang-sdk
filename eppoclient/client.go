@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -50,13 +51,13 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 	override := getSubjectVariationOverride(experimentConfig, subjectKey)
 
 	if override != "" {
-		return override, err
+		return override, nil
 	}
 
 	if !experimentConfig.Enabled ||
 		!subjectAttributesSatisfyRules(subjectAttributes, experimentConfig.Rules) ||
 		!isInExperimentSample(subjectKey, experimentKey, experimentConfig) {
-		return "", err
+		return "", errors.New("not in sample")
 	}
 
 	assignmentKey := "assignment-" + subjectKey + "-" + experimentKey
@@ -92,7 +93,7 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 		ec.logger.LogAssignment(string(aeJson))
 	}()
 
-	return assignedVariation, err
+	return assignedVariation, nil
 }
 
 func getSubjectVariationOverride(experimentConfig ExperimentConfiguration, subject string) string {
