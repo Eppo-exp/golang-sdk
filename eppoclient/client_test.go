@@ -130,22 +130,28 @@ func Test_AssignSubjectWithAttributesAndRules(t *testing.T) {
 	}
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(mockResult, nil)
 
+	tests := []struct {
+		a    string
+		b    string
+		c    Dictionary
+		want string
+	}{
+		{"user-1", "experiment-key-1", Dictionary{}, ""},
+		{"user-1", "experiment-key-1", Dictionary{
+			"email": "test@example.com",
+		}, ""},
+		{"user-1", "experiment-key-1", Dictionary{
+			"email": "test@eppo.com",
+		}, "control"},
+	}
+
 	client := NewEppoClient(mockConfigRequestor, mockLogger)
 
-	expected := ""
-	assignment, _ := client.GetAssignment("user-1", "experiment-key-1", Dictionary{})
-	assert.Equal(t, expected, assignment)
+	for _, tt := range tests {
+		assignment, _ := client.GetAssignment(tt.a, tt.b, tt.c)
 
-	assignment, _ = client.GetAssignment("user-1", "experiment-key-1", Dictionary{
-		"email": "test@example.com",
-	})
-	assert.Equal(t, expected, assignment)
-
-	expected = "control"
-	assignment, _ = client.GetAssignment("user-1", "experiment-key-1", Dictionary{
-		"email": "test@eppo.com",
-	})
-	assert.Equal(t, expected, assignment)
+		assert.Equal(t, tt.want, assignment)
+	}
 }
 
 func Test_WithSubjectInOverrides(t *testing.T) {
