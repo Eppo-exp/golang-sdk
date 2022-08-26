@@ -23,7 +23,7 @@ import (
 const TEST_DATA_DIR = "test-data/assignment"
 const BUCKET_NAME = "sdk-test-data"
 
-var testData = []TestData{}
+var tstData = []testData{}
 
 func Test_e2e(t *testing.T) {
 	serverUrl := initFixture()
@@ -32,7 +32,7 @@ func Test_e2e(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	for _, experiment := range testData {
+	for _, experiment := range tstData {
 		expName := experiment.Experiment
 
 		assignments := []string{}
@@ -83,15 +83,15 @@ func getTestData() dictionary {
 
 		defer jsonFile.Close()
 
-		testCaseDict := TestData{}
+		testCaseDict := testData{}
 		byteValue, _ := ioutil.ReadAll(jsonFile)
 		json.Unmarshal(byteValue, &testCaseDict)
-		testData = append(testData, testCaseDict)
+		tstData = append(tstData, testCaseDict)
 	}
 
 	expConfigs := dictionary{}
 
-	for _, experimentTest := range testData {
+	for _, experimentTest := range tstData {
 		experimentName := experimentTest.Experiment
 		expMap := dictionary{}
 		expMap["subjectShards"] = 10000
