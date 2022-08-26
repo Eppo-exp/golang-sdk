@@ -51,7 +51,7 @@ func (ecr *ExperimentConfigurationRequestor) FetchAndStoreConfigurations() {
 	err = json.Unmarshal(responseBody["experiments"], &configs)
 
 	if err != nil {
-		fmt.Println("Failed to unmarshal RAC response json", result)
+		fmt.Println("Failed to unmarshal RAC response json in experiments section", result)
 		fmt.Println(err)
 	}
 

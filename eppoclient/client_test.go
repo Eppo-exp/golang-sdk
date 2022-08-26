@@ -81,7 +81,7 @@ func Test_LogAssignment(t *testing.T) {
 
 func Test_GetAssignmentHandlesLoggingPanic(t *testing.T) {
 	var mockLogger = new(MockLogger)
-	mockLogger.Mock.On("LogAssignment", mock.AnythingOfType("string")).Panic("logging panic")
+	mockLogger.Mock.On("LogAssignment", mock.Anything).Panic("logging panic")
 
 	var mockConfigRequestor = new(MockConfigRequestor)
 	overrides := make(Dictionary)
@@ -110,7 +110,7 @@ func Test_GetAssignmentHandlesLoggingPanic(t *testing.T) {
 
 func Test_AssignSubjectWithAttributesAndRules(t *testing.T) {
 	var mockLogger = new(MockLogger)
-	mockLogger.Mock.On("LogAssignment", mock.AnythingOfType("string")).Return()
+	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
 	var matchesEmailCondition = Condition{operator: "MATCHES", value: ".*@eppo.com", attribute: "email"}
 	var textRule = Rule{conditions: []Condition{matchesEmailCondition}}
@@ -156,7 +156,7 @@ func Test_AssignSubjectWithAttributesAndRules(t *testing.T) {
 
 func Test_WithSubjectInOverrides(t *testing.T) {
 	var mockLogger = new(MockLogger)
-	mockLogger.Mock.On("LogAssignment", mock.AnythingOfType("string")).Return()
+	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
 	var mockConfigRequestor = new(MockConfigRequestor)
 	var mockVariations = []Variation{
@@ -185,7 +185,7 @@ func Test_WithSubjectInOverrides(t *testing.T) {
 
 func Test_WithSubjectInOverridesExpDisabled(t *testing.T) {
 	var mockLogger = new(MockLogger)
-	mockLogger.Mock.On("LogAssignment", mock.AnythingOfType("string")).Return()
+	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
 	var mockConfigRequestor = new(MockConfigRequestor)
 	var mockVariations = []Variation{
@@ -216,7 +216,7 @@ func Test_WithSubjectInOverridesExpDisabled(t *testing.T) {
 
 func Test_WithNullExpConfig(t *testing.T) {
 	var mockLogger = new(MockLogger)
-	mockLogger.Mock.On("LogAssignment", mock.AnythingOfType("string")).Return()
+	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
 	var mockConfigRequestor = new(MockConfigRequestor)
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(ExperimentConfiguration{}, nil)

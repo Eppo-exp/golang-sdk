@@ -1,7 +1,9 @@
 package eppoclient
 
 import (
+	"encoding/json"
 	"errors"
+	"log"
 
 	lru "github.com/hashicorp/golang-lru"
 )
@@ -46,7 +48,15 @@ func (cs *ConfigurationStore) GetConfiguration(key string) (expConfig Experiment
 		return
 	}
 
-	return value.(ExperimentConfiguration), nil
+	jsonString, err := json.Marshal(value)
+
+	if err != nil {
+		log.Fatalln("Incorrect json")
+	}
+	ec := ExperimentConfiguration{}
+	json.Unmarshal(jsonString, &ec)
+
+	return ec, nil
 }
 
 func (cs *ConfigurationStore) SetConfigurations(configs Dictionary) {

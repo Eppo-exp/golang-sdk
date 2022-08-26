@@ -87,7 +87,9 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 		// need to catch panics from Logger and continue
 		defer func() {
 			r := recover()
-			fmt.Println("panic occurred:", r)
+			if r != nil {
+				fmt.Println("panic occurred:", r)
+			}
 		}()
 
 		event := map[string]string{}
@@ -122,5 +124,5 @@ func isInExperimentSample(subjectKey string, experimentKey string, experimentCon
 	shardKey := "exposure-" + subjectKey + "-" + experimentKey
 	shard := getShard(shardKey, int64(experimentConfig.SubjectShards))
 
-	return shard <= int64(experimentConfig.PercentExposure)*int64(experimentConfig.SubjectShards)
+	return float64(shard) <= float64(experimentConfig.PercentExposure)*float64(experimentConfig.SubjectShards)
 }
