@@ -13,11 +13,11 @@ type IConfigRequestor interface {
 }
 
 type ExperimentConfigurationRequestor struct {
-	httpClient  HttpClient
+	httpClient  httpClient
 	configStore ConfigurationStore
 }
 
-func NewExperimentConfigurationRequestor(httpClient HttpClient, configStore ConfigurationStore) *ExperimentConfigurationRequestor {
+func NewExperimentConfigurationRequestor(httpClient httpClient, configStore ConfigurationStore) *ExperimentConfigurationRequestor {
 	return &ExperimentConfigurationRequestor{
 		httpClient:  httpClient,
 		configStore: configStore,
@@ -39,7 +39,7 @@ func (ecr *ExperimentConfigurationRequestor) FetchAndStoreConfigurations() {
 	var responseBody map[string]json.RawMessage
 
 	configs := Dictionary{}
-	result := ecr.httpClient.Get(RAC_ENDPOINT)
+	result := ecr.httpClient.get(RAC_ENDPOINT)
 
 	err := json.Unmarshal([]byte(result), &responseBody)
 
