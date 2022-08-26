@@ -23,7 +23,7 @@ type experimentConfiguration struct {
 	Enabled         bool        `json:"enabled"`
 	SubjectShards   int         `json:"subjectShards"`
 	Variations      []Variation `json:"variations"`
-	Rules           []Rule      `json:"rules"`
+	Rules           []rule      `json:"rules"`
 	Overrides       Dictionary  `json:"overrides"`
 }
 

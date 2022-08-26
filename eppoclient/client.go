@@ -112,7 +112,7 @@ func getSubjectVariationOverride(experimentConfig experimentConfiguration, subje
 	return ""
 }
 
-func subjectAttributesSatisfyRules(subjectAttributes Dictionary, rules []Rule) bool {
+func subjectAttributesSatisfyRules(subjectAttributes Dictionary, rules []rule) bool {
 	if len(rules) == 0 {
 		return true
 	}

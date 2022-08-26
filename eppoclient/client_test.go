@@ -112,8 +112,8 @@ func Test_AssignSubjectWithAttributesAndRules(t *testing.T) {
 	var mockLogger = new(MockLogger)
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
-	var matchesEmailCondition = Condition{operator: "MATCHES", value: ".*@eppo.com", attribute: "email"}
-	var textRule = Rule{conditions: []Condition{matchesEmailCondition}}
+	var matchesEmailCondition = condition{operator: "MATCHES", value: ".*@eppo.com", attribute: "email"}
+	var textRule = rule{conditions: []condition{matchesEmailCondition}}
 	var mockConfigRequestor = new(MockConfigRequestor)
 	var overrides = make(Dictionary)
 	var mockVariations = []Variation{
@@ -126,7 +126,7 @@ func Test_AssignSubjectWithAttributesAndRules(t *testing.T) {
 		SubjectShards:   1000,
 		Overrides:       overrides,
 		Variations:      mockVariations,
-		Rules:           []Rule{textRule},
+		Rules:           []rule{textRule},
 	}
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(mockResult, nil)
 
@@ -171,7 +171,7 @@ func Test_WithSubjectInOverrides(t *testing.T) {
 		SubjectShards:   1000,
 		Overrides:       overrides,
 		Variations:      mockVariations,
-		Rules:           []Rule{textRule},
+		Rules:           []rule{textRule},
 	}
 
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(mockResult, nil)
@@ -200,7 +200,7 @@ func Test_WithSubjectInOverridesExpDisabled(t *testing.T) {
 		SubjectShards:   1000,
 		Overrides:       overrides,
 		Variations:      mockVariations,
-		Rules:           []Rule{textRule},
+		Rules:           []rule{textRule},
 	}
 
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(mockResult, nil)
