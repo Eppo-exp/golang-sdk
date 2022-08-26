@@ -13,7 +13,7 @@ func InitClient(config Config) *EppoClient {
 	requestor := newExperimentConfigurationRequestor(*httpClient, *configStore)
 	assignmentLogger := NewAssignmentLogger()
 
-	client := NewEppoClient(requestor, assignmentLogger)
+	client := newEppoClient(requestor, assignmentLogger)
 
 	client.poller.Start()
 

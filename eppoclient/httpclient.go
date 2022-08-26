@@ -24,13 +24,13 @@ type SDKParams struct {
 }
 
 // todo move this to requestor
-type Experiment struct {
+type experiment struct {
 	Name   string
 	Latest string
 }
 
-type Experiments struct {
-	Results []*Experiment
+type experiments struct {
+	Results []*experiment
 }
 
 func newHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) *httpClient {

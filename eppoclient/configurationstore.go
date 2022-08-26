@@ -8,13 +8,13 @@ import (
 	lru "github.com/hashicorp/golang-lru"
 )
 
-type ConfigurationStore struct {
+type configurationStore struct {
 	cache lru.Cache
 }
 
 type Variation struct {
 	Name       string `json:"name"`
-	ShardRange ShardRange
+	ShardRange shardRange
 }
 
 type experimentConfiguration struct {
@@ -24,11 +24,11 @@ type experimentConfiguration struct {
 	SubjectShards   int         `json:"subjectShards"`
 	Variations      []Variation `json:"variations"`
 	Rules           []rule      `json:"rules"`
-	Overrides       Dictionary  `json:"overrides"`
+	Overrides       dictionary  `json:"overrides"`
 }
 
-func newConfigurationStore(maxEntries int) *ConfigurationStore {
-	var configStore = &ConfigurationStore{}
+func newConfigurationStore(maxEntries int) *configurationStore {
+	var configStore = &configurationStore{}
 
 	lruCache, err := lru.New(maxEntries)
 	configStore.cache = *lruCache
@@ -40,7 +40,7 @@ func newConfigurationStore(maxEntries int) *ConfigurationStore {
 	return configStore
 }
 
-func (cs *ConfigurationStore) GetConfiguration(key string) (expConfig experimentConfiguration, err error) {
+func (cs *configurationStore) GetConfiguration(key string) (expConfig experimentConfiguration, err error) {
 	value, _ := cs.cache.Get(key)
 
 	if value == nil {
@@ -59,7 +59,7 @@ func (cs *ConfigurationStore) GetConfiguration(key string) (expConfig experiment
 	return ec, nil
 }
 
-func (cs *ConfigurationStore) SetConfigurations(configs Dictionary) {
+func (cs *configurationStore) SetConfigurations(configs dictionary) {
 	for key, element := range configs {
 		cs.cache.Add(key, element)
 	}

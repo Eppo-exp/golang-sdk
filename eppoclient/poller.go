@@ -5,28 +5,28 @@ import (
 	"time"
 )
 
-type Poller struct {
+type poller struct {
 	interval  int `default:"10"`
 	callback  func()
 	isStopped bool `default:"false"`
 }
 
-func NewPoller(interval int, callback func()) *Poller {
-	var poller = &Poller{}
+func newPoller(interval int, callback func()) *poller {
+	var pl = &poller{}
 
-	poller.interval = interval
-	poller.callback = callback
+	pl.interval = interval
+	pl.callback = callback
 
-	return poller
+	return pl
 }
 
-func (p *Poller) Start() {
+func (p *poller) Start() {
 	fmt.Println("Poller start")
 
 	go p.poll()
 }
 
-func (p *Poller) poll() {
+func (p *poller) poll() {
 	defer func() {
 		if err := recover(); err != nil {
 			p.Stop()
@@ -42,7 +42,7 @@ func (p *Poller) poll() {
 	}
 }
 
-func (p *Poller) Stop() {
+func (p *poller) Stop() {
 	fmt.Println("Poller stopped")
 	p.isStopped = true
 }

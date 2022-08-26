@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-type ShardRange struct {
+type shardRange struct {
 	Start int `json:"start"`
 	End   int `json:"end"`
 }
@@ -22,6 +22,6 @@ func getShard(input string, subjectShards int64) int64 {
 	return intVal % subjectShards
 }
 
-func isShardInRange(shard int, shardRange ShardRange) bool {
+func isShardInRange(shard int, shardRange shardRange) bool {
 	return shard >= shardRange.Start && shard < shardRange.End
 }

@@ -38,7 +38,7 @@ func Test_e2e(t *testing.T) {
 		assignments := []string{}
 
 		for _, subject := range experiment.Subjects {
-			assignment, err := client.GetAssignment(subject, expName, Dictionary{})
+			assignment, err := client.GetAssignment(subject, expName, dictionary{})
 
 			if assignment != "" {
 				assert.Nil(t, err)
@@ -67,7 +67,7 @@ func initFixture() string {
 	return server.URL
 }
 
-func getTestData() Dictionary {
+func getTestData() dictionary {
 	files, err := ioutil.ReadDir(TEST_DATA_DIR)
 
 	if err != nil {
@@ -89,11 +89,11 @@ func getTestData() Dictionary {
 		testData = append(testData, testCaseDict)
 	}
 
-	expConfigs := Dictionary{}
+	expConfigs := dictionary{}
 
 	for _, experimentTest := range testData {
 		experimentName := experimentTest.Experiment
-		expMap := Dictionary{}
+		expMap := dictionary{}
 		expMap["subjectShards"] = 10000
 		expMap["enabled"] = true
 		expMap["variations"] = experimentTest.Variations
@@ -103,7 +103,7 @@ func getTestData() Dictionary {
 		expConfigs[experimentName] = expMap
 	}
 
-	response := Dictionary{}
+	response := dictionary{}
 	response["experiments"] = expConfigs
 
 	return response

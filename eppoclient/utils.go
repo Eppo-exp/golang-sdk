@@ -1,6 +1,6 @@
 package eppoclient
 
-type Dictionary map[string]interface{}
+type dictionary map[string]interface{}
 
 type TestData struct {
 	Experiment          string               `json:"experiment"`

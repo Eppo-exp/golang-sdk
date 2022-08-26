@@ -18,7 +18,7 @@ type rule struct {
 	conditions []condition
 }
 
-func matchesAnyRule(subjectAttributes Dictionary, rules []rule) bool {
+func matchesAnyRule(subjectAttributes dictionary, rules []rule) bool {
 	for _, rule := range rules {
 		if matchesRule(subjectAttributes, rule) {
 			return true
@@ -28,7 +28,7 @@ func matchesAnyRule(subjectAttributes Dictionary, rules []rule) bool {
 	return false
 }
 
-func matchesRule(subjectAttributes Dictionary, rule rule) bool {
+func matchesRule(subjectAttributes dictionary, rule rule) bool {
 	for _, condition := range rule.conditions {
 		if !evaluateCondition(subjectAttributes, condition) {
 			return false
@@ -38,7 +38,7 @@ func matchesRule(subjectAttributes Dictionary, rule rule) bool {
 	return true
 }
 
-func evaluateCondition(subjectAttributes Dictionary, condition condition) bool {
+func evaluateCondition(subjectAttributes dictionary, condition condition) bool {
 	subjectValue := subjectAttributes[condition.attribute]
 
 	if subjectValue != nil {

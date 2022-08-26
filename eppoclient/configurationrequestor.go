@@ -7,17 +7,17 @@ import (
 
 const RAC_ENDPOINT = "/randomized_assignment/config"
 
-type IConfigRequestor interface {
+type iConfigRequestor interface {
 	GetConfiguration(key string) (experimentConfiguration, error)
 	FetchAndStoreConfigurations()
 }
 
 type experimentConfigurationRequestor struct {
 	httpClient  httpClient
-	configStore ConfigurationStore
+	configStore configurationStore
 }
 
-func newExperimentConfigurationRequestor(httpClient httpClient, configStore ConfigurationStore) *experimentConfigurationRequestor {
+func newExperimentConfigurationRequestor(httpClient httpClient, configStore configurationStore) *experimentConfigurationRequestor {
 	return &experimentConfigurationRequestor{
 		httpClient:  httpClient,
 		configStore: configStore,
@@ -38,7 +38,7 @@ func (ecr *experimentConfigurationRequestor) GetConfiguration(experimentKey stri
 func (ecr *experimentConfigurationRequestor) FetchAndStoreConfigurations() {
 	var responseBody map[string]json.RawMessage
 
-	configs := Dictionary{}
+	configs := dictionary{}
 	result := ecr.httpClient.get(RAC_ENDPOINT)
 
 	err := json.Unmarshal([]byte(result), &responseBody)
