@@ -17,7 +17,7 @@ type Variation struct {
 	ShardRange ShardRange
 }
 
-type ExperimentConfiguration struct {
+type experimentConfiguration struct {
 	Name            string      `json:"name"`
 	PercentExposure float32     `json:"percentExposure"`
 	Enabled         bool        `json:"enabled"`
@@ -27,7 +27,7 @@ type ExperimentConfiguration struct {
 	Overrides       Dictionary  `json:"overrides"`
 }
 
-func NewConfigurationStore(maxEntries int) *ConfigurationStore {
+func newConfigurationStore(maxEntries int) *ConfigurationStore {
 	var configStore = &ConfigurationStore{}
 
 	lruCache, err := lru.New(maxEntries)
@@ -40,7 +40,7 @@ func NewConfigurationStore(maxEntries int) *ConfigurationStore {
 	return configStore
 }
 
-func (cs *ConfigurationStore) GetConfiguration(key string) (expConfig ExperimentConfiguration, err error) {
+func (cs *ConfigurationStore) GetConfiguration(key string) (expConfig experimentConfiguration, err error) {
 	value, _ := cs.cache.Get(key)
 
 	if value == nil {
@@ -53,7 +53,7 @@ func (cs *ConfigurationStore) GetConfiguration(key string) (expConfig Experiment
 	if err != nil {
 		log.Fatalln("Incorrect json")
 	}
-	ec := ExperimentConfiguration{}
+	ec := experimentConfiguration{}
 	json.Unmarshal(jsonString, &ec)
 
 	return ec, nil

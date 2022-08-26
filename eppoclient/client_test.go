@@ -30,7 +30,7 @@ func Test_SubjectNotInSample(t *testing.T) {
 	var mockVariations = []Variation{
 		{Name: "control", ShardRange: ShardRange{Start: 0, End: 10000}},
 	}
-	mockResult := ExperimentConfiguration{
+	mockResult := experimentConfiguration{
 		Name:            "recommendation_algo",
 		PercentExposure: 0,
 		Enabled:         true,
@@ -59,7 +59,7 @@ func Test_LogAssignment(t *testing.T) {
 	var mockVariations = []Variation{
 		{Name: "control", ShardRange: ShardRange{Start: 0, End: 10000}},
 	}
-	mockResult := ExperimentConfiguration{
+	mockResult := experimentConfiguration{
 		Name:            "recommendation_algo",
 		PercentExposure: 100,
 		Enabled:         true,
@@ -89,7 +89,7 @@ func Test_GetAssignmentHandlesLoggingPanic(t *testing.T) {
 	var mockVariations = []Variation{
 		{Name: "control", ShardRange: ShardRange{Start: 0, End: 10000}},
 	}
-	mockResult := ExperimentConfiguration{
+	mockResult := experimentConfiguration{
 		Name:            "recommendation_algo",
 		PercentExposure: 100,
 		Enabled:         true,
@@ -119,7 +119,7 @@ func Test_AssignSubjectWithAttributesAndRules(t *testing.T) {
 	var mockVariations = []Variation{
 		{Name: "control", ShardRange: ShardRange{Start: 0, End: 10000}},
 	}
-	var mockResult = ExperimentConfiguration{
+	var mockResult = experimentConfiguration{
 		Name:            "recommendation_algo",
 		PercentExposure: 100,
 		Enabled:         true,
@@ -164,7 +164,7 @@ func Test_WithSubjectInOverrides(t *testing.T) {
 	}
 	var overrides = make(Dictionary)
 	overrides["d6d7705392bc7af633328bea8c4c6904"] = "override-variation"
-	var mockResult = ExperimentConfiguration{
+	var mockResult = experimentConfiguration{
 		Name:            "recommendation_algo",
 		PercentExposure: 100,
 		Enabled:         true,
@@ -193,7 +193,7 @@ func Test_WithSubjectInOverridesExpDisabled(t *testing.T) {
 	}
 	var overrides = make(Dictionary)
 	overrides["d6d7705392bc7af633328bea8c4c6904"] = "override-variation"
-	var mockResult = ExperimentConfiguration{
+	var mockResult = experimentConfiguration{
 		Name:            "recommendation_algo",
 		PercentExposure: 100,
 		Enabled:         false,
@@ -219,7 +219,7 @@ func Test_WithNullExpConfig(t *testing.T) {
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
 	var mockConfigRequestor = new(MockConfigRequestor)
-	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(ExperimentConfiguration{}, nil)
+	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(experimentConfiguration{}, nil)
 
 	client := NewEppoClient(mockConfigRequestor, mockLogger)
 

@@ -101,7 +101,7 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 	return assignedVariation, nil
 }
 
-func getSubjectVariationOverride(experimentConfig ExperimentConfiguration, subject string) string {
+func getSubjectVariationOverride(experimentConfig experimentConfiguration, subject string) string {
 	hash := md5.Sum([]byte(subject))
 	hashOutput := hex.EncodeToString(hash[:])
 
@@ -120,7 +120,7 @@ func subjectAttributesSatisfyRules(subjectAttributes Dictionary, rules []Rule) b
 	return matchesAnyRule(subjectAttributes, rules)
 }
 
-func isInExperimentSample(subjectKey string, experimentKey string, experimentConfig ExperimentConfiguration) bool {
+func isInExperimentSample(subjectKey string, experimentKey string, experimentConfig experimentConfiguration) bool {
 	shardKey := "exposure-" + subjectKey + "-" + experimentKey
 	shard := getShard(shardKey, int64(experimentConfig.SubjectShards))
 

@@ -8,23 +8,23 @@ import (
 const RAC_ENDPOINT = "/randomized_assignment/config"
 
 type IConfigRequestor interface {
-	GetConfiguration(key string) (ExperimentConfiguration, error)
+	GetConfiguration(key string) (experimentConfiguration, error)
 	FetchAndStoreConfigurations()
 }
 
-type ExperimentConfigurationRequestor struct {
+type experimentConfigurationRequestor struct {
 	httpClient  httpClient
 	configStore ConfigurationStore
 }
 
-func NewExperimentConfigurationRequestor(httpClient httpClient, configStore ConfigurationStore) *ExperimentConfigurationRequestor {
-	return &ExperimentConfigurationRequestor{
+func newExperimentConfigurationRequestor(httpClient httpClient, configStore ConfigurationStore) *experimentConfigurationRequestor {
+	return &experimentConfigurationRequestor{
 		httpClient:  httpClient,
 		configStore: configStore,
 	}
 }
 
-func (ecr *ExperimentConfigurationRequestor) GetConfiguration(experimentKey string) (ExperimentConfiguration, error) {
+func (ecr *experimentConfigurationRequestor) GetConfiguration(experimentKey string) (experimentConfiguration, error) {
 	if ecr.httpClient.isUnauthorized {
 		// should we panic here or return an error?
 		panic("Unauthorized: please check your API key")
@@ -35,7 +35,7 @@ func (ecr *ExperimentConfigurationRequestor) GetConfiguration(experimentKey stri
 	return result, err
 }
 
-func (ecr *ExperimentConfigurationRequestor) FetchAndStoreConfigurations() {
+func (ecr *experimentConfigurationRequestor) FetchAndStoreConfigurations() {
 	var responseBody map[string]json.RawMessage
 
 	configs := Dictionary{}

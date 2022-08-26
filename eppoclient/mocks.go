@@ -16,10 +16,10 @@ type MockConfigRequestor struct {
 	mock.Mock
 }
 
-func (mcr *MockConfigRequestor) GetConfiguration(experimentKey string) (ExperimentConfiguration, error) {
+func (mcr *MockConfigRequestor) GetConfiguration(experimentKey string) (experimentConfiguration, error) {
 	args := mcr.Called(experimentKey)
 
-	return args.Get(0).(ExperimentConfiguration), args.Error(1)
+	return args.Get(0).(experimentConfiguration), args.Error(1)
 }
 
 func (mcr *MockConfigRequestor) FetchAndStoreConfigurations() {
