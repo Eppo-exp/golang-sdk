@@ -10,7 +10,7 @@ import (
 )
 
 // Client for eppo.cloud. Instance of this struct will be created on calling InitClient.
-// EppoClient will then immidiately start polling experiments data from eppo.cloud.
+// EppoClient will then immediately start polling experiments data from eppo.cloud.
 type EppoClient struct {
 	configRequestor IConfigRequestor
 	poller          Poller
