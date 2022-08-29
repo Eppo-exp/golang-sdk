@@ -23,7 +23,7 @@ import (
 const TEST_DATA_DIR = "test-data/assignment"
 const BUCKET_NAME = "sdk-test-data"
 
-var testData = []TestData{}
+var tstData = []testData{}
 
 func Test_e2e(t *testing.T) {
 	serverUrl := initFixture()
@@ -32,13 +32,13 @@ func Test_e2e(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	for _, experiment := range testData {
+	for _, experiment := range tstData {
 		expName := experiment.Experiment
 
 		assignments := []string{}
 
 		for _, subject := range experiment.Subjects {
-			assignment, err := client.GetAssignment(subject, expName, Dictionary{})
+			assignment, err := client.GetAssignment(subject, expName, dictionary{})
 
 			if assignment != "" {
 				assert.Nil(t, err)
@@ -67,7 +67,7 @@ func initFixture() string {
 	return server.URL
 }
 
-func getTestData() Dictionary {
+func getTestData() dictionary {
 	files, err := ioutil.ReadDir(TEST_DATA_DIR)
 
 	if err != nil {
@@ -83,17 +83,17 @@ func getTestData() Dictionary {
 
 		defer jsonFile.Close()
 
-		testCaseDict := TestData{}
+		testCaseDict := testData{}
 		byteValue, _ := ioutil.ReadAll(jsonFile)
 		json.Unmarshal(byteValue, &testCaseDict)
-		testData = append(testData, testCaseDict)
+		tstData = append(tstData, testCaseDict)
 	}
 
-	expConfigs := Dictionary{}
+	expConfigs := dictionary{}
 
-	for _, experimentTest := range testData {
+	for _, experimentTest := range tstData {
 		experimentName := experimentTest.Experiment
-		expMap := Dictionary{}
+		expMap := dictionary{}
 		expMap["subjectShards"] = 10000
 		expMap["enabled"] = true
 		expMap["variations"] = experimentTest.Variations
@@ -103,7 +103,7 @@ func getTestData() Dictionary {
 		expConfigs[experimentName] = expMap
 	}
 
-	response := Dictionary{}
+	response := dictionary{}
 	response["experiments"] = expConfigs
 
 	return response

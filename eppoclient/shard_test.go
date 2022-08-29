@@ -25,7 +25,7 @@ func Test_getShard(t *testing.T) {
 
 func Test_isShardInRange_Fail(t *testing.T) {
 	input := 5
-	inputRange := ShardRange{Start: 1, End: 5}
+	inputRange := shardRange{Start: 1, End: 5}
 	expected := false
 	result := isShardInRange(input, inputRange)
 
@@ -34,7 +34,7 @@ func Test_isShardInRange_Fail(t *testing.T) {
 
 func Test_isShardInRange_Success(t *testing.T) {
 	input := 3
-	inputRange := ShardRange{Start: 1, End: 7}
+	inputRange := shardRange{Start: 1, End: 7}
 	expected := true
 	result := isShardInRange(input, inputRange)
 

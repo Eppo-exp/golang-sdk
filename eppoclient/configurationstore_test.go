@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testExp = ExperimentConfiguration{
+var testExp = experimentConfiguration{
 	SubjectShards:   1000,
 	PercentExposure: 1,
 	Enabled:         true,
@@ -18,16 +18,16 @@ var testExp = ExperimentConfiguration{
 const TEST_MAX_SIZE = 10
 
 func Test_GetConfiguration_unknownKey(t *testing.T) {
-	var store = NewConfigurationStore(TEST_MAX_SIZE)
-	store.SetConfigurations(Dictionary{"randomization_algo": testExp})
+	var store = newConfigurationStore(TEST_MAX_SIZE)
+	store.SetConfigurations(dictionary{"randomization_algo": testExp})
 	_, err := store.GetConfiguration("unknown_exp")
 
 	assert.Error(t, err)
 }
 
 func Test_GetConfiguration_knownKey(t *testing.T) {
-	var store = NewConfigurationStore(TEST_MAX_SIZE)
-	store.SetConfigurations(Dictionary{"randomization_algo": testExp})
+	var store = newConfigurationStore(TEST_MAX_SIZE)
+	store.SetConfigurations(dictionary{"randomization_algo": testExp})
 	result, _ := store.GetConfiguration("randomization_algo")
 
 	expected := "randomization_algo"
@@ -36,8 +36,8 @@ func Test_GetConfiguration_knownKey(t *testing.T) {
 }
 
 func Test_GetConfiguration_evictsOldEntriesWhenMaxSizeExceeded(t *testing.T) {
-	var store = NewConfigurationStore(TEST_MAX_SIZE)
-	store.SetConfigurations(Dictionary{"item_to_be_evicted": testExp})
+	var store = newConfigurationStore(TEST_MAX_SIZE)
+	store.SetConfigurations(dictionary{"item_to_be_evicted": testExp})
 	result, _ := store.GetConfiguration("item_to_be_evicted")
 
 	expected := "randomization_algo"
@@ -45,7 +45,7 @@ func Test_GetConfiguration_evictsOldEntriesWhenMaxSizeExceeded(t *testing.T) {
 
 	for i := 0; i < TEST_MAX_SIZE; i++ {
 		dictKey := fmt.Sprintf("test-entry-%v", i)
-		store.SetConfigurations(Dictionary{dictKey: testExp})
+		store.SetConfigurations(dictionary{dictKey: testExp})
 	}
 
 	result, err := store.GetConfiguration("item_to_be_evicted")

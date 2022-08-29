@@ -10,7 +10,7 @@ import (
 
 const REQUEST_TIMEOUT_SECONDS = time.Duration(1 * time.Second)
 
-type HttpClient struct {
+type httpClient struct {
 	baseUrl        string
 	sdkParams      SDKParams
 	isUnauthorized bool
@@ -24,17 +24,17 @@ type SDKParams struct {
 }
 
 // todo move this to requestor
-type Experiment struct {
+type experiment struct {
 	Name   string
 	Latest string
 }
 
-type Experiments struct {
-	Results []*Experiment
+type experiments struct {
+	Results []*experiment
 }
 
-func NewHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) *HttpClient {
-	var hc = &HttpClient{
+func newHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) *httpClient {
+	var hc = &httpClient{
 		baseUrl:        baseUrl,
 		sdkParams:      sdkParams,
 		isUnauthorized: false,
@@ -43,7 +43,7 @@ func NewHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) *Ht
 	return hc
 }
 
-func (hc *HttpClient) Get(resource string) string {
+func (hc *httpClient) get(resource string) string {
 	url := hc.baseUrl + resource
 
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
