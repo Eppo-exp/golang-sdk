@@ -1,0 +1,19 @@
+name: Test SDK
+on:
+  pull_request:
+    path: '**/*'
+
+jobs:
+  test-sdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...

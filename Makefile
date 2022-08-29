@@ -1,0 +1,19 @@
+BINARY_NAME=eppo-golang-sdk
+default: help
+
+build:
+	GOARCH=amd64 GOOS=darwin go build -o ${BINARY_NAME}-darwin ./eppoclient
+
+clean:
+	go clean
+	rm ${BINARY_NAME}-darwin
+
+help: Makefile
+	@echo "usage: make <target>"
+	@sed -n 's/^##//p' $<
+
+test:
+	go test ./...
+
+lint:
+	golangci-lint run
