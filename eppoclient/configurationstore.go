@@ -8,27 +8,27 @@ import (
 	lru "github.com/hashicorp/golang-lru"
 )
 
-type ConfigurationStore struct {
+type configurationStore struct {
 	cache lru.Cache
 }
 
 type Variation struct {
 	Name       string `json:"name"`
-	ShardRange ShardRange
+	ShardRange shardRange
 }
 
-type ExperimentConfiguration struct {
+type experimentConfiguration struct {
 	Name            string      `json:"name"`
 	PercentExposure float32     `json:"percentExposure"`
 	Enabled         bool        `json:"enabled"`
 	SubjectShards   int         `json:"subjectShards"`
 	Variations      []Variation `json:"variations"`
-	Rules           []Rule      `json:"rules"`
-	Overrides       Dictionary  `json:"overrides"`
+	Rules           []rule      `json:"rules"`
+	Overrides       dictionary  `json:"overrides"`
 }
 
-func NewConfigurationStore(maxEntries int) *ConfigurationStore {
-	var configStore = &ConfigurationStore{}
+func newConfigurationStore(maxEntries int) *configurationStore {
+	var configStore = &configurationStore{}
 
 	lruCache, err := lru.New(maxEntries)
 	configStore.cache = *lruCache
@@ -40,7 +40,7 @@ func NewConfigurationStore(maxEntries int) *ConfigurationStore {
 	return configStore
 }
 
-func (cs *ConfigurationStore) GetConfiguration(key string) (expConfig ExperimentConfiguration, err error) {
+func (cs *configurationStore) GetConfiguration(key string) (expConfig experimentConfiguration, err error) {
 	value, _ := cs.cache.Get(key)
 
 	if value == nil {
@@ -53,13 +53,13 @@ func (cs *ConfigurationStore) GetConfiguration(key string) (expConfig Experiment
 	if err != nil {
 		log.Fatalln("Incorrect json")
 	}
-	ec := ExperimentConfiguration{}
+	ec := experimentConfiguration{}
 	json.Unmarshal(jsonString, &ec)
 
 	return ec, nil
 }
 
-func (cs *ConfigurationStore) SetConfigurations(configs Dictionary) {
+func (cs *configurationStore) SetConfigurations(configs dictionary) {
 	for key, element := range configs {
 		cs.cache.Add(key, element)
 	}

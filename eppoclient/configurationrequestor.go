@@ -7,24 +7,24 @@ import (
 
 const RAC_ENDPOINT = "/randomized_assignment/config"
 
-type IConfigRequestor interface {
-	GetConfiguration(key string) (ExperimentConfiguration, error)
+type iConfigRequestor interface {
+	GetConfiguration(key string) (experimentConfiguration, error)
 	FetchAndStoreConfigurations()
 }
 
-type ExperimentConfigurationRequestor struct {
-	httpClient  HttpClient
-	configStore ConfigurationStore
+type experimentConfigurationRequestor struct {
+	httpClient  httpClient
+	configStore configurationStore
 }
 
-func NewExperimentConfigurationRequestor(httpClient HttpClient, configStore ConfigurationStore) *ExperimentConfigurationRequestor {
-	return &ExperimentConfigurationRequestor{
+func newExperimentConfigurationRequestor(httpClient httpClient, configStore configurationStore) *experimentConfigurationRequestor {
+	return &experimentConfigurationRequestor{
 		httpClient:  httpClient,
 		configStore: configStore,
 	}
 }
 
-func (ecr *ExperimentConfigurationRequestor) GetConfiguration(experimentKey string) (ExperimentConfiguration, error) {
+func (ecr *experimentConfigurationRequestor) GetConfiguration(experimentKey string) (experimentConfiguration, error) {
 	if ecr.httpClient.isUnauthorized {
 		// should we panic here or return an error?
 		panic("Unauthorized: please check your API key")
@@ -35,11 +35,11 @@ func (ecr *ExperimentConfigurationRequestor) GetConfiguration(experimentKey stri
 	return result, err
 }
 
-func (ecr *ExperimentConfigurationRequestor) FetchAndStoreConfigurations() {
+func (ecr *experimentConfigurationRequestor) FetchAndStoreConfigurations() {
 	var responseBody map[string]json.RawMessage
 
-	configs := Dictionary{}
-	result := ecr.httpClient.Get(RAC_ENDPOINT)
+	configs := dictionary{}
+	result := ecr.httpClient.get(RAC_ENDPOINT)
 
 	err := json.Unmarshal([]byte(result), &responseBody)
 

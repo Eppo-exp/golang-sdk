@@ -9,24 +9,26 @@ import (
 	"time"
 )
 
+// Client for eppo.cloud. Instance of this struct will be created on calling InitClient.
+// EppoClient will then immediately start polling experiments data from eppo.cloud.
 type EppoClient struct {
-	configRequestor IConfigRequestor
-	poller          Poller
+	configRequestor iConfigRequestor
+	poller          poller
 	logger          IAssignmentLogger
 }
 
-type AssignmentEvent struct {
+type assignmentEvent struct {
 	Experiment        string
 	Variation         string
 	Subject           string
 	Timestamp         string
-	SubjectAttributes Dictionary
+	SubjectAttributes dictionary
 }
 
-func NewEppoClient(configRequestor IConfigRequestor, assignmentLogger IAssignmentLogger) *EppoClient {
+func newEppoClient(configRequestor iConfigRequestor, assignmentLogger IAssignmentLogger) *EppoClient {
 	var ec = &EppoClient{}
 
-	var poller = NewPoller(10, configRequestor.FetchAndStoreConfigurations)
+	var poller = newPoller(10, configRequestor.FetchAndStoreConfigurations)
 	ec.poller = *poller
 	ec.configRequestor = configRequestor
 	ec.logger = assignmentLogger
@@ -34,7 +36,7 @@ func NewEppoClient(configRequestor IConfigRequestor, assignmentLogger IAssignmen
 	return ec
 }
 
-func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, subjectAttributes Dictionary) (string, error) {
+func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, subjectAttributes dictionary) (string, error) {
 	if subjectKey == "" {
 		panic("no subject key provided")
 	}
@@ -73,7 +75,7 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 
 	assignedVariation := variationShard.Name
 
-	assignmentEvent := &AssignmentEvent{
+	assignmentEvent := &assignmentEvent{
 		Experiment:        experimentKey,
 		Variation:         assignedVariation,
 		Subject:           subjectKey,
@@ -101,7 +103,7 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 	return assignedVariation, nil
 }
 
-func getSubjectVariationOverride(experimentConfig ExperimentConfiguration, subject string) string {
+func getSubjectVariationOverride(experimentConfig experimentConfiguration, subject string) string {
 	hash := md5.Sum([]byte(subject))
 	hashOutput := hex.EncodeToString(hash[:])
 
@@ -112,7 +114,7 @@ func getSubjectVariationOverride(experimentConfig ExperimentConfiguration, subje
 	return ""
 }
 
-func subjectAttributesSatisfyRules(subjectAttributes Dictionary, rules []Rule) bool {
+func subjectAttributesSatisfyRules(subjectAttributes dictionary, rules []rule) bool {
 	if len(rules) == 0 {
 		return true
 	}
@@ -120,7 +122,7 @@ func subjectAttributesSatisfyRules(subjectAttributes Dictionary, rules []Rule) b
 	return matchesAnyRule(subjectAttributes, rules)
 }
 
-func isInExperimentSample(subjectKey string, experimentKey string, experimentConfig ExperimentConfiguration) bool {
+func isInExperimentSample(subjectKey string, experimentKey string, experimentConfig experimentConfiguration) bool {
 	shardKey := "exposure-" + subjectKey + "-" + experimentKey
 	shard := getShard(shardKey, int64(experimentConfig.SubjectShards))
 

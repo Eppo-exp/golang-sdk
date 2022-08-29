@@ -4,23 +4,23 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type MockLogger struct {
+type mockLogger struct {
 	mock.Mock
 }
 
-func (ml *MockLogger) LogAssignment(event map[string]string) {
+func (ml *mockLogger) LogAssignment(event map[string]string) {
 	ml.Called(event)
 }
 
-type MockConfigRequestor struct {
+type mockConfigRequestor struct {
 	mock.Mock
 }
 
-func (mcr *MockConfigRequestor) GetConfiguration(experimentKey string) (ExperimentConfiguration, error) {
+func (mcr *mockConfigRequestor) GetConfiguration(experimentKey string) (experimentConfiguration, error) {
 	args := mcr.Called(experimentKey)
 
-	return args.Get(0).(ExperimentConfiguration), args.Error(1)
+	return args.Get(0).(experimentConfiguration), args.Error(1)
 }
 
-func (mcr *MockConfigRequestor) FetchAndStoreConfigurations() {
+func (mcr *mockConfigRequestor) FetchAndStoreConfigurations() {
 }

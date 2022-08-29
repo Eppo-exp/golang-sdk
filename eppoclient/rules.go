@@ -8,17 +8,17 @@ import (
 	"strings"
 )
 
-type Condition struct {
+type condition struct {
 	attribute string
 	value     interface{}
 	operator  string `validator:"regexp=^(MATCHES|GTE|GT|LTE|LT|ONE_OF|NOT_ONE_OF)$"`
 }
 
-type Rule struct {
-	conditions []Condition
+type rule struct {
+	conditions []condition
 }
 
-func matchesAnyRule(subjectAttributes Dictionary, rules []Rule) bool {
+func matchesAnyRule(subjectAttributes dictionary, rules []rule) bool {
 	for _, rule := range rules {
 		if matchesRule(subjectAttributes, rule) {
 			return true
@@ -28,7 +28,7 @@ func matchesAnyRule(subjectAttributes Dictionary, rules []Rule) bool {
 	return false
 }
 
-func matchesRule(subjectAttributes Dictionary, rule Rule) bool {
+func matchesRule(subjectAttributes dictionary, rule rule) bool {
 	for _, condition := range rule.conditions {
 		if !evaluateCondition(subjectAttributes, condition) {
 			return false
@@ -38,7 +38,7 @@ func matchesRule(subjectAttributes Dictionary, rule Rule) bool {
 	return true
 }
 
-func evaluateCondition(subjectAttributes Dictionary, condition Condition) bool {
+func evaluateCondition(subjectAttributes dictionary, condition condition) bool {
 	subjectValue := subjectAttributes[condition.attribute]
 
 	if subjectValue != nil {
@@ -88,7 +88,7 @@ func getMatchingStringValues(attributeValue interface{}, conditionValue []string
 	return result
 }
 
-func evaluateNumericCondition(subjectValue interface{}, condition Condition) bool {
+func evaluateNumericCondition(subjectValue interface{}, condition condition) bool {
 	v := reflect.ValueOf(subjectValue)
 
 	if v.Kind() == reflect.String {

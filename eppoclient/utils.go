@@ -1,21 +1,21 @@
 package eppoclient
 
-type Dictionary map[string]interface{}
+type dictionary map[string]interface{}
 
-type TestData struct {
+type testData struct {
 	Experiment          string               `json:"experiment"`
 	PercentExposure     float32              `json:"percentExposure"`
-	Variations          []TestDataVariations `json:"variations"`
+	Variations          []testDataVariations `json:"variations"`
 	Subjects            []string             `json:"subjects"`
 	ExpectedAssignments []string             `json:"expectedAssignments"`
 }
 
-type TestDataVariations struct {
+type testDataVariations struct {
 	Name       string             `json:"name"`
-	ShardRange TestDataShardRange `json:"shardRange"`
+	ShardRange testDataShardRange `json:"shardRange"`
 }
 
-type TestDataShardRange struct {
+type testDataShardRange struct {
 	Start int `json:"start"`
 	End   int `json:"end"`
 }
