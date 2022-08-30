@@ -9,7 +9,7 @@ import (
 )
 
 type configurationStore struct {
-	cache lru.Cache
+	cache *lru.Cache
 }
 
 type Variation struct {
@@ -31,7 +31,7 @@ func newConfigurationStore(maxEntries int) *configurationStore {
 	var configStore = &configurationStore{}
 
 	lruCache, err := lru.New(maxEntries)
-	configStore.cache = *lruCache
+	configStore.cache = lruCache
 
 	if err != nil {
 		panic(err)

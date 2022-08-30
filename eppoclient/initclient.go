@@ -14,7 +14,7 @@ func InitClient(config Config) *EppoClient {
 
 	httpClient := newHttpClient(config.BaseUrl, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
 	configStore := newConfigurationStore(MAX_CACHE_ENTRIES)
-	requestor := newExperimentConfigurationRequestor(*httpClient, *configStore)
+	requestor := newExperimentConfigurationRequestor(*httpClient, configStore)
 	assignmentLogger := NewAssignmentLogger()
 
 	client := newEppoClient(requestor, assignmentLogger)
