@@ -14,10 +14,10 @@ type iConfigRequestor interface {
 
 type experimentConfigurationRequestor struct {
 	httpClient  httpClient
-	configStore configurationStore
+	configStore *configurationStore
 }
 
-func newExperimentConfigurationRequestor(httpClient httpClient, configStore configurationStore) *experimentConfigurationRequestor {
+func newExperimentConfigurationRequestor(httpClient httpClient, configStore *configurationStore) *experimentConfigurationRequestor {
 	return &experimentConfigurationRequestor{
 		httpClient:  httpClient,
 		configStore: configStore,
