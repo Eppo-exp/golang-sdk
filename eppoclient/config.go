@@ -1,7 +1,9 @@
 package eppoclient
 
+const default_base_url = "https://eppo.cloud/api"
+
 type Config struct {
-	BaseUrl          string `default:"https://eppo.cloud/api"`
+	BaseUrl          string
 	ApiKey           string
 	AssignmentLogger AssignmentLogger
 }
@@ -9,5 +11,9 @@ type Config struct {
 func (cfg *Config) validate() {
 	if cfg.ApiKey == "" {
 		panic("api key not set")
+	}
+
+	if cfg.BaseUrl == "" {
+		cfg.BaseUrl = default_base_url
 	}
 }
