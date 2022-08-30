@@ -5,7 +5,7 @@ const default_base_url = "https://eppo.cloud/api"
 type Config struct {
 	BaseUrl          string
 	ApiKey           string
-	AssignmentLogger AssignmentLogger
+	AssignmentLogger IAssignmentLogger
 }
 
 func (cfg *Config) validate() {

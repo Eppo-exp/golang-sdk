@@ -8,7 +8,7 @@ It is used to retrieve the experiments data and put it to in-memory cache, and t
 Refer to our [SDK documentation](https://docs.geteppo.com/prerequisites/feature-flagging/randomization-sdk/) for how to install and use the SDK.
 
 ## Supported Python Versions
-This version of the SDK is compatible with Python 3.6 and above.
+This version of the SDK is compatible with Go v1.18 and above.
 
 ## Example
 
