@@ -35,8 +35,4 @@ This version of the SDK is compatible with Go v1.18 and above.
 			// do something
 		}
 	}
-<<<<<<< HEAD
 ```
-=======
-```
->>>>>>> 1732d6bdadffc0e80011a86c49a50d56546c6296
