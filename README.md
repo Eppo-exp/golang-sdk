@@ -5,10 +5,10 @@ It is used to retrieve the experiments data and put it to in-memory cache, and t
 
 ## Getting Started
 
-Refer to our [SDK documentation](https://docs.geteppo.com/feature-flagging/randomization-sdk/) for how to install and use the SDK.
+Refer to our [SDK documentation](https://docs.geteppo.com/prerequisites/feature-flagging/randomization-sdk/) for how to install and use the SDK.
 
 ## Supported Python Versions
-This version of the SDK is compatible with Python 3.6 and above.
+This version of the SDK is compatible with Go v1.18 and above.
 
 ## Example
 
@@ -35,4 +35,8 @@ This version of the SDK is compatible with Python 3.6 and above.
 			// do something
 		}
 	}
+<<<<<<< HEAD
 ```
+=======
+```
+>>>>>>> 1732d6bdadffc0e80011a86c49a50d56546c6296
