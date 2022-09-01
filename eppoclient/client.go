@@ -17,14 +17,6 @@ type EppoClient struct {
 	logger          IAssignmentLogger
 }
 
-type assignmentEvent struct {
-	Experiment        string
-	Variation         string
-	Subject           string
-	Timestamp         string
-	SubjectAttributes dictionary
-}
-
 func newEppoClient(configRequestor iConfigRequestor, assignmentLogger IAssignmentLogger) *EppoClient {
 	var ec = &EppoClient{}
 
@@ -75,7 +67,7 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 
 	assignedVariation := variationShard.Name
 
-	assignmentEvent := &assignmentEvent{
+	assignmentEvent := AssignmentEvent{
 		Experiment:        experimentKey,
 		Variation:         assignedVariation,
 		Subject:           subjectKey,
@@ -83,7 +75,11 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 		SubjectAttributes: subjectAttributes,
 	}
 
-	aeJson, _ := json.Marshal(assignmentEvent)
+	_, jsonErr := json.Marshal(assignmentEvent)
+
+	if jsonErr != nil {
+		panic("incorrect json")
+	}
 
 	func() {
 		// need to catch panics from Logger and continue
@@ -94,10 +90,7 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 			}
 		}()
 
-		event := map[string]string{}
-		json.Unmarshal([]byte(aeJson), &event)
-
-		ec.logger.LogAssignment(event)
+		ec.logger.LogAssignment(assignmentEvent)
 	}()
 
 	return assignedVariation, nil
