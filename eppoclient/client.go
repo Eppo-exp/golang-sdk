@@ -75,7 +75,11 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 		SubjectAttributes: subjectAttributes,
 	}
 
-	json.Marshal(assignmentEvent)
+	_, jsonErr := json.Marshal(assignmentEvent)
+
+	if jsonErr != nil {
+		panic("incorrect json")
+	}
 
 	func() {
 		// need to catch panics from Logger and continue
