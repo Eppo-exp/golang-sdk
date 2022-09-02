@@ -12,7 +12,15 @@ help: Makefile
 	@echo "usage: make <target>"
 	@sed -n 's/^##//p' $<
 
-test:
+testDataDir := eppoclient/test-data/
+.PHONY: test-data
+test-data:
+	rm -rf $(testDataDir)
+	mkdir -p $(testDataDir)
+	gsutil cp gs://sdk-test-data/rac-experiments.json $(testDataDir)
+	gsutil cp -r gs://sdk-test-data/assignment-v2 $(testDataDir)
+
+test: test-data
 	go test ./...
 
 lint:

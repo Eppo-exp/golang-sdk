@@ -9,13 +9,13 @@ import (
 )
 
 type condition struct {
-	attribute string
-	value     interface{}
-	operator  string `validator:"regexp=^(MATCHES|GTE|GT|LTE|LT|ONE_OF|NOT_ONE_OF)$"`
+	Attribute string `json:"attribute"`
+	Value     interface{} `json:"value"`
+	Operator  string `validator:"regexp=^(MATCHES|GTE|GT|LTE|LT|ONE_OF|NOT_ONE_OF)$" json:"operator"`
 }
 
 type rule struct {
-	conditions []condition
+	Conditions []condition `json:"conditions"`
 }
 
 func matchesAnyRule(subjectAttributes dictionary, rules []rule) bool {
@@ -29,7 +29,7 @@ func matchesAnyRule(subjectAttributes dictionary, rules []rule) bool {
 }
 
 func matchesRule(subjectAttributes dictionary, rule rule) bool {
-	for _, condition := range rule.conditions {
+	for _, condition := range rule.Conditions {
 		if !evaluateCondition(subjectAttributes, condition) {
 			return false
 		}
@@ -39,25 +39,36 @@ func matchesRule(subjectAttributes dictionary, rule rule) bool {
 }
 
 func evaluateCondition(subjectAttributes dictionary, condition condition) bool {
-	subjectValue := subjectAttributes[condition.attribute]
+	subjectValue := subjectAttributes[condition.Attribute]
 
 	if subjectValue != nil {
-		if condition.operator == "MATCHES" {
+		if condition.Operator == "MATCHES" {
 			v := reflect.ValueOf(subjectValue)
 			if v.Kind() != reflect.String {
 				subjectValue = strconv.Itoa(subjectValue.(int))
 			}
-			r, _ := regexp.MatchString(condition.value.(string), subjectValue.(string))
+			r, _ := regexp.MatchString(condition.Value.(string), subjectValue.(string))
 			return r
-		} else if condition.operator == "ONE_OF" {
-			return isOneOf(subjectValue, condition.value.([]string))
-		} else if condition.operator == "NOT_ONE_OF" {
-			return isNotOneOf(subjectValue, condition.value.([]string))
+		} else if condition.Operator == "ONE_OF" {
+			return isOneOf(subjectValue, convertToStringArray(condition.Value))
+		} else if condition.Operator == "NOT_ONE_OF" {
+			return isNotOneOf(subjectValue, convertToStringArray(condition.Value))
 		} else {
 			return evaluateNumericCondition(subjectValue, condition)
 		}
 	}
 	return false
+}
+
+func convertToStringArray(conditionValue interface{}) []string {
+	if reflect.TypeOf(conditionValue).Elem().Kind() == reflect.String {
+		return conditionValue.([]string)
+	}
+	conditionValueStrings := make([]string, len(conditionValue.([]interface{})))
+	for i, v := range conditionValue.([]interface{}) {
+	    conditionValueStrings[i] = v.(string)
+	}
+	return conditionValueStrings
 }
 
 func isOneOf(attributeValue interface{}, conditionValue []string) bool {
@@ -99,15 +110,15 @@ func evaluateNumericCondition(subjectValue interface{}, condition condition) boo
 		subjectValue = float64(subjectValue.(int))
 	}
 
-	switch condition.operator {
+	switch condition.Operator {
 	case "GT":
-		return subjectValue.(float64) > condition.value.(float64)
+		return subjectValue.(float64) > condition.Value.(float64)
 	case "GTE":
-		return subjectValue.(float64) >= condition.value.(float64)
+		return subjectValue.(float64) >= condition.Value.(float64)
 	case "LT":
-		return subjectValue.(float64) < condition.value.(float64)
+		return subjectValue.(float64) < condition.Value.(float64)
 	case "LTE":
-		return subjectValue.(float64) <= condition.value.(float64)
+		return subjectValue.(float64) <= condition.Value.(float64)
 	default:
 		panic("Incorrect condition operator")
 	}

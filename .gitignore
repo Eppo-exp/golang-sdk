@@ -14,5 +14,6 @@ eppo-golang-sdk-*
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-eppoclient/test-data/assignment/*
+eppoclient/test-data/assignment-v2
+eppoclient/test-data/rac-experiments.json
 .vscode

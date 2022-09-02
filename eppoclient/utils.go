@@ -7,7 +7,13 @@ type testData struct {
 	PercentExposure     float32              `json:"percentExposure"`
 	Variations          []testDataVariations `json:"variations"`
 	Subjects            []string             `json:"subjects"`
+	SubjectsWithAttributes []subjectWithAttributes `json:"subjectsWithAttributes"`
 	ExpectedAssignments []string             `json:"expectedAssignments"`
+}
+
+type subjectWithAttributes struct {
+	SubjectKey string `json:"subjectKey"`
+	SubjectAttributes dictionary `json:"subjectAttributes"`
 }
 
 type testDataVariations struct {
