@@ -9,9 +9,9 @@ import (
 )
 
 type condition struct {
-	Attribute string `json:"attribute"`
+	Attribute string      `json:"attribute"`
 	Value     interface{} `json:"value"`
-	Operator  string `validator:"regexp=^(MATCHES|GTE|GT|LTE|LT|ONE_OF|NOT_ONE_OF)$" json:"operator"`
+	Operator  string      `validator:"regexp=^(MATCHES|GTE|GT|LTE|LT|ONE_OF|NOT_ONE_OF)$" json:"operator"`
 }
 
 type rule struct {
@@ -66,7 +66,7 @@ func convertToStringArray(conditionValue interface{}) []string {
 	}
 	conditionValueStrings := make([]string, len(conditionValue.([]interface{})))
 	for i, v := range conditionValue.([]interface{}) {
-	    conditionValueStrings[i] = v.(string)
+		conditionValueStrings[i] = v.(string)
 	}
 	return conditionValueStrings
 }

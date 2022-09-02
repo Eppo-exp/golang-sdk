@@ -16,4 +16,4 @@ jobs:
       - name: 'Set up GCP SDK for downloading test data'
         uses: 'google-github-actions/setup-gcloud@v0'
       - name: Test
-        run: go test -v ./...
+        run: make test
