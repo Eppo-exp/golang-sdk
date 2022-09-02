@@ -96,6 +96,9 @@ func getTestData() dictionary {
 	var racResponseData map[string]interface{}
 	racResponseJsonFile, _ := os.Open(MOCK_RAC_RESPONSE_FILE)
 	byteValue, _ := ioutil.ReadAll(racResponseJsonFile)
-	json.Unmarshal(byteValue, &racResponseData)
+	err = json.Unmarshal(byteValue, &racResponseData)
+	if err != nil {
+		fmt.Println("Error reading mock RAC response file")
+	}
 	return racResponseData
 }
