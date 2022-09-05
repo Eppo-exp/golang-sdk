@@ -1,12 +1,9 @@
 package eppoclient
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,14 +11,11 @@ import (
 	"testing"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
 )
 
-const TEST_DATA_DIR = "test-data/assignment"
-const BUCKET_NAME = "sdk-test-data"
+const TEST_DATA_DIR = "test-data/assignment-v2"
+const MOCK_RAC_RESPONSE_FILE = "test-data/rac-experiments.json"
 
 var tstData = []testData{}
 
@@ -38,6 +32,16 @@ func Test_e2e(t *testing.T) {
 
 		assignments := []string{}
 
+		for _, subject := range experiment.SubjectsWithAttributes {
+			assignment, err := client.GetAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
+
+			if assignment != "" {
+				assert.Nil(t, err)
+			}
+
+			assignments = append(assignments, assignment)
+		}
+
 		for _, subject := range experiment.Subjects {
 			assignment, err := client.GetAssignment(subject, expName, dictionary{})
 
@@ -53,7 +57,6 @@ func Test_e2e(t *testing.T) {
 }
 
 func initFixture() string {
-	downloadTestData()
 	testResponse := getTestData() // this is here because we need to append to global testData
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -90,67 +93,12 @@ func getTestData() dictionary {
 		tstData = append(tstData, testCaseDict)
 	}
 
-	expConfigs := dictionary{}
-
-	for _, experimentTest := range tstData {
-		experimentName := experimentTest.Experiment
-		expMap := dictionary{}
-		expMap["subjectShards"] = 10000
-		expMap["enabled"] = true
-		expMap["variations"] = experimentTest.Variations
-		expMap["name"] = experimentName
-		expMap["percentExposure"] = experimentTest.PercentExposure
-
-		expConfigs[experimentName] = expMap
-	}
-
-	response := dictionary{}
-	response["experiments"] = expConfigs
-
-	return response
-}
-
-func downloadTestData() {
-	if _, err := os.Stat(TEST_DATA_DIR); os.IsNotExist(err) {
-		if err := os.MkdirAll(TEST_DATA_DIR, os.ModePerm); err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		return //data is already downloaded, skip this step
-	}
-
-	ctx := context.Background()
-	client, err := storage.NewClient(ctx, option.WithoutAuthentication())
+	var racResponseData map[string]interface{}
+	racResponseJsonFile, _ := os.Open(MOCK_RAC_RESPONSE_FILE)
+	byteValue, _ := ioutil.ReadAll(racResponseJsonFile)
+	err = json.Unmarshal(byteValue, &racResponseData)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Error reading mock RAC response file")
 	}
-
-	query := &storage.Query{Prefix: "assignment/test-case"}
-	bkt := client.Bucket(BUCKET_NAME)
-	it := bkt.Objects(ctx, query)
-
-	for {
-		attrs, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-		obj := bkt.Object(attrs.Name)
-		rdr, err := obj.NewReader(ctx)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer rdr.Close()
-
-		out, err := os.Create("test-data/" + obj.ObjectName())
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer out.Close()
-
-		io.Copy(out, rdr)
-	}
+	return racResponseData
 }

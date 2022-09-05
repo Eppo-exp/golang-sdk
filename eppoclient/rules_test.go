@@ -6,13 +6,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var greaterThanCondition = condition{operator: "GT", value: 10.0, attribute: "age"}
-var lessThanCondition = condition{operator: "LT", value: 100.0, attribute: "age"}
-var numericRule = rule{conditions: []condition{greaterThanCondition, lessThanCondition}}
+var greaterThanCondition = condition{Operator: "GT", Value: 10.0, Attribute: "age"}
+var lessThanCondition = condition{Operator: "LT", Value: 100.0, Attribute: "age"}
+var numericRule = rule{Conditions: []condition{greaterThanCondition, lessThanCondition}}
 
-var matchesEmailCondition = condition{operator: "MATCHES", value: ".*@email.com", attribute: "email"}
-var textRule = rule{conditions: []condition{matchesEmailCondition}}
-var ruleWithEmptyConditions = rule{conditions: []condition{}}
+var matchesEmailCondition = condition{Operator: "MATCHES", Value: ".*@email.com", Attribute: "email"}
+var textRule = rule{Conditions: []condition{matchesEmailCondition}}
+var ruleWithEmptyConditions = rule{Conditions: []condition{}}
 
 func Test_matchesAnyRule_withEmptyRules(t *testing.T) {
 	expected := false
@@ -84,8 +84,8 @@ func Test_matchesAnyRule_NumericOperatorWithString(t *testing.T) {
 func Test_matchesAnyRule_NumericValueAndRegex(t *testing.T) {
 	expected := true
 
-	cdn := condition{operator: "MATCHES", value: "[0-9]+", attribute: "age"}
-	rl := rule{conditions: []condition{cdn}}
+	cdn := condition{Operator: "MATCHES", Value: "[0-9]+", Attribute: "age"}
+	rl := rule{Conditions: []condition{cdn}}
 
 	subjectAttributes := make(dictionary)
 	subjectAttributes["age"] = 99
@@ -102,8 +102,8 @@ type MatchesAnyRuleTest []struct {
 }
 
 func Test_matchesAnyRule_oneOfOperatorWithBoolean(t *testing.T) {
-	oneOfRule := rule{conditions: []condition{{operator: "ONE_OF", value: []string{"true"}, attribute: "enabled"}}}
-	notOneOfRule := rule{conditions: []condition{{operator: "NOT_ONE_OF", value: []string{"True"}, attribute: "enabled"}}}
+	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"true"}, Attribute: "enabled"}}}
+	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"True"}, Attribute: "enabled"}}}
 
 	subjectAttributesEnabled := make(dictionary)
 	subjectAttributesEnabled["enabled"] = "true"
@@ -126,7 +126,7 @@ func Test_matchesAnyRule_oneOfOperatorWithBoolean(t *testing.T) {
 }
 
 func Test_matchesAnyRule_OneOfOperatorCaseInsensitive(t *testing.T) {
-	oneOfRule := rule{conditions: []condition{{operator: "ONE_OF", value: []string{"1Ab", "Ron"}, attribute: "name"}}}
+	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"1Ab", "Ron"}, Attribute: "name"}}}
 	subjectAttributes0 := make(dictionary)
 	subjectAttributes0["name"] = "ron"
 
@@ -146,7 +146,7 @@ func Test_matchesAnyRule_OneOfOperatorCaseInsensitive(t *testing.T) {
 }
 
 func Test_matchesAnyRule_NotOneOfOperatorCaseInsensitive(t *testing.T) {
-	notOneOfRule := rule{conditions: []condition{{operator: "NOT_ONE_OF", value: []string{"bbB", "1.1.ab"}, attribute: "name"}}}
+	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"bbB", "1.1.ab"}, Attribute: "name"}}}
 	subjectAttributes0 := make(dictionary)
 	subjectAttributes0["name"] = "BBB"
 
@@ -166,8 +166,8 @@ func Test_matchesAnyRule_NotOneOfOperatorCaseInsensitive(t *testing.T) {
 }
 
 func Test_matchesAnyRule_OneOfOperatorWithString(t *testing.T) {
-	oneOfRule := rule{conditions: []condition{{operator: "ONE_OF", value: []string{"john", "ron"}, attribute: "name"}}}
-	notOneOfRule := rule{conditions: []condition{{operator: "NOT_ONE_OF", value: []string{"ron"}, attribute: "name"}}}
+	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"john", "ron"}, Attribute: "name"}}}
+	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"ron"}, Attribute: "name"}}}
 
 	subjectAttributesJohn := make(dictionary)
 	subjectAttributesJohn["name"] = "john"
@@ -194,8 +194,8 @@ func Test_matchesAnyRule_OneOfOperatorWithString(t *testing.T) {
 }
 
 func Test_matchesAnyRule_OneOfOperatorWithNumber(t *testing.T) {
-	oneOfRule := rule{conditions: []condition{{operator: "ONE_OF", value: []string{"14", "15.11", "15"}, attribute: "number"}}}
-	notOneOfRule := rule{conditions: []condition{{operator: "NOT_ONE_OF", value: []string{"10"}, attribute: "number"}}}
+	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"14", "15.11", "15"}, Attribute: "number"}}}
+	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"10"}, Attribute: "number"}}}
 
 	subjectAttributes0 := make(dictionary)
 	subjectAttributes0["number"] = "14"
@@ -272,18 +272,18 @@ func Test_isNotOneOf_Fail(t *testing.T) {
 
 func Test_evaluateNumericCondition_Success(t *testing.T) {
 	expected := false
-	result := evaluateNumericCondition(40, condition{operator: "LT", value: 30.0})
+	result := evaluateNumericCondition(40, condition{Operator: "LT", Value: 30.0})
 
 	assert.Equal(t, expected, result)
 }
 
 func Test_evaluateNumericCondition_Fail(t *testing.T) {
 	expected := true
-	result := evaluateNumericCondition(25, condition{operator: "LT", value: 30.0})
+	result := evaluateNumericCondition(25, condition{Operator: "LT", Value: 30.0})
 
 	assert.Equal(t, expected, result)
 }
 
 func Test_evaluateNumericCondition_IncorrectOperator(t *testing.T) {
-	assert.Panics(t, func() { evaluateNumericCondition(25, condition{operator: "LTGT", value: 30.0}) })
+	assert.Panics(t, func() { evaluateNumericCondition(25, condition{Operator: "LTGT", Value: 30.0}) })
 }

@@ -112,8 +112,8 @@ func Test_AssignSubjectWithAttributesAndRules(t *testing.T) {
 	var mockLogger = new(mockLogger)
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
-	var matchesEmailCondition = condition{operator: "MATCHES", value: ".*@eppo.com", attribute: "email"}
-	var textRule = rule{conditions: []condition{matchesEmailCondition}}
+	var matchesEmailCondition = condition{Operator: "MATCHES", Value: ".*@eppo.com", Attribute: "email"}
+	var textRule = rule{Conditions: []condition{matchesEmailCondition}}
 	var mockConfigRequestor = new(mockConfigRequestor)
 	var overrides = make(dictionary)
 	var mockVariations = []Variation{
