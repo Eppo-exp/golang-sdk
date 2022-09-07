@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -70,7 +71,10 @@ func initFixture() string {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch strings.TrimSpace(r.URL.Path) {
 		case "/randomized_assignment/config":
-			json.NewEncoder(w).Encode(testResponse)
+			err := json.NewEncoder(w).Encode(testResponse)
+			if err != nil {
+				log.Fatalln("Init failed")
+			}
 		default:
 			http.NotFoundHandler().ServeHTTP(w, r)
 		}
@@ -97,7 +101,11 @@ func getTestData() dictionary {
 
 		testCaseDict := testData{}
 		byteValue, _ := io.ReadAll(jsonFile)
-		json.Unmarshal(byteValue, &testCaseDict)
+		err := json.Unmarshal(byteValue, &testCaseDict)
+
+		if err != nil {
+			log.Fatalln("Test data fetch failed")
+		}
 		tstData = append(tstData, testCaseDict)
 	}
 
