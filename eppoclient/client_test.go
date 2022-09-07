@@ -12,7 +12,13 @@ func Test_AssignBlankExperiment(t *testing.T) {
 	var mockLogger = new(mockLogger)
 	client := newEppoClient(mockConfigRequestor, mockLogger)
 
-	assert.Panics(t, func() { client.GetAssignment("subject-1", "", dictionary{}) })
+	assert.Panics(t, func() {
+		_, err := client.GetAssignment("subject-1", "", dictionary{})
+
+		if err == nil {
+			t.Error("Test failed")
+		}
+	})
 }
 
 func Test_AssignBlankSubject(t *testing.T) {
@@ -20,7 +26,13 @@ func Test_AssignBlankSubject(t *testing.T) {
 	var mockLogger = new(mockLogger)
 	client := newEppoClient(mockConfigRequestor, mockLogger)
 
-	assert.Panics(t, func() { client.GetAssignment("", "experiment-1", dictionary{}) })
+	assert.Panics(t, func() {
+		_, err := client.GetAssignment("", "experiment-1", dictionary{})
+
+		if err == nil {
+			t.Error("Test failed")
+		}
+	})
 }
 
 func Test_SubjectNotInSample(t *testing.T) {
