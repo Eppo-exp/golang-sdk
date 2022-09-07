@@ -54,7 +54,11 @@ func (cs *configurationStore) GetConfiguration(key string) (expConfig experiment
 		log.Fatalln("Incorrect json")
 	}
 	ec := experimentConfiguration{}
-	json.Unmarshal(jsonString, &ec)
+	jsonErr := json.Unmarshal(jsonString, &ec)
+
+	if jsonErr != nil {
+		log.Fatalln("Incorrect json")
+	}
 
 	return ec, nil
 }

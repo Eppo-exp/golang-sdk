@@ -23,16 +23,6 @@ type SDKParams struct {
 	sdkVersion string
 }
 
-// todo move this to requestor
-type experiment struct {
-	Name   string
-	Latest string
-}
-
-type experiments struct {
-	Results []*experiment
-}
-
 func newHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) *httpClient {
 	var hc = &httpClient{
 		baseUrl:        baseUrl,
