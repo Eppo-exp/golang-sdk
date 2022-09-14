@@ -1,6 +1,7 @@
 package eppoclient
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -15,7 +16,18 @@ type condition struct {
 }
 
 type rule struct {
-	Conditions []condition `json:"conditions"`
+	AllocationKey string      `json:"allocationKey"`
+	Conditions    []condition `json:"conditions"`
+}
+
+func findMatchingRule(subjectAttributes dictionary, rules []rule) (rule, error) {
+	for _, rule := range rules {
+		if matchesRule(subjectAttributes, rule) {
+			return rule, nil
+		}
+	}
+
+	return rule{}, errors.New("No matching rule")
 }
 
 func matchesAnyRule(subjectAttributes dictionary, rules []rule) bool {

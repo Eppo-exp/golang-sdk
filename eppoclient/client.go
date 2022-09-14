@@ -28,16 +28,16 @@ func newEppoClient(configRequestor iConfigRequestor, assignmentLogger IAssignmen
 	return ec
 }
 
-func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, subjectAttributes dictionary) (string, error) {
+func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
 	if subjectKey == "" {
 		panic("no subject key provided")
 	}
 
-	if experimentKey == "" {
-		panic("no experiment key provided")
+	if flagKey == "" {
+		panic("no flag key provided")
 	}
 
-	experimentConfig, err := ec.configRequestor.GetConfiguration(experimentKey)
+	experimentConfig, err := ec.configRequestor.GetConfiguration(flagKey)
 	if err != nil {
 		return "", err
 	}
@@ -50,11 +50,11 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 
 	if !experimentConfig.Enabled ||
 		!subjectAttributesSatisfyRules(subjectAttributes, experimentConfig.Rules) ||
-		!isInExperimentSample(subjectKey, experimentKey, experimentConfig) {
+		!isInExperimentSample(subjectKey, flagKey, experimentConfig) {
 		return "", errors.New("not in sample")
 	}
 
-	assignmentKey := "assignment-" + subjectKey + "-" + experimentKey
+	assignmentKey := "assignment-" + subjectKey + "-" + flagKey
 	shard := getShard(assignmentKey, int64(experimentConfig.SubjectShards))
 	variations := experimentConfig.Variations
 	var variationShard Variation
@@ -68,7 +68,7 @@ func (ec *EppoClient) GetAssignment(subjectKey string, experimentKey string, sub
 	assignedVariation := variationShard.Name
 
 	assignmentEvent := AssignmentEvent{
-		Experiment:        experimentKey,
+		Experiment:        flagKey,
 		Variation:         assignedVariation,
 		Subject:           subjectKey,
 		Timestamp:         time.Now().String(),
@@ -115,8 +115,8 @@ func subjectAttributesSatisfyRules(subjectAttributes dictionary, rules []rule) b
 	return matchesAnyRule(subjectAttributes, rules)
 }
 
-func isInExperimentSample(subjectKey string, experimentKey string, experimentConfig experimentConfiguration) bool {
-	shardKey := "exposure-" + subjectKey + "-" + experimentKey
+func isInExperimentSample(subjectKey string, flagKey string, experimentConfig experimentConfiguration) bool {
+	shardKey := "exposure-" + subjectKey + "-" + flagKey
 	shard := getShard(shardKey, int64(experimentConfig.SubjectShards))
 
 	return float64(shard) <= float64(experimentConfig.PercentExposure)*float64(experimentConfig.SubjectShards)
