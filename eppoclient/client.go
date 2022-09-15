@@ -37,26 +37,38 @@ func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAt
 		panic("no flag key provided")
 	}
 
-	experimentConfig, err := ec.configRequestor.GetConfiguration(flagKey)
+	config, err := ec.configRequestor.GetConfiguration(flagKey)
 	if err != nil {
 		return "", err
 	}
 
-	override := getSubjectVariationOverride(experimentConfig, subjectKey)
+	override := getSubjectVariationOverride(config, subjectKey)
 
 	if override != "" {
 		return override, nil
 	}
 
-	if !experimentConfig.Enabled ||
-		!subjectAttributesSatisfyRules(subjectAttributes, experimentConfig.Rules) ||
-		!isInExperimentSample(subjectKey, flagKey, experimentConfig) {
-		return "", errors.New("not in sample")
+	// Check if disabled
+	if !config.Enabled {
+		return "", errors.New("the experiment or flag is not enabled")
 	}
 
+	// Find matching rule
+	rule, err := findMatchingRule(subjectAttributes, config.Rules)
+	if err != nil {
+		return "", err
+	}
+
+	// Check if in sample population
+	allocation := config.Allocations[rule.AllocationKey]
+	if !isInExperimentSample(subjectKey, flagKey, config.SubjectShards, allocation.PercentExposure) {
+		return "", errors.New("subject not part of the sample population")
+	}
+
+	// Get assigned variation
 	assignmentKey := "assignment-" + subjectKey + "-" + flagKey
-	shard := getShard(assignmentKey, int64(experimentConfig.SubjectShards))
-	variations := experimentConfig.Variations
+	shard := getShard(assignmentKey, int64(config.SubjectShards))
+	variations := allocation.Variations
 	var variationShard Variation
 
 	for _, variation := range variations {
@@ -65,7 +77,7 @@ func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAt
 		}
 	}
 
-	assignedVariation := variationShard.Name
+	assignedVariation := variationShard.Value.(string)
 
 	assignmentEvent := AssignmentEvent{
 		Experiment:        flagKey,
@@ -107,17 +119,9 @@ func getSubjectVariationOverride(experimentConfig experimentConfiguration, subje
 	return ""
 }
 
-func subjectAttributesSatisfyRules(subjectAttributes dictionary, rules []rule) bool {
-	if len(rules) == 0 {
-		return true
-	}
-
-	return matchesAnyRule(subjectAttributes, rules)
-}
-
-func isInExperimentSample(subjectKey string, flagKey string, experimentConfig experimentConfiguration) bool {
+func isInExperimentSample(subjectKey string, flagKey string, subjectShards int, percentExposure float32) bool {
 	shardKey := "exposure-" + subjectKey + "-" + flagKey
-	shard := getShard(shardKey, int64(experimentConfig.SubjectShards))
+	shard := getShard(shardKey, int64(subjectShards))
 
-	return float64(shard) <= float64(experimentConfig.PercentExposure)*float64(experimentConfig.SubjectShards)
+	return float64(shard) <= float64(percentExposure)*float64(subjectShards)
 }

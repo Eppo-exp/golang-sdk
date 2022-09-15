@@ -30,16 +30,6 @@ func findMatchingRule(subjectAttributes dictionary, rules []rule) (rule, error) 
 	return rule{}, errors.New("No matching rule")
 }
 
-func matchesAnyRule(subjectAttributes dictionary, rules []rule) bool {
-	for _, rule := range rules {
-		if matchesRule(subjectAttributes, rule) {
-			return true
-		}
-	}
-
-	return false
-}
-
 func matchesRule(subjectAttributes dictionary, rule rule) bool {
 	for _, condition := range rule.Conditions {
 		if !evaluateCondition(subjectAttributes, condition) {
