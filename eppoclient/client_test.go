@@ -31,7 +31,7 @@ func Test_SubjectNotInSample(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
 	overrides := make(dictionary)
 	var mockVariations = []Variation{
-		{Name: "control", ShardRange: shardRange{Start: 0, End: 10000}},
+		{Name: "control", Value: String("control"), ShardRange: shardRange{Start: 0, End: 10000}},
 	}
 	var allocations = make(map[string]Allocation)
 	allocations[defaultAllocationKey] = Allocation{
@@ -65,7 +65,7 @@ func Test_LogAssignment(t *testing.T) {
 	overrides := make(dictionary)
 
 	var mockVariations = []Variation{
-		{Name: "control", ShardRange: shardRange{Start: 0, End: 10000}},
+		{Name: "control", Value: String("control"), ShardRange: shardRange{Start: 0, End: 10000}},
 	}
 	var allocations = make(map[string]Allocation)
 	allocations[defaultAllocationKey] = Allocation{
@@ -100,7 +100,7 @@ func Test_GetAssignmentHandlesLoggingPanic(t *testing.T) {
 	overrides := make(dictionary)
 
 	var mockVariations = []Variation{
-		{Name: "control", ShardRange: shardRange{Start: 0, End: 10000}},
+		{Name: "control", Value: String("control"), ShardRange: shardRange{Start: 0, End: 10000}},
 	}
 	var allocations = make(map[string]Allocation)
 	allocations[defaultAllocationKey] = Allocation{
@@ -135,7 +135,7 @@ func Test_AssignSubjectWithAttributesAndRules(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
 	var overrides = make(dictionary)
 	var mockVariations = []Variation{
-		{Name: "control", ShardRange: shardRange{Start: 0, End: 10000}},
+		{Name: "control", Value: String("control"), ShardRange: shardRange{Start: 0, End: 10000}},
 	}
 	var allocations = make(map[string]Allocation)
 	allocations[defaultAllocationKey] = Allocation{

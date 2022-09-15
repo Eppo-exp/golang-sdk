@@ -13,9 +13,9 @@ type configurationStore struct {
 }
 
 type Variation struct {
-	Name       string      `json:"name"`
-	Value      interface{} `json:"value"`
-	ShardRange shardRange
+	Name       string     `json:"name"`
+	Value      Value      `json:"value"`
+	ShardRange shardRange `json:"shardRange"`
 }
 
 type Allocation struct {

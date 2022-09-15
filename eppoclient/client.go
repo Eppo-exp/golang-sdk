@@ -77,7 +77,7 @@ func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAt
 		}
 	}
 
-	assignedVariation := variationShard.Value.(string)
+	assignedVariation := variationShard.Value.StringValue()
 
 	assignmentEvent := AssignmentEvent{
 		Experiment:        flagKey,

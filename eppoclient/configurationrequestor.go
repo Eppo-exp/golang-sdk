@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const RAC_ENDPOINT = "/randomized_assignment/config"
+const RAC_ENDPOINT = "/randomized_assignment/v2/config"
 
 type iConfigRequestor interface {
 	GetConfiguration(key string) (experimentConfiguration, error)
@@ -48,7 +48,7 @@ func (ecr *experimentConfigurationRequestor) FetchAndStoreConfigurations() {
 		fmt.Println(err)
 	}
 
-	err = json.Unmarshal(responseBody["experiments"], &configs)
+	err = json.Unmarshal(responseBody["flags"], &configs)
 
 	if err != nil {
 		fmt.Println("Failed to unmarshal RAC response json in experiments section", result)
