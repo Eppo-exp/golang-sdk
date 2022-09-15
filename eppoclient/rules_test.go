@@ -11,7 +11,7 @@ var lessThanCondition = condition{Operator: "LT", Value: 100.0, Attribute: "age"
 var numericRule = rule{Conditions: []condition{greaterThanCondition, lessThanCondition}}
 
 var matchesEmailCondition = condition{Operator: "MATCHES", Value: ".*@email.com", Attribute: "email"}
-var textRule = rule{Conditions: []condition{matchesEmailCondition}}
+var textRule = rule{AllocationKey: "allocation-key", Conditions: []condition{matchesEmailCondition}}
 var ruleWithEmptyConditions = rule{Conditions: []condition{}}
 var expectedNoMatchErrorMessage = "No matching rule"
 
