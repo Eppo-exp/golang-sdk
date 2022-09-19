@@ -7,6 +7,9 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+var defaultAllocationKey = "allocation-key"
+var defaultRule = rule{Conditions: []condition{}, AllocationKey: defaultAllocationKey}
+
 func Test_AssignBlankExperiment(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
 	var mockLogger = new(mockLogger)
@@ -28,15 +31,20 @@ func Test_SubjectNotInSample(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
 	overrides := make(dictionary)
 	var mockVariations = []Variation{
-		{Name: "control", ShardRange: shardRange{Start: 0, End: 10000}},
+		{Name: "control", Value: String("control"), ShardRange: shardRange{Start: 0, End: 10000}},
+	}
+	var allocations = make(map[string]Allocation)
+	allocations[defaultAllocationKey] = Allocation{
+		PercentExposure: 0,
+		Variations:      mockVariations,
 	}
 	mockResult := experimentConfiguration{
-		Name:            "recommendation_algo",
-		PercentExposure: 0,
-		Enabled:         true,
-		SubjectShards:   1000,
-		Overrides:       overrides,
-		Variations:      mockVariations,
+		Name:          "recommendation_algo",
+		Enabled:       true,
+		SubjectShards: 1000,
+		Overrides:     overrides,
+		Allocations:   allocations,
+		Rules:         []rule{defaultRule},
 	}
 
 	mockConfigRequestor.Mock.On("GetConfiguration", mock.Anything).Return(mockResult, nil)
@@ -57,15 +65,20 @@ func Test_LogAssignment(t *testing.T) {
 	overrides := make(dictionary)
 
 	var mockVariations = []Variation{
-		{Name: "control", ShardRange: shardRange{Start: 0, End: 10000}},
+		{Name: "control", Value: String("control"), ShardRange: shardRange{Start: 0, End: 10000}},
+	}
+	var allocations = make(map[string]Allocation)
+	allocations[defaultAllocationKey] = Allocation{
+		PercentExposure: 1,
+		Variations:      mockVariations,
 	}
 	mockResult := experimentConfiguration{
-		Name:            "recommendation_algo",
-		PercentExposure: 100,
-		Enabled:         true,
-		SubjectShards:   1000,
-		Overrides:       overrides,
-		Variations:      mockVariations,
+		Name:          "recommendation_algo",
+		Enabled:       true,
+		SubjectShards: 1000,
+		Overrides:     overrides,
+		Allocations:   allocations,
+		Rules:         []rule{defaultRule},
 	}
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(mockResult, nil)
 
@@ -87,15 +100,20 @@ func Test_GetAssignmentHandlesLoggingPanic(t *testing.T) {
 	overrides := make(dictionary)
 
 	var mockVariations = []Variation{
-		{Name: "control", ShardRange: shardRange{Start: 0, End: 10000}},
+		{Name: "control", Value: String("control"), ShardRange: shardRange{Start: 0, End: 10000}},
+	}
+	var allocations = make(map[string]Allocation)
+	allocations[defaultAllocationKey] = Allocation{
+		PercentExposure: 1,
+		Variations:      mockVariations,
 	}
 	mockResult := experimentConfiguration{
-		Name:            "recommendation_algo",
-		PercentExposure: 100,
-		Enabled:         true,
-		SubjectShards:   1000,
-		Overrides:       overrides,
-		Variations:      mockVariations,
+		Name:          "recommendation_algo",
+		Enabled:       true,
+		SubjectShards: 1000,
+		Overrides:     overrides,
+		Allocations:   allocations,
+		Rules:         []rule{defaultRule},
 	}
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(mockResult, nil)
 
@@ -113,20 +131,24 @@ func Test_AssignSubjectWithAttributesAndRules(t *testing.T) {
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
 	var matchesEmailCondition = condition{Operator: "MATCHES", Value: ".*@eppo.com", Attribute: "email"}
-	var textRule = rule{Conditions: []condition{matchesEmailCondition}}
+	var textRule = rule{AllocationKey: defaultAllocationKey, Conditions: []condition{matchesEmailCondition}}
 	var mockConfigRequestor = new(mockConfigRequestor)
 	var overrides = make(dictionary)
 	var mockVariations = []Variation{
-		{Name: "control", ShardRange: shardRange{Start: 0, End: 10000}},
+		{Name: "control", Value: String("control"), ShardRange: shardRange{Start: 0, End: 10000}},
+	}
+	var allocations = make(map[string]Allocation)
+	allocations[defaultAllocationKey] = Allocation{
+		PercentExposure: 1,
+		Variations:      mockVariations,
 	}
 	var mockResult = experimentConfiguration{
-		Name:            "recommendation_algo",
-		PercentExposure: 100,
-		Enabled:         true,
-		SubjectShards:   1000,
-		Overrides:       overrides,
-		Variations:      mockVariations,
-		Rules:           []rule{textRule},
+		Name:          "recommendation_algo",
+		Enabled:       true,
+		SubjectShards: 1000,
+		Overrides:     overrides,
+		Rules:         []rule{textRule},
+		Allocations:   allocations,
 	}
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(mockResult, nil)
 
@@ -164,14 +186,17 @@ func Test_WithSubjectInOverrides(t *testing.T) {
 	}
 	var overrides = make(dictionary)
 	overrides["d6d7705392bc7af633328bea8c4c6904"] = "override-variation"
-	var mockResult = experimentConfiguration{
-		Name:            "recommendation_algo",
-		PercentExposure: 100,
-		Enabled:         true,
-		SubjectShards:   1000,
-		Overrides:       overrides,
+	var allocations = make(map[string]Allocation)
+	allocations[defaultAllocationKey] = Allocation{
+		PercentExposure: 1,
 		Variations:      mockVariations,
-		Rules:           []rule{textRule},
+	}
+	var mockResult = experimentConfiguration{
+		Name:          "recommendation_algo",
+		Enabled:       true,
+		SubjectShards: 1000,
+		Overrides:     overrides,
+		Rules:         []rule{textRule},
 	}
 
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(mockResult, nil)
@@ -193,14 +218,18 @@ func Test_WithSubjectInOverridesExpDisabled(t *testing.T) {
 	}
 	var overrides = make(dictionary)
 	overrides["d6d7705392bc7af633328bea8c4c6904"] = "override-variation"
-	var mockResult = experimentConfiguration{
-		Name:            "recommendation_algo",
-		PercentExposure: 100,
-		Enabled:         false,
-		SubjectShards:   1000,
-		Overrides:       overrides,
+	var allocations = make(map[string]Allocation)
+	allocations[defaultAllocationKey] = Allocation{
+		PercentExposure: 1,
 		Variations:      mockVariations,
-		Rules:           []rule{textRule},
+	}
+	var mockResult = experimentConfiguration{
+		Name:          "recommendation_algo",
+		Enabled:       false,
+		SubjectShards: 1000,
+		Overrides:     overrides,
+		Allocations:   allocations,
+		Rules:         []rule{textRule},
 	}
 
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(mockResult, nil)

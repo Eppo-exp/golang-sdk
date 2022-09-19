@@ -15,7 +15,7 @@ import (
 )
 
 const TEST_DATA_DIR = "test-data/assignment-v2"
-const MOCK_RAC_RESPONSE_FILE = "test-data/rac-experiments.json"
+const MOCK_RAC_RESPONSE_FILE = "test-data/rac-experiments-v2.json"
 
 var tstData = []testData{}
 
@@ -61,7 +61,7 @@ func initFixture() string {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch strings.TrimSpace(r.URL.Path) {
-		case "/randomized_assignment/config":
+		case "/randomized_assignment/v2/config":
 			json.NewEncoder(w).Encode(testResponse)
 		default:
 			http.NotFoundHandler().ServeHTTP(w, r)

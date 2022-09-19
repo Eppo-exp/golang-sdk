@@ -11,97 +11,85 @@ var lessThanCondition = condition{Operator: "LT", Value: 100.0, Attribute: "age"
 var numericRule = rule{Conditions: []condition{greaterThanCondition, lessThanCondition}}
 
 var matchesEmailCondition = condition{Operator: "MATCHES", Value: ".*@email.com", Attribute: "email"}
-var textRule = rule{Conditions: []condition{matchesEmailCondition}}
+var textRule = rule{AllocationKey: "allocation-key", Conditions: []condition{matchesEmailCondition}}
 var ruleWithEmptyConditions = rule{Conditions: []condition{}}
+var expectedNoMatchErrorMessage = "No matching rule"
 
-func Test_matchesAnyRule_withEmptyRules(t *testing.T) {
-	expected := false
-
+func Test_findMatchingRule_withEmptyRules(t *testing.T) {
 	subjectAttributes := make(dictionary)
 	subjectAttributes["age"] = 20
 	subjectAttributes["country"] = "US"
 
-	result := matchesAnyRule(subjectAttributes, []rule{})
+	_, err := findMatchingRule(subjectAttributes, []rule{})
 
-	assert.Equal(t, expected, result)
+	assert.EqualError(t, err, expectedNoMatchErrorMessage)
 }
 
-func Test_matchesAnyRule_whenNoRulesMatch(t *testing.T) {
-	expected := false
-
+func Test_findMatchingRule_whenNoRulesMatch(t *testing.T) {
 	subjectAttributes := make(dictionary)
 	subjectAttributes["age"] = 99
 	subjectAttributes["country"] = "US"
 	subjectAttributes["email"] = "test@example.com"
 
-	result := matchesAnyRule(subjectAttributes, []rule{textRule})
+	_, err := findMatchingRule(subjectAttributes, []rule{textRule})
 
-	assert.Equal(t, expected, result)
+	assert.EqualError(t, err, expectedNoMatchErrorMessage)
 }
 
-func Test_matchesAnyRule_Success(t *testing.T) {
-	expected := true
-
+func Test_findMatchingRule_Success(t *testing.T) {
 	subjectAttributes := make(dictionary)
 	subjectAttributes["age"] = 99.0
 
-	result := matchesAnyRule(subjectAttributes, []rule{numericRule})
+	result, _ := findMatchingRule(subjectAttributes, []rule{numericRule})
 
-	assert.Equal(t, expected, result)
+	assert.Equal(t, numericRule, result)
 }
 
-func Test_matchesAnyRule_NoAttributeForCondition(t *testing.T) {
-	expected := false
-
+func Test_findMatchingRule_NoAttributeForCondition(t *testing.T) {
 	subjectAttributes := make(dictionary)
 
-	result := matchesAnyRule(subjectAttributes, []rule{numericRule})
+	_, err := findMatchingRule(subjectAttributes, []rule{numericRule})
 
-	assert.Equal(t, expected, result)
+	assert.EqualError(t, err, expectedNoMatchErrorMessage)
 }
 
-func Test_matchesAnyRule_NoConditionsForRule(t *testing.T) {
-	expected := true
-
+func Test_findMatchingRule_NoConditionsForRule(t *testing.T) {
 	subjectAttributes := make(dictionary)
 
-	result := matchesAnyRule(subjectAttributes, []rule{ruleWithEmptyConditions})
+	result, _ := findMatchingRule(subjectAttributes, []rule{ruleWithEmptyConditions})
 
-	assert.Equal(t, expected, result)
+	assert.Equal(t, ruleWithEmptyConditions, result)
 }
 
-func Test_matchesAnyRule_NumericOperatorWithString(t *testing.T) {
-	expected := false
-
+func Test_findMatchingRule_NumericOperatorWithString(t *testing.T) {
 	subjectAttributes := make(dictionary)
 	subjectAttributes["age"] = "something"
 
-	result := matchesAnyRule(subjectAttributes, []rule{numericRule})
+	_, err := findMatchingRule(subjectAttributes, []rule{numericRule})
 
-	assert.Equal(t, expected, result)
+	assert.EqualError(t, err, expectedNoMatchErrorMessage)
 }
 
-func Test_matchesAnyRule_NumericValueAndRegex(t *testing.T) {
-	expected := true
-
+func Test_findMatchingRule_NumericValueAndRegex(t *testing.T) {
 	cdn := condition{Operator: "MATCHES", Value: "[0-9]+", Attribute: "age"}
 	rl := rule{Conditions: []condition{cdn}}
 
 	subjectAttributes := make(dictionary)
 	subjectAttributes["age"] = 99
 
-	result := matchesAnyRule(subjectAttributes, []rule{rl})
+	result, _ := findMatchingRule(subjectAttributes, []rule{rl})
 
-	assert.Equal(t, expected, result)
+	assert.Equal(t, rl, result)
 }
 
 type MatchesAnyRuleTest []struct {
 	a    dictionary
 	b    []rule
-	want bool
+	expectedRule rule
+	expectedError string
 }
 
-func Test_matchesAnyRule_oneOfOperatorWithBoolean(t *testing.T) {
+func Test_findMatchingRule_oneOfOperatorWithBoolean(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"true"}, Attribute: "enabled"}}}
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"True"}, Attribute: "enabled"}}}
 
@@ -112,20 +100,23 @@ func Test_matchesAnyRule_oneOfOperatorWithBoolean(t *testing.T) {
 	subjectAttributesDisabled["enabled"] = "false"
 
 	var tests = MatchesAnyRuleTest{
-		{subjectAttributesEnabled, []rule{oneOfRule}, true},
-		{subjectAttributesDisabled, []rule{oneOfRule}, false},
-		{subjectAttributesEnabled, []rule{notOneOfRule}, false},
-		{subjectAttributesDisabled, []rule{notOneOfRule}, true},
+		{subjectAttributesEnabled, []rule{oneOfRule}, oneOfRule, ""},
+		{subjectAttributesDisabled, []rule{oneOfRule}, rule{}, expectedNoMatchErrorMessage},
+		{subjectAttributesEnabled, []rule{notOneOfRule}, rule{}, expectedNoMatchErrorMessage},
+		{subjectAttributesDisabled, []rule{notOneOfRule}, notOneOfRule, ""},
 	}
 
 	for _, tt := range tests {
-		result := matchesAnyRule(tt.a, tt.b)
+		result, err := findMatchingRule(tt.a, tt.b)
 
-		assert.Equal(t, tt.want, result)
+		assert.Equal(t, tt.expectedRule, result)
+		if tt.expectedError != "" {
+			assert.EqualError(t, err, tt.expectedError)
+		}
 	}
 }
 
-func Test_matchesAnyRule_OneOfOperatorCaseInsensitive(t *testing.T) {
+func Test_findMatchingRule_OneOfOperatorCaseInsensitive(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"1Ab", "Ron"}, Attribute: "name"}}}
 	subjectAttributes0 := make(dictionary)
 	subjectAttributes0["name"] = "ron"
@@ -134,18 +125,21 @@ func Test_matchesAnyRule_OneOfOperatorCaseInsensitive(t *testing.T) {
 	subjectAttributes1["name"] = "1AB"
 
 	var tests = MatchesAnyRuleTest{
-		{subjectAttributes0, []rule{oneOfRule}, true},
-		{subjectAttributes1, []rule{oneOfRule}, true},
+		{subjectAttributes0, []rule{oneOfRule}, oneOfRule, ""},
+		{subjectAttributes1, []rule{oneOfRule}, oneOfRule, ""},
 	}
 
 	for _, tt := range tests {
-		result := matchesAnyRule(tt.a, tt.b)
+		result, err := findMatchingRule(tt.a, tt.b)
 
-		assert.Equal(t, tt.want, result)
+		assert.Equal(t, tt.expectedRule, result)
+		if (tt.expectedError != "") {
+			assert.EqualError(t, err, tt.expectedError)
+		}
 	}
 }
 
-func Test_matchesAnyRule_NotOneOfOperatorCaseInsensitive(t *testing.T) {
+func Test_findMatchingRule_NotOneOfOperatorCaseInsensitive(t *testing.T) {
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"bbB", "1.1.ab"}, Attribute: "name"}}}
 	subjectAttributes0 := make(dictionary)
 	subjectAttributes0["name"] = "BBB"
@@ -154,18 +148,19 @@ func Test_matchesAnyRule_NotOneOfOperatorCaseInsensitive(t *testing.T) {
 	subjectAttributes1["name"] = "1.1.AB"
 
 	var tests = MatchesAnyRuleTest{
-		{subjectAttributes0, []rule{notOneOfRule}, false},
-		{subjectAttributes1, []rule{notOneOfRule}, false},
+		{subjectAttributes0, []rule{notOneOfRule}, rule{}, expectedNoMatchErrorMessage},
+		{subjectAttributes1, []rule{notOneOfRule}, rule{}, expectedNoMatchErrorMessage},
 	}
 
 	for _, tt := range tests {
-		result := matchesAnyRule(tt.a, tt.b)
+		result, err := findMatchingRule(tt.a, tt.b)
 
-		assert.Equal(t, tt.want, result)
+		assert.Equal(t, tt.expectedRule, result)
+		assert.EqualError(t, err, tt.expectedError)
 	}
 }
 
-func Test_matchesAnyRule_OneOfOperatorWithString(t *testing.T) {
+func Test_findMatchingRule_OneOfOperatorWithString(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"john", "ron"}, Attribute: "name"}}}
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"ron"}, Attribute: "name"}}}
 
@@ -179,21 +174,24 @@ func Test_matchesAnyRule_OneOfOperatorWithString(t *testing.T) {
 	subjectAttributesSam["name"] = "sam"
 
 	var tests = MatchesAnyRuleTest{
-		{subjectAttributesJohn, []rule{oneOfRule}, true},
-		{subjectAttributesRon, []rule{oneOfRule}, true},
-		{subjectAttributesSam, []rule{oneOfRule}, false},
-		{subjectAttributesRon, []rule{notOneOfRule}, false},
-		{subjectAttributesSam, []rule{notOneOfRule}, true},
+		{subjectAttributesJohn, []rule{oneOfRule}, oneOfRule, ""},
+		{subjectAttributesRon, []rule{oneOfRule}, oneOfRule, ""},
+		{subjectAttributesSam, []rule{oneOfRule}, rule{}, expectedNoMatchErrorMessage},
+		{subjectAttributesRon, []rule{notOneOfRule}, rule{}, expectedNoMatchErrorMessage},
+		{subjectAttributesSam, []rule{notOneOfRule}, notOneOfRule, ""},
 	}
 
 	for _, tt := range tests {
-		result := matchesAnyRule(tt.a, tt.b)
+		result, err := findMatchingRule(tt.a, tt.b)
 
-		assert.Equal(t, tt.want, result)
+		assert.Equal(t, tt.expectedRule, result)
+		if (tt.expectedError != "") {
+			assert.EqualError(t, err, tt.expectedError)
+		}
 	}
 }
 
-func Test_matchesAnyRule_OneOfOperatorWithNumber(t *testing.T) {
+func Test_findMatchingRule_OneOfOperatorWithNumber(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"14", "15.11", "15"}, Attribute: "number"}}}
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"10"}, Attribute: "number"}}}
 
@@ -213,18 +211,21 @@ func Test_matchesAnyRule_OneOfOperatorWithNumber(t *testing.T) {
 	subjectAttributes4["number"] = 11
 
 	var tests = MatchesAnyRuleTest{
-		{subjectAttributes0, []rule{oneOfRule}, true},
-		{subjectAttributes1, []rule{oneOfRule}, true},
-		{subjectAttributes2, []rule{oneOfRule}, true},
-		{subjectAttributes3, []rule{oneOfRule}, false},
-		{subjectAttributes3, []rule{notOneOfRule}, false},
-		{subjectAttributes4, []rule{notOneOfRule}, true},
+		{subjectAttributes0, []rule{oneOfRule}, oneOfRule, ""},
+		{subjectAttributes1, []rule{oneOfRule}, oneOfRule, ""},
+		{subjectAttributes2, []rule{oneOfRule}, oneOfRule, ""},
+		{subjectAttributes3, []rule{oneOfRule}, rule{}, expectedNoMatchErrorMessage},
+		{subjectAttributes3, []rule{notOneOfRule}, rule{}, expectedNoMatchErrorMessage},
+		{subjectAttributes4, []rule{notOneOfRule}, notOneOfRule, ""},
 	}
 
 	for _, tt := range tests {
-		result := matchesAnyRule(tt.a, tt.b)
+		result, err := findMatchingRule(tt.a, tt.b)
 
-		assert.Equal(t, tt.want, result)
+		assert.Equal(t, tt.expectedRule, result)
+		if (tt.expectedError != "") {
+			assert.EqualError(t, err, tt.expectedError)
+		}
 	}
 }
 

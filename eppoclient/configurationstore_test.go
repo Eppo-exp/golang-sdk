@@ -7,12 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var testAllocationMap = make(map[string]Allocation)
+
 var testExp = experimentConfiguration{
-	SubjectShards:   1000,
-	PercentExposure: 1,
-	Enabled:         true,
-	Variations:      []Variation{},
-	Name:            "randomization_algo",
+	SubjectShards: 1000,
+	Enabled:       true,
+	Allocations:   testAllocationMap,
+	Rules:         []rule{},
+	Name:          "randomization_algo",
 }
 
 const TEST_MAX_SIZE = 10

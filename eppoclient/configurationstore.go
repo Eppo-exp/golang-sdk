@@ -13,18 +13,23 @@ type configurationStore struct {
 }
 
 type Variation struct {
-	Name       string `json:"name"`
-	ShardRange shardRange
+	Name       string     `json:"name"`
+	Value      Value      `json:"value"`
+	ShardRange shardRange `json:"shardRange"`
+}
+
+type Allocation struct {
+	PercentExposure float32     `json:"percentExposure"`
+	Variations      []Variation `json:"variations"`
 }
 
 type experimentConfiguration struct {
-	Name            string      `json:"name"`
-	PercentExposure float32     `json:"percentExposure"`
-	Enabled         bool        `json:"enabled"`
-	SubjectShards   int         `json:"subjectShards"`
-	Variations      []Variation `json:"variations"`
-	Rules           []rule      `json:"rules"`
-	Overrides       dictionary  `json:"overrides"`
+	Name          string                `json:"name"`
+	Enabled       bool                  `json:"enabled"`
+	SubjectShards int                   `json:"subjectShards"`
+	Rules         []rule                `json:"rules"`
+	Overrides     dictionary            `json:"overrides"`
+	Allocations   map[string]Allocation `json:"allocations"`
 }
 
 func newConfigurationStore(maxEntries int) *configurationStore {
