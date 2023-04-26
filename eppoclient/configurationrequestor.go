@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const RAC_ENDPOINT = "/randomized_assignment/v2/config"
+const RAC_ENDPOINT = "/randomized_assignment/v3/config"
 
 type iConfigRequestor interface {
 	GetConfiguration(key string) (experimentConfiguration, error)

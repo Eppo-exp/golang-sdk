@@ -61,7 +61,7 @@ func initFixture() string {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch strings.TrimSpace(r.URL.Path) {
-		case "/randomized_assignment/v2/config":
+		case "/randomized_assignment/v3/config":
 			json.NewEncoder(w).Encode(testResponse)
 		default:
 			http.NotFoundHandler().ServeHTTP(w, r)

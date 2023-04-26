@@ -1,6 +1,6 @@
 package eppoclient
 
-const default_base_url = "https://eppo.cloud/api"
+const default_base_url = "https://fscdn.eppo.cloud/api"
 
 type Config struct {
 	BaseUrl          string
