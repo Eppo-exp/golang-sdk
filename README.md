@@ -23,7 +23,6 @@ This version of the SDK is compatible with Go v1.18 and above.
 	func main() {
 		eppoClient = eppoclient.InitClient(eppoclient.Config{
 			ApiKey:           "<your_api_key>",
-			BaseUrl:          "<base_url>", // optional, default https://fscdn.eppo.cloud/api
 			AssignmentLogger: eppoclient.AssignmentLogger{},
 		})
 	}
@@ -31,7 +30,7 @@ This version of the SDK is compatible with Go v1.18 and above.
 	func someBLFunc() {
 		assignment, _ := eppoClient.GetAssignment("subject-1", "experiment_5", sbjAttrs)
 
-		if assigment == "control" {
+		if assignment == "control" {
 			// do something
 		}
 	}
