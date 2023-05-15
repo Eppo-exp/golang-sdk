@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-const REQUEST_TIMEOUT_SECONDS = time.Duration(1 * time.Second)
+const REQUEST_TIMEOUT_SECONDS = time.Duration(10 * time.Second)
 
 type httpClient struct {
 	baseUrl        string

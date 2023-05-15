@@ -14,7 +14,6 @@
 	func main() {
 		eppoClient = eppoclient.InitClient(eppoclient.Config{
 			ApiKey:           "<your_api_key>",
-			BaseUrl:          "<eppo.cloud>",
 			AssignmentLogger: eppoclient.AssignmentLogger{},
 		})
 	}
@@ -22,7 +21,7 @@
 	func apiEndpoint() {
 		assignment, _ := eppoClient.GetAssignment("subject-1", "experiment_5", sbjAttrs)
 
-		if assigment == "control" {
+		if assignment == "control" {
 			// do something
 		}
 	}
