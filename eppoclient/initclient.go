@@ -4,7 +4,7 @@ package eppoclient
 
 import "net/http"
 
-var __version__ = "1.2.0"
+var __version__ = "1.2.1"
 
 // InitClient is required to start polling of experiments configurations and create
 // an instance of EppoClient, which could be used to get assignments information.
