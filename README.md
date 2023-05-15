@@ -23,7 +23,7 @@ This version of the SDK is compatible with Go v1.18 and above.
 	func main() {
 		eppoClient = eppoclient.InitClient(eppoclient.Config{
 			ApiKey:           "<your_api_key>",
-			BaseUrl:          "<base_url>", // optional, default https://eppo.cloud/api
+			BaseUrl:          "<base_url>", // optional, default https://fscdn.eppo.cloud/api
 			AssignmentLogger: eppoclient.AssignmentLogger{},
 		})
 	}
