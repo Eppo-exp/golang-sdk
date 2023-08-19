@@ -4,11 +4,12 @@ type dictionary map[string]interface{}
 
 type testData struct {
 	Experiment             string                  `json:"experiment"`
+	ValueType              string                  `json:"valueType"`
 	PercentExposure        float32                 `json:"percentExposure"`
 	Variations             []testDataVariations    `json:"variations"`
 	Subjects               []string                `json:"subjects"`
 	SubjectsWithAttributes []subjectWithAttributes `json:"subjectsWithAttributes"`
-	ExpectedAssignments    []string                `json:"expectedAssignments"`
+	ExpectedAssignments    []Value                 `json:"expectedAssignments"`
 }
 
 type subjectWithAttributes struct {

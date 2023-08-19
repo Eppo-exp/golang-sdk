@@ -28,7 +28,27 @@ func newEppoClient(configRequestor iConfigRequestor, assignmentLogger IAssignmen
 	return ec
 }
 
-func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
+func (ec *EppoClient) GetBoolAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (bool, error) {
+	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, BoolType)
+	return variation.boolValue, err
+}
+
+func (ec *EppoClient) GetNumericAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (float64, error) {
+	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, NumericType)
+	return variation.numericValue, err
+}
+
+func (ec *EppoClient) GetStringAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
+	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, StringType)
+	return variation.stringValue, err
+}
+
+func (ec *EppoClient) GetJSONAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
+	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, StringType)
+	return variation.stringValue, err
+}
+
+func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAttributes dictionary, valueType ValueType) (Value, error) {
 	if subjectKey == "" {
 		panic("no subject key provided")
 	}
@@ -39,30 +59,29 @@ func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAt
 
 	config, err := ec.configRequestor.GetConfiguration(flagKey)
 	if err != nil {
-		return "", err
+		return Null(), err
 	}
 
-	override := getSubjectVariationOverride(config, subjectKey)
-
-	if override != "" {
+	override := getSubjectVariationOverride(config, subjectKey, valueType)
+	if override != Null() {
 		return override, nil
 	}
 
 	// Check if disabled
 	if !config.Enabled {
-		return "", errors.New("the experiment or flag is not enabled")
+		return Null(), errors.New("the experiment or flag is not enabled")
 	}
 
 	// Find matching rule
 	rule, err := findMatchingRule(subjectAttributes, config.Rules)
 	if err != nil {
-		return "", err
+		return Null(), err
 	}
 
 	// Check if in sample population
 	allocation := config.Allocations[rule.AllocationKey]
 	if !isInExperimentSample(subjectKey, flagKey, config.SubjectShards, allocation.PercentExposure) {
-		return "", errors.New("subject not part of the sample population")
+		return Null(), errors.New("subject not part of the sample population")
 	}
 
 	// Get assigned variation
@@ -77,7 +96,7 @@ func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAt
 		}
 	}
 
-	assignedVariation := variationShard.Value.StringValue()
+	assignedVariation := variationShard.Value
 
 	assignmentEvent := AssignmentEvent{
 		Experiment:        flagKey,
@@ -108,15 +127,15 @@ func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAt
 	return assignedVariation, nil
 }
 
-func getSubjectVariationOverride(experimentConfig experimentConfiguration, subject string) string {
+func getSubjectVariationOverride(experimentConfig experimentConfiguration, subject string, valueType ValueType) Value {
 	hash := md5.Sum([]byte(subject))
 	hashOutput := hex.EncodeToString(hash[:])
 
 	if val, ok := experimentConfig.Overrides[hashOutput]; ok {
-		return val.(string)
+		return val
 	}
 
-	return ""
+	return Null()
 }
 
 func isInExperimentSample(subjectKey string, flagKey string, subjectShards int, percentExposure float32) bool {

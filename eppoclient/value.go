@@ -7,15 +7,17 @@ import (
 type ValueType int
 
 const (
-	NullType   ValueType = iota
-	BoolType   ValueType = iota
-	StringType ValueType = iota
+	NullType    ValueType = iota
+	BoolType    ValueType = iota
+	NumericType ValueType = iota
+	StringType  ValueType = iota
 )
 
 type Value struct {
-	valueType ValueType
-	stringValue string
-	boolValue   bool
+	valueType    ValueType
+	boolValue    bool
+	numericValue float64
+	stringValue  string
 }
 
 func Null() Value {
@@ -26,12 +28,16 @@ func Bool(value bool) Value {
 	return Value{valueType: BoolType, boolValue: value}
 }
 
+func Numeric(value float64) Value {
+	return Value{valueType: NumericType, numericValue: value}
+}
+
 func String(value string) Value {
 	return Value{valueType: StringType, stringValue: value}
 }
 
 func (receiver *Value) UnmarshalJSON(data []byte) error {
-	var valueInterface interface{}  
+	var valueInterface interface{}
 	if err := json.Unmarshal(data, &valueInterface); err != nil {
 		return err
 	}

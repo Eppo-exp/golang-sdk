@@ -14,7 +14,7 @@ type configurationStore struct {
 
 type Variation struct {
 	Name       string     `json:"name"`
-	Value      Value      `json:"value"`
+	Value      Value      `json:"typedValue"`
 	ShardRange shardRange `json:"shardRange"`
 }
 
@@ -28,7 +28,7 @@ type experimentConfiguration struct {
 	Enabled       bool                  `json:"enabled"`
 	SubjectShards int                   `json:"subjectShards"`
 	Rules         []rule                `json:"rules"`
-	Overrides     dictionary            `json:"overrides"`
+	Overrides     map[string]Value      `json:"typedOverrides"`
 	Allocations   map[string]Allocation `json:"allocations"`
 }
 

@@ -17,7 +17,7 @@ testDataDir := eppoclient/test-data/
 test-data:
 	rm -rf $(testDataDir)
 	mkdir -p $(testDataDir)
-	gsutil cp gs://sdk-test-data/rac-experiments-v2.json $(testDataDir)
+	gsutil cp gs://sdk-test-data/rac-experiments-v3.json $(testDataDir)
 	gsutil cp -r gs://sdk-test-data/assignment-v2 $(testDataDir)
 
 test: test-data

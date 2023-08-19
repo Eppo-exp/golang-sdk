@@ -15,7 +15,7 @@ import (
 )
 
 const TEST_DATA_DIR = "test-data/assignment-v2"
-const MOCK_RAC_RESPONSE_FILE = "test-data/rac-experiments-v2.json"
+const MOCK_RAC_RESPONSE_FILE = "test-data/rac-experiments-v3.json"
 
 var tstData = []testData{}
 
@@ -31,28 +31,58 @@ func Test_e2e(t *testing.T) {
 		expName := experiment.Experiment
 
 		assignments := []string{}
+		numericAssignments := []float64{}
 
 		for _, subject := range experiment.SubjectsWithAttributes {
-			assignment, err := client.GetAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
+			if experiment.ValueType == "numeric" {
+				numericAssignment, err := client.GetNumericAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
+				if err == nil {
+					assert.Nil(t, err)
+				}
 
-			if assignment != "" {
-				assert.Nil(t, err)
+				numericAssignments = append(numericAssignments, numericAssignment)
+			} else {
+				assignment, err := client.GetStringAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
+				if assignment != "" {
+					assert.Nil(t, err)
+				}
+
+				assignments = append(assignments, assignment)
 			}
-
-			assignments = append(assignments, assignment)
 		}
 
 		for _, subject := range experiment.Subjects {
-			assignment, err := client.GetAssignment(subject, expName, dictionary{})
+			if experiment.ValueType == "numeric" {
+				numericAssignment, err := client.GetNumericAssignment(subject, expName, dictionary{})
+				if err == nil {
+					assert.Nil(t, err)
+				}
 
-			if assignment != "" {
-				assert.Nil(t, err)
+				numericAssignments = append(numericAssignments, numericAssignment)
+			} else {
+				assignment, err := client.GetStringAssignment(subject, expName, dictionary{})
+
+				if assignment != "" {
+					assert.Nil(t, err)
+				}
+
+				assignments = append(assignments, assignment)
 			}
-
-			assignments = append(assignments, assignment)
 		}
 
-		assert.Equal(t, experiment.ExpectedAssignments, assignments)
+		if experiment.ValueType == "numeric" {
+			expectedAssignments := []float64{}
+			for _, assignment := range experiment.ExpectedAssignments {
+				expectedAssignments = append(expectedAssignments, assignment.numericValue)
+			}
+			assert.Equal(t, expectedAssignments, numericAssignments)
+		} else {
+			expectedAssignments := []string{}
+			for _, assignment := range experiment.ExpectedAssignments {
+				expectedAssignments = append(expectedAssignments, assignment.stringValue)
+			}
+			assert.Equal(t, expectedAssignments, assignments)
+		}
 	}
 }
 
