@@ -33,7 +33,7 @@ func Test_e2e(t *testing.T) {
 		assignments := []string{}
 
 		for _, subject := range experiment.SubjectsWithAttributes {
-			assignment, err := client.GetAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
+			assignment, err := client.GetStringAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
 
 			if assignment != "" {
 				assert.Nil(t, err)
@@ -43,7 +43,7 @@ func Test_e2e(t *testing.T) {
 		}
 
 		for _, subject := range experiment.Subjects {
-			assignment, err := client.GetAssignment(subject, expName, dictionary{})
+			assignment, err := client.GetStringAssignment(subject, expName, dictionary{})
 
 			if assignment != "" {
 				assert.Nil(t, err)

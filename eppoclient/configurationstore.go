@@ -28,7 +28,7 @@ type experimentConfiguration struct {
 	Enabled       bool                  `json:"enabled"`
 	SubjectShards int                   `json:"subjectShards"`
 	Rules         []rule                `json:"rules"`
-	Overrides     dictionary            `json:"overrides"`
+	Overrides     dictionary            `json:"typedOverrides"`
 	Allocations   map[string]Allocation `json:"allocations"`
 }
 
