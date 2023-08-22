@@ -3,7 +3,7 @@ package eppoclient
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -62,7 +62,10 @@ func initFixture() string {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch strings.TrimSpace(r.URL.Path) {
 		case "/randomized_assignment/v3/config":
-			json.NewEncoder(w).Encode(testResponse)
+			err := json.NewEncoder(w).Encode(testResponse)
+			if err != nil {
+				fmt.Println("Error encoding test response")
+			}
 		default:
 			http.NotFoundHandler().ServeHTTP(w, r)
 		}
@@ -72,7 +75,7 @@ func initFixture() string {
 }
 
 func getTestData() dictionary {
-	files, err := ioutil.ReadDir(TEST_DATA_DIR)
+	files, err := os.ReadDir(TEST_DATA_DIR)
 
 	if err != nil {
 		panic("test cases files read error")
@@ -88,15 +91,22 @@ func getTestData() dictionary {
 		defer jsonFile.Close()
 
 		testCaseDict := testData{}
-		byteValue, _ := ioutil.ReadAll(jsonFile)
-		json.Unmarshal(byteValue, &testCaseDict)
+		byteValue, _ := io.ReadAll(jsonFile)
+		err = json.Unmarshal(byteValue, &testCaseDict)
+		if err != nil {
+			fmt.Println("Error reading test case file")
+		}
 		tstData = append(tstData, testCaseDict)
 	}
 
 	var racResponseData map[string]interface{}
 	racResponseJsonFile, _ := os.Open(MOCK_RAC_RESPONSE_FILE)
-	byteValue, _ := ioutil.ReadAll(racResponseJsonFile)
+	byteValue, _ := io.ReadAll(racResponseJsonFile)
 	err = json.Unmarshal(byteValue, &racResponseData)
+	if err != nil {
+		fmt.Println("Error reading mock RAC response file")
+	}
+
 	if err != nil {
 		fmt.Println("Error reading mock RAC response file")
 	}
