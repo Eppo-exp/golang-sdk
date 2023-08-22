@@ -1,6 +1,6 @@
 # Eppo SDK for Golang
 
-Eppoclient is a client sdk for `eppo.cloud` randomization API.
+EppoClient is a client sdk for the `eppo.cloud` randomization API.
 It is used to retrieve the experiments data and put it to in-memory cache, and then get assignments information.
 
 ## Getting Started
@@ -8,7 +8,7 @@ It is used to retrieve the experiments data and put it to in-memory cache, and t
 Refer to our [SDK documentation](https://docs.geteppo.com/feature-flags/sdks/server-sdks/go) for how to install and use the SDK.
 
 ## Supported Go Versions
-This version of the SDK is compatible with Go v1.18 and above.
+This version of the SDK is compatible with Go v1.19 and above.
 
 ## Example
 
@@ -28,7 +28,7 @@ This version of the SDK is compatible with Go v1.18 and above.
 	}
 
 	func someBLFunc() {
-		assignment, _ := eppoClient.GetAssignment("subject-1", "experiment_5", sbjAttrs)
+		assignment, _ := eppoClient.GetStringAssignment("subject-1", "experiment_5", sbjAttrs)
 
 		if assignment == "control" {
 			// do something
