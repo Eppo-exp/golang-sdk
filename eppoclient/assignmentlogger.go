@@ -8,7 +8,7 @@ type IAssignmentLogger interface {
 
 type AssignmentEvent struct {
 	Experiment        string
-	Variation         string
+	Variation         Value
 	Subject           string
 	Timestamp         string
 	SubjectAttributes dictionary
