@@ -189,15 +189,14 @@ func Test_AssignSubjectWithAttributesAndRules(t *testing.T) {
 
 func Test_WithSubjectInOverrides(t *testing.T) {
 	var tests = []struct {
-		name               string
-		input              Value
-		inputUnwantedValue Value
-		inputValueType     ValueType
-		want               Value
+		name                        string
+		inputVariationOverrideValue Value
+		inputValueType              ValueType
+		want                        Value
 	}{
-		{"string override", String("override-variation"), String("foo"), StringType, String("override-variation")},
-		{"numeric override", Numeric(5), Numeric(100), NumericType, Numeric(5)},
-		{"boolean override", Bool(true), Bool(false), BoolType, Bool(true)},
+		{"string override", String("variation-value"), StringType, String("variation-value")},
+		{"numeric override", Numeric(5), NumericType, Numeric(5)},
+		{"boolean override", Bool(true), BoolType, Bool(true)},
 	}
 
 	for _, tt := range tests {
@@ -208,10 +207,10 @@ func Test_WithSubjectInOverrides(t *testing.T) {
 
 			var mockConfigRequestor = new(mockConfigRequestor)
 			var mockVariations = []Variation{
-				{Name: "control", Value: tt.inputUnwantedValue, ShardRange: shardRange{Start: 0, End: 100}},
+				{Name: "control", ShardRange: shardRange{Start: 0, End: 100}},
 			}
 			overrides := make(map[string]Value)
-			overrides["d6d7705392bc7af633328bea8c4c6904"] = tt.input
+			overrides["d6d7705392bc7af633328bea8c4c6904"] = tt.inputVariationOverrideValue
 			var allocations = make(map[string]Allocation)
 			allocations[defaultAllocationKey] = Allocation{
 				PercentExposure: 1,
@@ -232,16 +231,19 @@ func Test_WithSubjectInOverrides(t *testing.T) {
 			switch tt.inputValueType {
 			case StringType:
 				assignment, _ := client.GetStringAssignment("user-1", "experiment-key-1", dictionary{})
+
 				if assignment != tt.want.stringValue {
 					t.Errorf("got %s, want %s", assignment, tt.want.stringValue)
 				}
 			case NumericType:
 				assignment, _ := client.GetNumericAssignment("user-1", "experiment-key-1", dictionary{})
+
 				if assignment != tt.want.numericValue {
 					t.Errorf("got %T, want %T", assignment, tt.want.numericValue)
 				}
 			case BoolType:
 				assignment, _ := client.GetBoolAssignment("user-1", "experiment-key-1", dictionary{})
+
 				if assignment != tt.want.boolValue {
 					t.Errorf("got %t, want %t", assignment, tt.want.boolValue)
 				}
