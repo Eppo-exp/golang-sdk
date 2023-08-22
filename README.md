@@ -15,7 +15,7 @@ This version of the SDK is compatible with Go v1.19 and above.
 
 ```
 	import (
-		"github.com/Eppo-exp/golang-sdk/eppoclient"
+		"github.com/Eppo-exp/golang-sdk/v2/eppoclient"
 	)
 
 	var eppoClient = &eppoclient.EppoClient{}
