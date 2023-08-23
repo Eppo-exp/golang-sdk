@@ -1,12 +1,11 @@
 /*
-	eppoclient is a client sdk for eppo.cloud randomization API
-	It is used to retrieve the experiments data and put it to in-memory cache,
-	and then get assignments information.
+	EppoClient is a client sdk for the `eppo.cloud` randomization API.
+	It is used to retrieve the experiments data and put it to in-memory cache, and then get assignments information.
 
 	Usage:
 
 	import (
-		"github.com/Eppo-exp/golang-sdk/eppoclient"
+		"github.com/Eppo-exp/golang-sdk/v2/eppoclient"
 	)
 
 	var eppoClient = &eppoclient.EppoClient{}
@@ -19,7 +18,7 @@
 	}
 
 	func apiEndpoint() {
-		assignment, _ := eppoClient.GetAssignment("subject-1", "experiment_5", sbjAttrs)
+		assignment, _ := eppoClient.GetStringAssignment("subject-1", "experiment_5", sbjAttrs)
 
 		if assignment == "control" {
 			// do something
