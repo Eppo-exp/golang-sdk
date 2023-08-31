@@ -28,6 +28,11 @@ func newEppoClient(configRequestor iConfigRequestor, assignmentLogger IAssignmen
 	return ec
 }
 
+// GetAssignment is maintained for backwards capability. It will return a string value for the assignment.
+func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
+	return ec.GetStringAssignment(subjectKey, flagKey, subjectAttributes)
+}
+
 func (ec *EppoClient) GetBoolAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (bool, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, BoolType)
 	return variation.boolValue, err
