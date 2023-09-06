@@ -30,58 +30,103 @@ func Test_e2e(t *testing.T) {
 	for _, experiment := range tstData {
 		expName := experiment.Experiment
 
-		assignments := []string{}
+		booleanAssignments := []bool{}
+		jsonAssignments := []string{}
 		numericAssignments := []float64{}
+		stringAssignments := []string{}
 
 		for _, subject := range experiment.SubjectsWithAttributes {
-			if experiment.ValueType == "numeric" {
+			switch experiment.ValueType {
+			case "bool":
+				booleanAssignment, err := client.GetBoolAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
+				if err == nil {
+					assert.Nil(t, err)
+				}
+
+				booleanAssignments = append(booleanAssignments, booleanAssignment)
+			case "numeric":
 				numericAssignment, err := client.GetNumericAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
 				if err == nil {
 					assert.Nil(t, err)
 				}
 
 				numericAssignments = append(numericAssignments, numericAssignment)
-			} else {
-				assignment, err := client.GetStringAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
-				if assignment != "" {
+			case "json":
+				jsonAssignment, err := client.GetJSONAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
+				if err == nil {
 					assert.Nil(t, err)
 				}
 
-				assignments = append(assignments, assignment)
+				jsonAssignments = append(jsonAssignments, jsonAssignment)
+			case "string":
+				stringAssignment, err := client.GetStringAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
+				if err == nil {
+					assert.Nil(t, err)
+				}
+
+				stringAssignments = append(stringAssignments, stringAssignment)
 			}
 		}
 
 		for _, subject := range experiment.Subjects {
-			if experiment.ValueType == "numeric" {
+			switch experiment.ValueType {
+			case "bool":
+				booleanAssignment, err := client.GetBoolAssignment(subject, expName, dictionary{})
+				if err == nil {
+					assert.Nil(t, err)
+				}
+
+				booleanAssignments = append(booleanAssignments, booleanAssignment)
+			case "json":
+				jsonAssignment, err := client.GetJSONAssignment(subject, expName, dictionary{})
+				if err == nil {
+					assert.Nil(t, err)
+				}
+
+				jsonAssignments = append(jsonAssignments, jsonAssignment)
+			case "numeric":
 				numericAssignment, err := client.GetNumericAssignment(subject, expName, dictionary{})
 				if err == nil {
 					assert.Nil(t, err)
 				}
 
 				numericAssignments = append(numericAssignments, numericAssignment)
-			} else {
-				assignment, err := client.GetStringAssignment(subject, expName, dictionary{})
+			case "string":
+				stringAssignment, err := client.GetStringAssignment(subject, expName, dictionary{})
 
-				if assignment != "" {
+				if err == nil {
 					assert.Nil(t, err)
 				}
 
-				assignments = append(assignments, assignment)
+				stringAssignments = append(stringAssignments, stringAssignment)
 			}
 		}
 
-		if experiment.ValueType == "numeric" {
+		switch experiment.ValueType {
+		case "bool":
+			expectedAssignments := []bool{}
+			for _, assignment := range experiment.ExpectedAssignments {
+				expectedAssignments = append(expectedAssignments, assignment.boolValue)
+			}
+			assert.Equal(t, expectedAssignments, booleanAssignments)
+		case "json":
+			expectedAssignments := []string{}
+			for _, assignment := range experiment.ExpectedAssignments {
+				expectedAssignments = append(expectedAssignments, assignment.stringValue)
+			}
+			assert.Equal(t, expectedAssignments, jsonAssignments)
+		case "numeric":
 			expectedAssignments := []float64{}
 			for _, assignment := range experiment.ExpectedAssignments {
 				expectedAssignments = append(expectedAssignments, assignment.numericValue)
 			}
 			assert.Equal(t, expectedAssignments, numericAssignments)
-		} else {
+		case "string":
 			expectedAssignments := []string{}
 			for _, assignment := range experiment.ExpectedAssignments {
 				expectedAssignments = append(expectedAssignments, assignment.stringValue)
 			}
-			assert.Equal(t, expectedAssignments, assignments)
+			assert.Equal(t, expectedAssignments, stringAssignments)
 		}
 	}
 }
