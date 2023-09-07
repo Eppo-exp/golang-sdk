@@ -42,6 +42,7 @@ func (receiver *Value) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	*receiver = castInterfaceToValue(valueInterface)
+
 	return nil
 }
 
@@ -64,6 +65,9 @@ func castInterfaceToValue(valueInterface interface{}) Value {
 			return Null()
 		}
 		return Bool(*v)
+	case map[string]interface{}:
+		out, _ := json.Marshal(&v)
+		return String(string(out))
 	case string:
 		return String(v)
 	case *string:

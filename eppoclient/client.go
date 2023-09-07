@@ -48,7 +48,7 @@ func (ec *EppoClient) GetStringAssignment(subjectKey string, flagKey string, sub
 	return variation.stringValue, err
 }
 
-func (ec *EppoClient) GetJSONAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
+func (ec *EppoClient) GetJSONStringAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, StringType)
 	return variation.stringValue, err
 }
