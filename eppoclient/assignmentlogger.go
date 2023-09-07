@@ -8,6 +8,8 @@ type IAssignmentLogger interface {
 
 type AssignmentEvent struct {
 	Experiment        string
+	FeatureFlag       string
+	Allocation        string
 	Variation         Value
 	Subject           string
 	Timestamp         string
