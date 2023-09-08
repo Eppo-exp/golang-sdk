@@ -37,7 +37,7 @@ func Test_e2e(t *testing.T) {
 
 		for _, subject := range experiment.SubjectsWithAttributes {
 			switch experiment.ValueType {
-			case "bool":
+			case "boolean":
 				booleanAssignment, err := client.GetBoolAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
 				if err == nil {
 					assert.Nil(t, err)
@@ -52,7 +52,7 @@ func Test_e2e(t *testing.T) {
 
 				numericAssignments = append(numericAssignments, numericAssignment)
 			case "json":
-				jsonAssignment, err := client.GetJSONAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
+				jsonAssignment, err := client.GetJSONStringAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
 				if err == nil {
 					assert.Nil(t, err)
 				}
@@ -70,7 +70,7 @@ func Test_e2e(t *testing.T) {
 
 		for _, subject := range experiment.Subjects {
 			switch experiment.ValueType {
-			case "bool":
+			case "boolean":
 				booleanAssignment, err := client.GetBoolAssignment(subject, expName, dictionary{})
 				if err == nil {
 					assert.Nil(t, err)
@@ -78,7 +78,7 @@ func Test_e2e(t *testing.T) {
 
 				booleanAssignments = append(booleanAssignments, booleanAssignment)
 			case "json":
-				jsonAssignment, err := client.GetJSONAssignment(subject, expName, dictionary{})
+				jsonAssignment, err := client.GetJSONStringAssignment(subject, expName, dictionary{})
 				if err == nil {
 					assert.Nil(t, err)
 				}
@@ -103,7 +103,7 @@ func Test_e2e(t *testing.T) {
 		}
 
 		switch experiment.ValueType {
-		case "bool":
+		case "boolean":
 			expectedAssignments := []bool{}
 			for _, assignment := range experiment.ExpectedAssignments {
 				expectedAssignments = append(expectedAssignments, assignment.boolValue)
