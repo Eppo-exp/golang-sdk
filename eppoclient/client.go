@@ -103,8 +103,11 @@ func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAt
 
 	assignedVariation := variationShard.Value
 
+	// Log assignment
 	assignmentEvent := AssignmentEvent{
-		Experiment:        flagKey,
+		Experiment:        flagKey + "-" + rule.AllocationKey,
+		FeatureFlag:       flagKey,
+		Allocation:        rule.AllocationKey,
 		Variation:         assignedVariation,
 		Subject:           subjectKey,
 		Timestamp:         time.Now().String(),
