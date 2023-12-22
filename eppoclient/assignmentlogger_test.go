@@ -10,24 +10,7 @@ import (
 func TestAssignmentEventSerialization(t *testing.T) {
 	// Create a test case with each type
 	testCases := []AssignmentEvent{
-		{
-			Experiment:  "testExperiment",
-			FeatureFlag: "testFeatureFlag",
-			Allocation:  "testAllocation",
-			Variation:   Bool(true),
-			Subject:     "testSubject",
-			Timestamp:   "testTimestamp",
-			// SubjectAttributes: dictionary{"testKey": String("testValue")},
-		},
-		{
-			Experiment:  "testExperiment",
-			FeatureFlag: "testFeatureFlag",
-			Allocation:  "testAllocation",
-			Variation:   Numeric(123.45),
-			Subject:     "testSubject",
-			Timestamp:   "testTimestamp",
-			//SubjectAttributes: dictionary{"testKey": String("testValue")},
-		},
+		// empty subject attributes
 		{
 			Experiment:  "testExperiment",
 			FeatureFlag: "testFeatureFlag",
@@ -35,16 +18,42 @@ func TestAssignmentEventSerialization(t *testing.T) {
 			Variation:   String("testVariation"),
 			Subject:     "testSubject",
 			Timestamp:   "testTimestamp",
-			//SubjectAttributes: dictionary{"testKey": String("testValue")},
 		},
 		{
-			Experiment:  "testExperiment",
-			FeatureFlag: "testFeatureFlag",
-			Allocation:  "testAllocation",
-			Variation:   String("{\"foo\":\"bar\",\"car\":\"far\"}"),
-			Subject:     "testSubject",
-			Timestamp:   "testTimestamp",
-			//SubjectAttributes: dictionary{"testKey": String("testValue")},
+			Experiment:        "testExperiment",
+			FeatureFlag:       "testFeatureFlag",
+			Allocation:        "testAllocation",
+			Variation:         Bool(true),
+			Subject:           "testSubject",
+			Timestamp:         "testTimestamp",
+			SubjectAttributes: dictionary{"testKey": "testValue"},
+		},
+		{
+			Experiment:        "testExperiment",
+			FeatureFlag:       "testFeatureFlag",
+			Allocation:        "testAllocation",
+			Variation:         Numeric(123.45),
+			Subject:           "testSubject",
+			Timestamp:         "testTimestamp",
+			SubjectAttributes: dictionary{"testKey": "testValue"},
+		},
+		{
+			Experiment:        "testExperiment",
+			FeatureFlag:       "testFeatureFlag",
+			Allocation:        "testAllocation",
+			Variation:         String("testVariation"),
+			Subject:           "testSubject",
+			Timestamp:         "testTimestamp",
+			SubjectAttributes: dictionary{"testKey": "testValue"},
+		},
+		{
+			Experiment:        "testExperiment",
+			FeatureFlag:       "testFeatureFlag",
+			Allocation:        "testAllocation",
+			Variation:         String("{\"foo\":\"bar\",\"car\":\"far\"}"),
+			Subject:           "testSubject",
+			Timestamp:         "testTimestamp",
+			SubjectAttributes: dictionary{"testKey": "testValue"},
 		},
 	}
 
