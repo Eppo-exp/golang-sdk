@@ -57,54 +57,58 @@ func (v Value) GetNumericValue() float64 {
 }
 
 func (v Value) MarshalJSON() ([]byte, error) {
-	type Alias Value // Alias to avoid recursion
-	return json.Marshal(&struct {
-		ValueType ValueType `json:"valueType"`
-		*Alias
-	}{
-		ValueType: v.ValueType,
-		Alias:     (*Alias)(&v),
-	})
+	switch v.ValueType {
+	case BoolType:
+		return json.Marshal(v.BoolValue)
+	case NumericType:
+		return json.Marshal(v.NumericValue)
+	case StringType:
+		return json.Marshal(v.StringValue)
+	case NullType:
+		return json.Marshal(nil)
+	default:
+		return nil, fmt.Errorf("unsupported value type")
+	}
 }
 
 func (v *Value) UnmarshalJSON(data []byte) error {
-	// Temporary struct to capture the JSON structure
-	var temp struct {
-		ValueType    ValueType `json:"valueType"`
-		BoolValue    *bool     `json:"boolValue,omitempty"`
-		NumericValue *float64  `json:"numericValue,omitempty"`
-		StringValue  *string   `json:"stringValue,omitempty"`
-	}
-
-	if err := json.Unmarshal(data, &temp); err != nil {
+	// Unmarshal the data into an interface{} to check its type
+	var typedValue interface{}
+	if err := json.Unmarshal(data, &typedValue); err != nil {
 		return err
 	}
 
-	v.ValueType = temp.ValueType
-
-	switch temp.ValueType {
-	case BoolType:
-		if temp.BoolValue != nil {
-			v.BoolValue = *temp.BoolValue
-		} else {
-			return fmt.Errorf("bool value missing for BoolType")
+	// Determine the type of typedValue and set the Value struct accordingly
+	switch value := typedValue.(type) {
+	case Value:
+		*v = value
+	case *Value:
+		if v == nil {
+			*v = Null()
 		}
-	case NumericType:
-		if temp.NumericValue != nil {
-			v.NumericValue = *temp.NumericValue
-		} else {
-			return fmt.Errorf("numeric value missing for NumericType")
+	case string:
+		*v = String(value)
+	case *string:
+		if v == nil {
+			*v = Null()
 		}
-	case StringType:
-		if temp.StringValue != nil {
-			v.StringValue = *temp.StringValue
-		} else {
-			return fmt.Errorf("string value missing for StringType")
+	case float64:
+		// JSON numbers are float64 by default
+		*v = Numeric(value)
+	case bool:
+		*v = Bool(value)
+	case *bool:
+		if v == nil {
+			*v = Null()
 		}
-	case NullType:
-		// Handle NullType if necessary
+		*v = Bool(*value)
+	case map[string]interface{}:
+		out, _ := json.Marshal(typedValue)
+		*v = String(string(out))
+	case nil:
+		*v = Null()
 	default:
-		return fmt.Errorf("unsupported value type")
+		*v = Null()
 	}
 
 	return nil
