@@ -103,7 +103,10 @@ func (v *Value) UnmarshalJSON(data []byte) error {
 		}
 		*v = Bool(*value)
 	case map[string]interface{}:
-		out, _ := json.Marshal(typedValue)
+		out, err := json.Marshal(typedValue)
+		if err != nil {
+			return err
+		}
 		*v = String(string(out))
 	case nil:
 		*v = Null()
