@@ -37,7 +37,15 @@ func TestAssignmentEventSerialization(t *testing.T) {
 			Timestamp:   "testTimestamp",
 			//SubjectAttributes: dictionary{"testKey": String("testValue")},
 		},
-		// todo: test JSON variation types.
+		{
+			Experiment:  "testExperiment",
+			FeatureFlag: "testFeatureFlag",
+			Allocation:  "testAllocation",
+			Variation:   String("{\"foo\":\"bar\",\"car\":\"far\"}"),
+			Subject:     "testSubject",
+			Timestamp:   "testTimestamp",
+			//SubjectAttributes: dictionary{"testKey": String("testValue")},
+		},
 	}
 
 	for _, original := range testCases {
