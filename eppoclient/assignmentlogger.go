@@ -7,13 +7,13 @@ type IAssignmentLogger interface {
 }
 
 type AssignmentEvent struct {
-	Experiment        string
-	FeatureFlag       string
-	Allocation        string
-	Variation         Value
-	Subject           string
-	Timestamp         string
-	SubjectAttributes dictionary
+	Experiment        string     `json:"experiment"`
+	FeatureFlag       string     `json:"featureFlag"`
+	Allocation        string     `json:"allocation"`
+	Variation         Value      `json:"variation"`
+	Subject           string     `json:"subject"`
+	Timestamp         string     `json:"timestamp"`
+	SubjectAttributes dictionary `json:"subjectAttributes,omitempty"`
 }
 
 type AssignmentLogger struct {

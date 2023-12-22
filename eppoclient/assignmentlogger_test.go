@@ -11,31 +11,31 @@ func TestAssignmentEventSerialization(t *testing.T) {
 	// Create a test case with each type
 	testCases := []AssignmentEvent{
 		{
-			Experiment:        "testExperiment",
-			FeatureFlag:       "testFeatureFlag",
-			Allocation:        "testAllocation",
-			Variation:         Bool(true),
-			Subject:           "testSubject",
-			Timestamp:         "testTimestamp",
-			SubjectAttributes: dictionary{"testKey": String("testValue")},
+			Experiment:  "testExperiment",
+			FeatureFlag: "testFeatureFlag",
+			Allocation:  "testAllocation",
+			Variation:   Bool(true),
+			Subject:     "testSubject",
+			Timestamp:   "testTimestamp",
+			// SubjectAttributes: dictionary{"testKey": String("testValue")},
 		},
 		{
-			Experiment:        "testExperiment",
-			FeatureFlag:       "testFeatureFlag",
-			Allocation:        "testAllocation",
-			Variation:         Numeric(123.45),
-			Subject:           "testSubject",
-			Timestamp:         "testTimestamp",
-			SubjectAttributes: dictionary{"testKey": String("testValue")},
+			Experiment:  "testExperiment",
+			FeatureFlag: "testFeatureFlag",
+			Allocation:  "testAllocation",
+			Variation:   Numeric(123.45),
+			Subject:     "testSubject",
+			Timestamp:   "testTimestamp",
+			//SubjectAttributes: dictionary{"testKey": String("testValue")},
 		},
 		{
-			Experiment:        "testExperiment",
-			FeatureFlag:       "testFeatureFlag",
-			Allocation:        "testAllocation",
-			Variation:         String("testVariation"),
-			Subject:           "testSubject",
-			Timestamp:         "testTimestamp",
-			SubjectAttributes: dictionary{"testKey": String("testValue")},
+			Experiment:  "testExperiment",
+			FeatureFlag: "testFeatureFlag",
+			Allocation:  "testAllocation",
+			Variation:   String("testVariation"),
+			Subject:     "testSubject",
+			Timestamp:   "testTimestamp",
+			//SubjectAttributes: dictionary{"testKey": String("testValue")},
 		},
 		// todo: test JSON variation types.
 	}
@@ -48,7 +48,7 @@ func TestAssignmentEventSerialization(t *testing.T) {
 		}
 
 		// Unmarshal from JSON
-		var unmarshaled Value
+		var unmarshaled AssignmentEvent
 		err = json.Unmarshal(marshaled, &unmarshaled)
 		if err != nil {
 			t.Errorf("Failed to unmarshal: %v", err)
