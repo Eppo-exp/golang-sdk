@@ -232,20 +232,20 @@ func Test_WithSubjectInOverrides(t *testing.T) {
 			case StringType:
 				assignment, _ := client.GetStringAssignment("user-1", "experiment-key-1", dictionary{})
 
-				if assignment != tt.want.stringValue {
-					t.Errorf("got %s, want %s", assignment, tt.want.stringValue)
+				if assignment != tt.want.StringValue {
+					t.Errorf("got %s, want %s", assignment, tt.want.StringValue)
 				}
 			case NumericType:
 				assignment, _ := client.GetNumericAssignment("user-1", "experiment-key-1", dictionary{})
 
-				if assignment != tt.want.numericValue {
-					t.Errorf("got %T, want %T", assignment, tt.want.numericValue)
+				if assignment != tt.want.NumericValue {
+					t.Errorf("got %T, want %T", assignment, tt.want.NumericValue)
 				}
 			case BoolType:
 				assignment, _ := client.GetBoolAssignment("user-1", "experiment-key-1", dictionary{})
 
-				if assignment != tt.want.boolValue {
-					t.Errorf("got %t, want %t", assignment, tt.want.boolValue)
+				if assignment != tt.want.BoolValue {
+					t.Errorf("got %t, want %t", assignment, tt.want.BoolValue)
 				}
 
 			}

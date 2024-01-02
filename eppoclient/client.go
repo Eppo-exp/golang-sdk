@@ -35,22 +35,22 @@ func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAt
 
 func (ec *EppoClient) GetBoolAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (bool, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, BoolType)
-	return variation.boolValue, err
+	return variation.BoolValue, err
 }
 
 func (ec *EppoClient) GetNumericAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (float64, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, NumericType)
-	return variation.numericValue, err
+	return variation.NumericValue, err
 }
 
 func (ec *EppoClient) GetStringAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, StringType)
-	return variation.stringValue, err
+	return variation.StringValue, err
 }
 
 func (ec *EppoClient) GetJSONStringAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, StringType)
-	return variation.stringValue, err
+	return variation.StringValue, err
 }
 
 func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAttributes dictionary, valueType ValueType) (Value, error) {

@@ -2,6 +2,7 @@ package eppoclient
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type ValueType int
@@ -14,79 +15,104 @@ const (
 )
 
 type Value struct {
-	valueType    ValueType
-	boolValue    bool
-	numericValue float64
-	stringValue  string
+	ValueType    ValueType `json:"valueType"`
+	BoolValue    bool      `json:"boolValue,omitempty"`
+	NumericValue float64   `json:"numericValue,omitempty"`
+	StringValue  string    `json:"stringValue,omitempty"`
 }
 
 func Null() Value {
-	return Value{valueType: NullType}
+	return Value{ValueType: NullType}
 }
 
 func Bool(value bool) Value {
-	return Value{valueType: BoolType, boolValue: value}
+	return Value{ValueType: BoolType, BoolValue: value}
 }
 
 func Numeric(value float64) Value {
-	return Value{valueType: NumericType, numericValue: value}
+	return Value{ValueType: NumericType, NumericValue: value}
 }
 
 func String(value string) Value {
-	return Value{valueType: StringType, stringValue: value}
+	return Value{ValueType: StringType, StringValue: value}
 }
 
-func (receiver *Value) UnmarshalJSON(data []byte) error {
-	var valueInterface interface{}
-	if err := json.Unmarshal(data, &valueInterface); err != nil {
-		return err
-	}
-	*receiver = castInterfaceToValue(valueInterface)
-
-	return nil
+func (v Value) GetBoolValue() bool {
+	return v.ValueType == BoolType && v.BoolValue
 }
 
-func castInterfaceToValue(valueInterface interface{}) Value {
-	if valueInterface == nil {
-		return Null()
-	}
-	switch v := valueInterface.(type) {
-	case Value:
-		return v
-	case *Value:
-		if v == nil {
-			return Null()
-		}
-		return *v
-	case bool:
-		return Bool(v)
-	case *bool:
-		if v == nil {
-			return Null()
-		}
-		return Bool(*v)
-	case map[string]interface{}:
-		out, _ := json.Marshal(&v)
-		return String(string(out))
-	case string:
-		return String(v)
-	case *string:
-		if v == nil {
-			return Null()
-		}
-		return String(*v)
-	default:
-		return Null()
-	}
-}
-
-func (v Value) StringValue() string {
-	if v.valueType == StringType {
-		return v.stringValue
+func (v Value) GetStringValue() string {
+	if v.ValueType == StringType {
+		return v.StringValue
 	}
 	return ""
 }
 
-func (v Value) BoolValue() bool {
-	return v.valueType == BoolType && v.boolValue
+func (v Value) GetNumericValue() float64 {
+	if v.ValueType == NumericType {
+		return v.NumericValue
+	}
+
+	return 0
+}
+
+func (v Value) MarshalJSON() ([]byte, error) {
+	switch v.ValueType {
+	case BoolType:
+		return json.Marshal(v.BoolValue)
+	case NumericType:
+		return json.Marshal(v.NumericValue)
+	case StringType:
+		return json.Marshal(v.StringValue)
+	case NullType:
+		return json.Marshal(nil)
+	default:
+		return nil, fmt.Errorf("unsupported value type")
+	}
+}
+
+func (v *Value) UnmarshalJSON(data []byte) error {
+	// Unmarshal the data into an interface{} to check its type
+	var typedValue interface{}
+	if err := json.Unmarshal(data, &typedValue); err != nil {
+		return err
+	}
+
+	// Determine the type of typedValue and set the Value struct accordingly
+	switch value := typedValue.(type) {
+	case Value:
+		*v = value
+	case *Value:
+		if v == nil {
+			*v = Null()
+		}
+	case string:
+		*v = String(value)
+	case *string:
+		if v == nil {
+			*v = Null()
+		}
+	case float64:
+		// JSON numbers are float64 by default
+		*v = Numeric(value)
+	case bool:
+		*v = Bool(value)
+	case *bool:
+		if v == nil {
+			*v = Null()
+		}
+		*v = Bool(*value)
+	case map[string]interface{}:
+		out, err := json.Marshal(typedValue)
+		if err != nil {
+			return err
+		}
+		*v = String(string(out))
+	case nil:
+		*v = Null()
+	default:
+		*v = Null()
+	}
+
+	return nil
 }

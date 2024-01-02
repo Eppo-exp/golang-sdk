@@ -106,25 +106,25 @@ func Test_e2e(t *testing.T) {
 		case "boolean":
 			expectedAssignments := []bool{}
 			for _, assignment := range experiment.ExpectedAssignments {
-				expectedAssignments = append(expectedAssignments, assignment.boolValue)
+				expectedAssignments = append(expectedAssignments, assignment.BoolValue)
 			}
 			assert.Equal(t, expectedAssignments, booleanAssignments)
 		case "json":
 			expectedAssignments := []string{}
 			for _, assignment := range experiment.ExpectedAssignments {
-				expectedAssignments = append(expectedAssignments, assignment.stringValue)
+				expectedAssignments = append(expectedAssignments, assignment.StringValue)
 			}
 			assert.Equal(t, expectedAssignments, jsonAssignments)
 		case "numeric":
 			expectedAssignments := []float64{}
 			for _, assignment := range experiment.ExpectedAssignments {
-				expectedAssignments = append(expectedAssignments, assignment.numericValue)
+				expectedAssignments = append(expectedAssignments, assignment.NumericValue)
 			}
 			assert.Equal(t, expectedAssignments, numericAssignments)
 		case "string":
 			expectedAssignments := []string{}
 			for _, assignment := range experiment.ExpectedAssignments {
-				expectedAssignments = append(expectedAssignments, assignment.stringValue)
+				expectedAssignments = append(expectedAssignments, assignment.StringValue)
 			}
 			assert.Equal(t, expectedAssignments, stringAssignments)
 		}
