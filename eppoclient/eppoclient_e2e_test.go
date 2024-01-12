@@ -20,19 +20,12 @@ const MOCK_RAC_RESPONSE_FILE = "test-data/rac-experiments-v3.json"
 
 var tstData = []testData{}
 
-type MyTestAssignmentLogger struct {
-	mock.Mock
-}
-
-func (o *MyTestAssignmentLogger) LogAssignment(event AssignmentEvent) {
-	o.Called(event)
-}
-
 func Test_e2e(t *testing.T) {
 	serverUrl := initFixture()
 
-	mockAssignmentLogger := &MyTestAssignmentLogger{}
-	client := InitClient(Config{BaseUrl: serverUrl, ApiKey: "dummy", AssignmentLogger: mockAssignmentLogger})
+	mockLogger := new(mockLogger)
+	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
+	client := InitClient(Config{BaseUrl: serverUrl, ApiKey: "dummy", AssignmentLogger: mockLogger})
 
 	time.Sleep(2 * time.Second)
 
@@ -138,7 +131,7 @@ func Test_e2e(t *testing.T) {
 			assert.Equal(t, expectedAssignments, stringAssignments)
 		}
 
-		mockAssignmentLogger.AssertCalled(t, "LogAssignment", mock.Anything)
+		mockLogger.AssertCalled(t, "LogAssignment", mock.Anything)
 	}
 }
 
