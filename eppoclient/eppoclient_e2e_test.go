@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 const TEST_DATA_DIR = "test-data/assignment-v2"
@@ -22,8 +23,9 @@ var tstData = []testData{}
 func Test_e2e(t *testing.T) {
 	serverUrl := initFixture()
 
-	asmntLogger := &AssignmentLogger{}
-	client := InitClient(Config{BaseUrl: serverUrl, ApiKey: "dummy", AssignmentLogger: asmntLogger})
+	mockLogger := new(mockLogger)
+	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
+	client := InitClient(Config{BaseUrl: serverUrl, ApiKey: "dummy", AssignmentLogger: mockLogger})
 
 	time.Sleep(2 * time.Second)
 
@@ -128,6 +130,8 @@ func Test_e2e(t *testing.T) {
 			}
 			assert.Equal(t, expectedAssignments, stringAssignments)
 		}
+
+		mockLogger.AssertCalled(t, "LogAssignment", mock.Anything)
 	}
 }
 
