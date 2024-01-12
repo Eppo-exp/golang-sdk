@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 const TEST_DATA_DIR = "test-data/assignment-v2"
@@ -19,11 +20,19 @@ const MOCK_RAC_RESPONSE_FILE = "test-data/rac-experiments-v3.json"
 
 var tstData = []testData{}
 
+type MyTestAssignmentLogger struct {
+	mock.Mock
+}
+
+func (o *MyTestAssignmentLogger) LogAssignment(event AssignmentEvent) {
+	o.Called(event)
+}
+
 func Test_e2e(t *testing.T) {
 	serverUrl := initFixture()
 
-	asmntLogger := &AssignmentLogger{}
-	client := InitClient(Config{BaseUrl: serverUrl, ApiKey: "dummy", AssignmentLogger: asmntLogger})
+	mockAssignmentLogger := &MyTestAssignmentLogger{}
+	client := InitClient(Config{BaseUrl: serverUrl, ApiKey: "dummy", AssignmentLogger: mockAssignmentLogger})
 
 	time.Sleep(2 * time.Second)
 
@@ -128,6 +137,8 @@ func Test_e2e(t *testing.T) {
 			}
 			assert.Equal(t, expectedAssignments, stringAssignments)
 		}
+
+		mockAssignmentLogger.AssertCalled(t, "LogAssignment", mock.Anything)
 	}
 }
 
