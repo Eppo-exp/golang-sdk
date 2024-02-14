@@ -32,3 +32,12 @@ test: test-data
 
 lint:
 	golangci-lint run
+
+## profile-memory - Run test and generate memory profile
+profile-memory:
+	echo "Run test and generate memory profile"
+
+## profile-memory-compare - Compare two memory profiles
+## example: make profile-memory-compare BASE_FILE=memprofile1.out FEAT_FILE=memprofile2.out
+profile-memory-compare:
+	echo "Compare two memory profiles"
