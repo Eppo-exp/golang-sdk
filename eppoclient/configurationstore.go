@@ -1,15 +1,12 @@
 package eppoclient
 
 import (
-	"encoding/json"
 	"errors"
-	"log"
-
-	lru "github.com/hashicorp/golang-lru"
+	lru "github.com/hashicorp/golang-lru/v2"
 )
 
 type configurationStore struct {
-	cache *lru.Cache
+	cache *lru.Cache[string, experimentConfiguration]
 }
 
 type Variation struct {
@@ -35,7 +32,7 @@ type experimentConfiguration struct {
 func newConfigurationStore(maxEntries int) *configurationStore {
 	var configStore = &configurationStore{}
 
-	lruCache, err := lru.New(maxEntries)
+	lruCache, err := lru.New[string, experimentConfiguration](maxEntries)
 	configStore.cache = lruCache
 
 	if err != nil {
@@ -46,29 +43,18 @@ func newConfigurationStore(maxEntries int) *configurationStore {
 }
 
 func (cs *configurationStore) GetConfiguration(key string) (expConfig experimentConfiguration, err error) {
-	value, _ := cs.cache.Get(key)
-
-	if value == nil {
-		err = errors.New("not found")
-		return
+	// Attempt to get the value from the cache
+	expConfig, ok := cs.cache.Get(key)
+	if !ok {
+		return expConfig, errors.New("configuration not found in cache")
 	}
 
-	jsonString, err := json.Marshal(value)
-
-	if err != nil {
-		log.Fatalln("Incorrect json")
-	}
-	ec := experimentConfiguration{}
-	err = json.Unmarshal(jsonString, &ec)
-	if err != nil {
-		log.Fatalln("failure to unmarshal json into experiment configuration")
-	}
-
-	return ec, nil
+	return expConfig, nil
 }
 
-func (cs *configurationStore) SetConfigurations(configs dictionary) {
-	for key, element := range configs {
-		cs.cache.Add(key, element)
+func (cs *configurationStore) SetConfigurations(configs map[string]experimentConfiguration) error {
+	for key, config := range configs {
+		cs.cache.Add(key, config)
 	}
+	return nil
 }
