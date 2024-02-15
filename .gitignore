@@ -18,3 +18,4 @@ eppoclient/test-data
 .vscode
 
 .DS_Store
+memprofile*

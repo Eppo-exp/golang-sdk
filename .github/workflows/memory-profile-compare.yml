@@ -1,0 +1,64 @@
+name: Memory Profile Comparison
+
+on: pull_request
+
+jobs:
+  compare-memory-profiles:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout main branch
+      uses: actions/checkout@v2
+      with:
+        ref: 'main'
+    
+    - name: Set up Go (main branch)
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.19'
+    
+    - name: Generate memory profile for main branch
+      run: make profile-memory OUTFILE_SUFFIX=.main
+      
+    - name: Save main branch memory profile
+      uses: actions/upload-artifact@v2
+      with:
+        name: memprofile-main
+        path: | 
+          memprofile.main.out
+          memprofile.main.text 
+    
+    - name: Checkout feature branch
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
+    
+    - name: Set up Go (feature branch)
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.19'
+    
+    - name: Generate memory profile for feature branch
+      run: make profile-memory OUTFILE_SUFFIX=.feat
+      
+    - name: Save feat branch memory profile
+      uses: actions/upload-artifact@v2
+      with:
+        name: memprofile-feat
+        path: | 
+          memprofile.feat.out
+          memprofile.feat.text 
+
+    - name: Download main branch memory profile
+      uses: actions/download-artifact@v2
+      with:
+        name: memprofile-main
+        path: .
+    
+    - name: Compare memory profiles
+      run: make profile-memory-compare BASE_FILE=memprofile.main.out COMPARE_FILE=memprofile.feat.out > memory-profile-comparison.text
+    
+    - name: Upload comparison result
+      uses: actions/upload-artifact@v2
+      with:
+        name: memory-profile-comparison
+        path: memory-profile-comparison.text
