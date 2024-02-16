@@ -3,7 +3,6 @@ package eppoclient
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -103,23 +102,6 @@ func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAt
 
 	assignedVariation := variationShard.Value
 
-	// Log assignment
-	assignmentEvent := AssignmentEvent{
-		Experiment:        flagKey + "-" + rule.AllocationKey,
-		FeatureFlag:       flagKey,
-		Allocation:        rule.AllocationKey,
-		Variation:         assignedVariation,
-		Subject:           subjectKey,
-		Timestamp:         time.Now().String(),
-		SubjectAttributes: subjectAttributes,
-	}
-
-	_, jsonErr := json.Marshal(assignmentEvent)
-
-	if jsonErr != nil {
-		panic("incorrect json")
-	}
-
 	func() {
 		// need to catch panics from Logger and continue
 		defer func() {
@@ -129,6 +111,16 @@ func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAt
 			}
 		}()
 
+		// Log assignment
+		assignmentEvent := AssignmentEvent{
+			Experiment:        flagKey + "-" + rule.AllocationKey,
+			FeatureFlag:       flagKey,
+			Allocation:        rule.AllocationKey,
+			Variation:         assignedVariation,
+			Subject:           subjectKey,
+			Timestamp:         time.Now().String(),
+			SubjectAttributes: subjectAttributes,
+		}
 		ec.logger.LogAssignment(assignmentEvent)
 	}()
 

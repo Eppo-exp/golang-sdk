@@ -3,7 +3,7 @@ module github.com/Eppo-exp/golang-sdk/v2
 go 1.19
 
 require (
-	github.com/hashicorp/golang-lru v0.5.4
+	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/stretchr/testify v1.8.0
 )
 

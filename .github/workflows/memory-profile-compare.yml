@@ -54,9 +54,15 @@ jobs:
         name: memprofile-main
         path: .
     
-    - name: Compare memory profiles
-      run: make profile-memory-compare BASE_FILE=memprofile.main.out COMPARE_FILE=memprofile.feat.out > memory-profile-comparison.text
+    - name: Display structure of downloaded files
+      run: ls -R
     
+    - name: Compare memory profiles
+      run: make profile-memory-compare BASE_FILE=memprofile.main.out FEAT_FILE=memprofile.feat.out > memory-profile-comparison.text
+    
+    - name: Show memory profile comparison
+      run: cat memory-profile-comparison.text
+
     - name: Upload comparison result
       uses: actions/upload-artifact@v2
       with:
