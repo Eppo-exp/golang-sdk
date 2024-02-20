@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	semver "github.com/Masterminds/semver/v3"
 )
 
 type condition struct {
@@ -27,7 +29,7 @@ func findMatchingRule(subjectAttributes dictionary, rules []rule) (rule, error) 
 		}
 	}
 
-	return rule{}, errors.New("No matching rule")
+	return rule{}, errors.New("no matching rule")
 }
 
 func matchesRule(subjectAttributes dictionary, rule rule) bool {
@@ -56,6 +58,19 @@ func evaluateCondition(subjectAttributes dictionary, condition condition) bool {
 		} else if condition.Operator == "NOT_ONE_OF" {
 			return isNotOneOf(subjectValue, convertToStringArray(condition.Value))
 		} else {
+			// If the condition value is a string, we try to convert it to a semver.
+			// If it's not a semver, we fall back to numeric comparison.
+			subjectValueStr, subjectValueStrOk := subjectValue.(string)
+			conditionValueStr, conditionValueStrOk := condition.Value.(string)
+
+			if subjectValueStrOk && conditionValueStrOk {
+				subjectValueSemVer, subjectValueSemVerError := semver.NewVersion(subjectValueStr)
+				conditionValueSemVer, conditionValueSemVerError := semver.NewVersion(conditionValueStr)
+				if subjectValueSemVerError == nil && conditionValueSemVerError == nil {
+					return evaluateSemVerCondition(subjectValueSemVer, conditionValueSemVer, condition)
+				}
+			}
+
 			return evaluateNumericCondition(subjectValue, condition)
 		}
 	}
@@ -99,6 +114,21 @@ func getMatchingStringValues(attributeValue interface{}, conditionValue []string
 	}
 
 	return result
+}
+
+func evaluateSemVerCondition(subjectValue *semver.Version, conditionValue *semver.Version, condition condition) bool {
+	switch condition.Operator {
+	case "GT":
+		return subjectValue.GreaterThan(conditionValue)
+	case "GTE":
+		return subjectValue.GreaterThan(conditionValue) || subjectValue.Equal(conditionValue)
+	case "LT":
+		return subjectValue.LessThan(conditionValue)
+	case "LTE":
+		return subjectValue.LessThan(conditionValue) || subjectValue.Equal(conditionValue)
+	default:
+		panic("Incorrect condition operator")
+	}
 }
 
 func evaluateNumericCondition(subjectValue interface{}, condition condition) bool {
