@@ -17,7 +17,7 @@ var semverRule = rule{Conditions: []condition{greaterThanAppVersionCondition, le
 var matchesEmailCondition = condition{Operator: "MATCHES", Value: ".*@email.com", Attribute: "email"}
 var textRule = rule{AllocationKey: "allocation-key", Conditions: []condition{matchesEmailCondition}}
 var ruleWithEmptyConditions = rule{Conditions: []condition{}}
-var expectedNoMatchErrorMessage = "No matching rule"
+var expectedNoMatchErrorMessage = "no matching rule"
 
 func Test_findMatchingRule_withEmptyRules(t *testing.T) {
 	subjectAttributes := make(dictionary)
