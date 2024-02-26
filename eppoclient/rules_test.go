@@ -10,7 +10,7 @@ var greaterThanCondition = condition{Operator: "GT", Value: 10.0, Attribute: "ag
 var lessThanCondition = condition{Operator: "LT", Value: 100.0, Attribute: "age"}
 var numericRule = rule{Conditions: []condition{greaterThanCondition, lessThanCondition}}
 
-var greaterThanAppVersionCondition = condition{Operator: "GTE", Value: "1.0.0", Attribute: "appVersion"}
+var greaterThanAppVersionCondition = condition{Operator: "GTE", Value: "1.2.0", Attribute: "appVersion"}
 var lessThanAppVersionCondition = condition{Operator: "LT", Value: "2.2.0", Attribute: "appVersion"}
 var semverRule = rule{Conditions: []condition{greaterThanAppVersionCondition, lessThanAppVersionCondition}}
 
@@ -52,7 +52,7 @@ func Test_findMatchingRule_Success(t *testing.T) {
 func Test_findMatchingSemVerRule_Success(t *testing.T) {
 	subjectAttributes := make(dictionary)
 	subjectAttributes["age"] = 99.0
-	subjectAttributes["appVersion"] = "1.1.0"
+	subjectAttributes["appVersion"] = "1.15.0"
 
 	result, _ := findMatchingRule(subjectAttributes, []rule{semverRule})
 
@@ -287,18 +287,18 @@ func Test_isNotOneOf_Fail(t *testing.T) {
 
 func Test_evaluateNumericCondition_Success(t *testing.T) {
 	expected := false
-	result := evaluateNumericCondition(40, condition{Operator: "LT", Value: 30.0})
+	result := evaluateNumericCondition(40, 30.0, condition{Operator: "LT", Value: 30.0})
 
 	assert.Equal(t, expected, result)
 }
 
 func Test_evaluateNumericCondition_Fail(t *testing.T) {
 	expected := true
-	result := evaluateNumericCondition(25, condition{Operator: "LT", Value: 30.0})
+	result := evaluateNumericCondition(25, 30.0, condition{Operator: "LT", Value: 30.0})
 
 	assert.Equal(t, expected, result)
 }
 
 func Test_evaluateNumericCondition_IncorrectOperator(t *testing.T) {
-	assert.Panics(t, func() { evaluateNumericCondition(25, condition{Operator: "LTGT", Value: 30.0}) })
+	assert.Panics(t, func() { evaluateNumericCondition(25, 30.0, condition{Operator: "LTGT", Value: 30.0}) })
 }
