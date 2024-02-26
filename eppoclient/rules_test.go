@@ -10,10 +10,14 @@ var greaterThanCondition = condition{Operator: "GT", Value: 10.0, Attribute: "ag
 var lessThanCondition = condition{Operator: "LT", Value: 100.0, Attribute: "age"}
 var numericRule = rule{Conditions: []condition{greaterThanCondition, lessThanCondition}}
 
+var greaterThanAppVersionCondition = condition{Operator: "GTE", Value: "1.2.0", Attribute: "appVersion"}
+var lessThanAppVersionCondition = condition{Operator: "LT", Value: "2.2.0", Attribute: "appVersion"}
+var semverRule = rule{Conditions: []condition{greaterThanAppVersionCondition, lessThanAppVersionCondition}}
+
 var matchesEmailCondition = condition{Operator: "MATCHES", Value: ".*@email.com", Attribute: "email"}
 var textRule = rule{AllocationKey: "allocation-key", Conditions: []condition{matchesEmailCondition}}
 var ruleWithEmptyConditions = rule{Conditions: []condition{}}
-var expectedNoMatchErrorMessage = "No matching rule"
+var expectedNoMatchErrorMessage = "no matching rule"
 
 func Test_findMatchingRule_withEmptyRules(t *testing.T) {
 	subjectAttributes := make(dictionary)
@@ -43,6 +47,16 @@ func Test_findMatchingRule_Success(t *testing.T) {
 	result, _ := findMatchingRule(subjectAttributes, []rule{numericRule})
 
 	assert.Equal(t, numericRule, result)
+}
+
+func Test_findMatchingSemVerRule_Success(t *testing.T) {
+	subjectAttributes := make(dictionary)
+	subjectAttributes["age"] = 99.0
+	subjectAttributes["appVersion"] = "1.15.0"
+
+	result, _ := findMatchingRule(subjectAttributes, []rule{semverRule})
+
+	assert.Equal(t, semverRule, result)
 }
 
 func Test_findMatchingRule_NoAttributeForCondition(t *testing.T) {
@@ -83,9 +97,9 @@ func Test_findMatchingRule_NumericValueAndRegex(t *testing.T) {
 }
 
 type MatchesAnyRuleTest []struct {
-	a    dictionary
-	b    []rule
-	expectedRule rule
+	a             dictionary
+	b             []rule
+	expectedRule  rule
 	expectedError string
 }
 
@@ -133,7 +147,7 @@ func Test_findMatchingRule_OneOfOperatorCaseInsensitive(t *testing.T) {
 		result, err := findMatchingRule(tt.a, tt.b)
 
 		assert.Equal(t, tt.expectedRule, result)
-		if (tt.expectedError != "") {
+		if tt.expectedError != "" {
 			assert.EqualError(t, err, tt.expectedError)
 		}
 	}
@@ -185,7 +199,7 @@ func Test_findMatchingRule_OneOfOperatorWithString(t *testing.T) {
 		result, err := findMatchingRule(tt.a, tt.b)
 
 		assert.Equal(t, tt.expectedRule, result)
-		if (tt.expectedError != "") {
+		if tt.expectedError != "" {
 			assert.EqualError(t, err, tt.expectedError)
 		}
 	}
@@ -223,7 +237,7 @@ func Test_findMatchingRule_OneOfOperatorWithNumber(t *testing.T) {
 		result, err := findMatchingRule(tt.a, tt.b)
 
 		assert.Equal(t, tt.expectedRule, result)
-		if (tt.expectedError != "") {
+		if tt.expectedError != "" {
 			assert.EqualError(t, err, tt.expectedError)
 		}
 	}
@@ -273,18 +287,18 @@ func Test_isNotOneOf_Fail(t *testing.T) {
 
 func Test_evaluateNumericCondition_Success(t *testing.T) {
 	expected := false
-	result := evaluateNumericCondition(40, condition{Operator: "LT", Value: 30.0})
+	result := evaluateNumericCondition(40, 30.0, condition{Operator: "LT", Value: 30.0})
 
 	assert.Equal(t, expected, result)
 }
 
 func Test_evaluateNumericCondition_Fail(t *testing.T) {
 	expected := true
-	result := evaluateNumericCondition(25, condition{Operator: "LT", Value: 30.0})
+	result := evaluateNumericCondition(25, 30.0, condition{Operator: "LT", Value: 30.0})
 
 	assert.Equal(t, expected, result)
 }
 
 func Test_evaluateNumericCondition_IncorrectOperator(t *testing.T) {
-	assert.Panics(t, func() { evaluateNumericCondition(25, condition{Operator: "LTGT", Value: 30.0}) })
+	assert.Panics(t, func() { evaluateNumericCondition(25, 30.0, condition{Operator: "LTGT", Value: 30.0}) })
 }

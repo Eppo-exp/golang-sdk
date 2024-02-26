@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	semver "github.com/Masterminds/semver/v3"
 )
 
 type condition struct {
@@ -27,7 +29,7 @@ func findMatchingRule(subjectAttributes dictionary, rules []rule) (rule, error) 
 		}
 	}
 
-	return rule{}, errors.New("No matching rule")
+	return rule{}, errors.New("no matching rule")
 }
 
 func matchesRule(subjectAttributes dictionary, rule rule) bool {
@@ -41,25 +43,48 @@ func matchesRule(subjectAttributes dictionary, rule rule) bool {
 }
 
 func evaluateCondition(subjectAttributes dictionary, condition condition) bool {
-	subjectValue := subjectAttributes[condition.Attribute]
-
-	if subjectValue != nil {
-		if condition.Operator == "MATCHES" {
-			v := reflect.ValueOf(subjectValue)
-			if v.Kind() != reflect.String {
-				subjectValue = strconv.Itoa(subjectValue.(int))
-			}
-			r, _ := regexp.MatchString(condition.Value.(string), subjectValue.(string))
-			return r
-		} else if condition.Operator == "ONE_OF" {
-			return isOneOf(subjectValue, convertToStringArray(condition.Value))
-		} else if condition.Operator == "NOT_ONE_OF" {
-			return isNotOneOf(subjectValue, convertToStringArray(condition.Value))
-		} else {
-			return evaluateNumericCondition(subjectValue, condition)
-		}
+	subjectValue, exists := subjectAttributes[condition.Attribute]
+	if !exists {
+		return false
 	}
-	return false
+
+	switch condition.Operator {
+	case "MATCHES":
+		v := reflect.ValueOf(subjectValue)
+		if v.Kind() != reflect.String {
+			subjectValue = strconv.Itoa(subjectValue.(int))
+		}
+		r, _ := regexp.MatchString(condition.Value.(string), subjectValue.(string))
+		return r
+	case "ONE_OF":
+		return isOneOf(subjectValue, convertToStringArray(condition.Value))
+	case "NOT_ONE_OF":
+		return isNotOneOf(subjectValue, convertToStringArray(condition.Value))
+	default:
+		// Attempt to evaluate as numeric condition if both values are numeric.
+		subjectValueNumeric, isNumericSubject := subjectValue.(float64)        // Assuming float64 for general numeric comparison; adjust as needed.
+		conditionValueNumeric, isNumericCondition := condition.Value.(float64) // Same assumption as above.
+		if isNumericSubject && isNumericCondition {
+			return evaluateNumericCondition(subjectValueNumeric, conditionValueNumeric, condition)
+		}
+
+		// Attempt to compare using semantic versioning if both values are strings.
+		subjectValueStr, isStringSubject := subjectValue.(string)
+		conditionValueStr, isStringCondition := condition.Value.(string)
+		if isStringSubject && isStringCondition {
+			// Attempt to parse both values as semantic versions.
+			subjectSemVer, errSubject := semver.NewVersion(subjectValueStr)
+			conditionSemVer, errCondition := semver.NewVersion(conditionValueStr)
+
+			// If parsing succeeds, evaluate the semver condition.
+			if errSubject == nil && errCondition == nil {
+				return evaluateSemVerCondition(subjectSemVer, conditionSemVer, condition)
+			}
+		}
+
+		// Fallback logic if neither numeric nor semver comparison is applicable.
+		return false
+	}
 }
 
 func convertToStringArray(conditionValue interface{}) []string {
@@ -101,26 +126,31 @@ func getMatchingStringValues(attributeValue interface{}, conditionValue []string
 	return result
 }
 
-func evaluateNumericCondition(subjectValue interface{}, condition condition) bool {
-	v := reflect.ValueOf(subjectValue)
-
-	if v.Kind() == reflect.String {
-		return false
-	}
-
-	if v.Kind() == reflect.Int {
-		subjectValue = float64(subjectValue.(int))
-	}
-
+func evaluateSemVerCondition(subjectValue *semver.Version, conditionValue *semver.Version, condition condition) bool {
 	switch condition.Operator {
 	case "GT":
-		return subjectValue.(float64) > condition.Value.(float64)
+		return subjectValue.GreaterThan(conditionValue)
 	case "GTE":
-		return subjectValue.(float64) >= condition.Value.(float64)
+		return subjectValue.GreaterThan(conditionValue) || subjectValue.Equal(conditionValue)
 	case "LT":
-		return subjectValue.(float64) < condition.Value.(float64)
+		return subjectValue.LessThan(conditionValue)
 	case "LTE":
-		return subjectValue.(float64) <= condition.Value.(float64)
+		return subjectValue.LessThan(conditionValue) || subjectValue.Equal(conditionValue)
+	default:
+		panic("Incorrect condition operator")
+	}
+}
+
+func evaluateNumericCondition(subjectValue float64, conditionValue float64, condition condition) bool {
+	switch condition.Operator {
+	case "GT":
+		return subjectValue > conditionValue
+	case "GTE":
+		return subjectValue >= conditionValue
+	case "LT":
+		return subjectValue < conditionValue
+	case "LTE":
+		return subjectValue <= conditionValue
 	default:
 		panic("Incorrect condition operator")
 	}
