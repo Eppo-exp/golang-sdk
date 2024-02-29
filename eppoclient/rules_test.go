@@ -41,6 +41,8 @@ func Test_findMatchingRule_whenNoRulesMatch(t *testing.T) {
 }
 
 func Test_findMatchingRule_Success(t *testing.T) {
+	// both numeric and string wrapped numeric attributes must match.
+
 	// Test with a numeric value
 	subjectAttributes := make(dictionary)
 	subjectAttributes["age"] = 99.0
