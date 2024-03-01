@@ -61,10 +61,10 @@ func evaluateCondition(subjectAttributes dictionary, condition condition) bool {
 	case "NOT_ONE_OF":
 		return isNotOneOf(subjectValue, convertToStringArray(condition.Value))
 	default:
-		// Attempt to evaluate as numeric condition if both values are numeric.
-		subjectValueNumeric, isNumericSubject := subjectValue.(float64)        // Assuming float64 for general numeric comparison; adjust as needed.
-		conditionValueNumeric, isNumericCondition := condition.Value.(float64) // Same assumption as above.
-		if isNumericSubject && isNumericCondition {
+		// Attempt to coerce both values to float64 and compare them.
+		subjectValueNumeric, isNumericSubjectErr := ToFloat64(subjectValue)
+		conditionValueNumeric, isNumericConditionErr := ToFloat64(condition.Value)
+		if isNumericSubjectErr == nil && isNumericConditionErr == nil {
 			return evaluateNumericCondition(subjectValueNumeric, conditionValueNumeric, condition)
 		}
 
