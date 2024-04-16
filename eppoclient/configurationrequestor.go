@@ -40,11 +40,15 @@ func (ecr *experimentConfigurationRequestor) GetConfiguration(experimentKey stri
 }
 
 func (ecr *experimentConfigurationRequestor) FetchAndStoreConfigurations() {
-	result := ecr.httpClient.get(RAC_ENDPOINT)
+	result, err := ecr.httpClient.get(RAC_ENDPOINT)
+	if err != nil {
+		fmt.Println("Failed to fetch RAC response", err)
+		return
+	}
 	var wrapper racResponse
 
 	// Unmarshal JSON data directly into the wrapper struct
-	err := json.Unmarshal([]byte(result), &wrapper)
+	err = json.Unmarshal([]byte(result), &wrapper)
 	if err != nil {
 		fmt.Println("Failed to unmarshal RAC response JSON", result)
 		fmt.Println(err)
