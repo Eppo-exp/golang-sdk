@@ -50,6 +50,14 @@ func (hc *httpClient) get(resource string) (string, error) {
 
 	resp, err := hc.client.Do(req)
 	if err != nil {
+		// from https://golang.org/pkg/net/http/#Client.Do
+		//
+		// An error is returned if caused by client policy (such as
+		// CheckRedirect), or failure to speak HTTP (such as a network
+		// connectivity problem). A non-2xx status code doesn't cause an
+		// error.
+		//
+		// We should almost never expect to see this condition be executed.
 		return "", err // Return an empty string and the error
 	}
 	defer resp.Body.Close() // Ensure the response body is closed
