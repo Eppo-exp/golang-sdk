@@ -13,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 const TEST_DATA_DIR = "test-data/assignment-v2"
@@ -25,7 +26,9 @@ func Test_e2e(t *testing.T) {
 
 	mockLogger := new(mockLogger)
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
-	client := InitClient(Config{BaseUrl: serverUrl, ApiKey: "dummy", AssignmentLogger: mockLogger})
+	client, stopFn, err := NewClient(Config{BaseUrl: serverUrl, ApiKey: "dummy", AssignmentLogger: mockLogger})
+	require.NoError(t, err, "Failed to create client")
+	defer stopFn()
 
 	time.Sleep(2 * time.Second)
 
@@ -157,7 +160,7 @@ func getTestData() dictionary {
 	files, err := os.ReadDir(TEST_DATA_DIR)
 
 	if err != nil {
-		panic("test cases files read error")
+		panic(fmt.Sprintf("test cases files read error: %v", err))
 	}
 
 	for _, file := range files {

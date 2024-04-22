@@ -6,18 +6,22 @@ import (
 )
 
 type poller struct {
-	interval  int `default:"10"`
-	callback  func()
-	isStopped bool `default:"false"`
+	interval time.Duration
+	callback func()
+	stopChan chan struct{}
 }
 
-func newPoller(interval int, callback func()) *poller {
-	var pl = &poller{}
+const defaultPollInterval = 10 * time.Second
 
-	pl.interval = interval
-	pl.callback = callback
-
-	return pl
+func newPoller(interval time.Duration, callback func()) *poller {
+	if interval == 0 {
+		interval = defaultPollInterval
+	}
+	return &poller{
+		interval: interval,
+		callback: callback,
+		stopChan: make(chan struct{}),
+	}
 }
 
 func (p *poller) Start() {
@@ -29,20 +33,26 @@ func (p *poller) Start() {
 func (p *poller) poll() {
 	defer func() {
 		if err := recover(); err != nil {
+			fmt.Printf("Recovered from panic: %v\n", err)
 			p.Stop()
 		}
 	}()
 
+	ticker := time.NewTicker(p.interval)
+	defer ticker.Stop()
+
 	for {
-		if p.isStopped {
-			break
+
+		select {
+		case <-p.stopChan:
+			return
+		case <-ticker.C:
+			p.callback()
 		}
-		p.callback()
-		time.Sleep(time.Duration(p.interval) * time.Second)
 	}
 }
 
 func (p *poller) Stop() {
 	fmt.Println("Poller stopped")
-	p.isStopped = true
+	close(p.stopChan)
 }

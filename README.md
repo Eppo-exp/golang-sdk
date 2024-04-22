@@ -21,10 +21,17 @@ This version of the SDK is compatible with Go v1.19 and above.
 	var eppoClient = &eppoclient.EppoClient{}
 
 	func main() {
-		eppoClient = eppoclient.InitClient(eppoclient.Config{
+		eppoClient, stopFn, err := eppoclient.NewClient(eppoclient.Config{
 			ApiKey:           "<your_api_key>",
 			AssignmentLogger: eppoclient.AssignmentLogger{},
 		})
+        if err != nil {
+            fmt.Printf("init eppo client: %v", err)
+            return
+        }
+        defer stopFn()
+
+        // call the client
 	}
 
 	func someBLFunc() {

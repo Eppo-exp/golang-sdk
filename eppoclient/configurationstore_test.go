@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var testAllocationMap = make(map[string]Allocation)
@@ -20,8 +21,10 @@ var testExp = experimentConfiguration{
 const TEST_MAX_SIZE = 10
 
 func Test_GetConfiguration_unknownKey(t *testing.T) {
-	var store = newConfigurationStore(TEST_MAX_SIZE)
-	err := store.SetConfigurations(map[string]experimentConfiguration{
+	store, err := newConfigurationStore(TEST_MAX_SIZE)
+	require.NoError(t, err, "Failed to create configuration store")
+
+	err = store.SetConfigurations(map[string]experimentConfiguration{
 		"randomization_algo": testExp,
 	})
 
@@ -33,8 +36,10 @@ func Test_GetConfiguration_unknownKey(t *testing.T) {
 }
 
 func Test_GetConfiguration_knownKey(t *testing.T) {
-	var store = newConfigurationStore(TEST_MAX_SIZE)
-	err := store.SetConfigurations(map[string]experimentConfiguration{
+	store, err := newConfigurationStore(TEST_MAX_SIZE)
+	require.NoError(t, err, "Failed to create configuration store")
+
+	err = store.SetConfigurations(map[string]experimentConfiguration{
 		"randomization_algo": testExp,
 	})
 	assert.NoError(t, err)
@@ -47,8 +52,10 @@ func Test_GetConfiguration_knownKey(t *testing.T) {
 }
 
 func Test_GetConfiguration_evictsOldEntriesWhenMaxSizeExceeded(t *testing.T) {
-	var store = newConfigurationStore(TEST_MAX_SIZE)
-	err := store.SetConfigurations(map[string]experimentConfiguration{
+	store, err := newConfigurationStore(TEST_MAX_SIZE)
+	require.NoError(t, err, "Failed to create configuration store")
+
+	err = store.SetConfigurations(map[string]experimentConfiguration{
 		"item_to_be_evicted": testExp,
 	})
 	assert.NoError(t, err)

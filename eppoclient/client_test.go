@@ -1,7 +1,6 @@
 package eppoclient
 
 import (
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,12 +15,9 @@ func Test_AssignBlankExperiment(t *testing.T) {
 	var mockLogger = new(mockLogger)
 	client := newEppoClient(mockConfigRequestor, mockLogger)
 
-	assert.Panics(t, func() {
-		_, err := client.GetStringAssignment("subject-1", "", dictionary{})
-		if err != nil {
-			log.Println(err)
-		}
-	})
+	a, err := client.GetStringAssignment("subject-1", "", dictionary{})
+	assert.EqualError(t, err, "no flag key provided")
+	assert.Zero(t, a)
 }
 
 func Test_AssignBlankSubject(t *testing.T) {
@@ -29,12 +25,9 @@ func Test_AssignBlankSubject(t *testing.T) {
 	var mockLogger = new(mockLogger)
 	client := newEppoClient(mockConfigRequestor, mockLogger)
 
-	assert.Panics(t, func() {
-		_, err := client.GetStringAssignment("", "experiment-1", dictionary{})
-		if err != nil {
-			log.Println(err)
-		}
-	})
+	a, err := client.GetStringAssignment("", "experiment-1", dictionary{})
+	assert.EqualError(t, err, "no subject key provided")
+	assert.Zero(t, a)
 }
 
 func Test_SubjectNotInSample(t *testing.T) {

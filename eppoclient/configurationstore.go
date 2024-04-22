@@ -2,6 +2,7 @@ package eppoclient
 
 import (
 	"errors"
+
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
@@ -29,17 +30,17 @@ type experimentConfiguration struct {
 	Allocations   map[string]Allocation `json:"allocations"`
 }
 
-func newConfigurationStore(maxEntries int) *configurationStore {
+func newConfigurationStore(maxEntries int) (*configurationStore, error) {
 	var configStore = &configurationStore{}
 
 	lruCache, err := lru.New[string, experimentConfiguration](maxEntries)
 	configStore.cache = lruCache
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return configStore
+	return configStore, nil
 }
 
 func (cs *configurationStore) GetConfiguration(key string) (expConfig experimentConfiguration, err error) {

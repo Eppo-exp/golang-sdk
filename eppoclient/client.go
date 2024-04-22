@@ -19,7 +19,7 @@ type EppoClient struct {
 func newEppoClient(configRequestor iConfigRequestor, assignmentLogger IAssignmentLogger) *EppoClient {
 	var ec = &EppoClient{}
 
-	var poller = newPoller(10, configRequestor.FetchAndStoreConfigurations)
+	var poller = newPoller(defaultPollInterval, configRequestor.FetchAndStoreConfigurations)
 	ec.poller = *poller
 	ec.configRequestor = configRequestor
 	ec.logger = assignmentLogger
@@ -54,11 +54,11 @@ func (ec *EppoClient) GetJSONStringAssignment(subjectKey string, flagKey string,
 
 func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAttributes dictionary, valueType ValueType) (Value, error) {
 	if subjectKey == "" {
-		panic("no subject key provided")
+		return Null(), errors.New("no subject key provided")
 	}
 
 	if flagKey == "" {
-		panic("no flag key provided")
+		return Null(), errors.New("no flag key provided")
 	}
 
 	config, err := ec.configRequestor.GetConfiguration(flagKey)

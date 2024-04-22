@@ -1,5 +1,7 @@
 package eppoclient
 
+import "errors"
+
 const default_base_url = "https://fscdn.eppo.cloud/api"
 
 type Config struct {
@@ -8,12 +10,14 @@ type Config struct {
 	AssignmentLogger IAssignmentLogger
 }
 
-func (cfg *Config) validate() {
+func (cfg *Config) validate() error {
 	if cfg.ApiKey == "" {
-		panic("api key not set")
+		return errors.New("api key not set")
 	}
 
 	if cfg.BaseUrl == "" {
 		cfg.BaseUrl = default_base_url
 	}
+
+	return nil
 }

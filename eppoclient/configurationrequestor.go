@@ -2,6 +2,7 @@ package eppoclient
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -30,8 +31,7 @@ func newExperimentConfigurationRequestor(httpClient httpClient, configStore *con
 
 func (ecr *experimentConfigurationRequestor) GetConfiguration(experimentKey string) (experimentConfiguration, error) {
 	if ecr.httpClient.isUnauthorized {
-		// should we panic here or return an error?
-		panic("Unauthorized: please check your API key")
+		return experimentConfiguration{}, errors.New("Unauthorized: please check your API key")
 	}
 
 	result, err := ecr.configStore.GetConfiguration(experimentKey)
