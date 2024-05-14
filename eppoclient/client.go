@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"time"
 )
 
 // Client for eppo.cloud. Instance of this struct will be created on calling InitClient.
@@ -118,7 +117,7 @@ func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAt
 			Allocation:        rule.AllocationKey,
 			Variation:         assignedVariation,
 			Subject:           subjectKey,
-			Timestamp:         time.Now().String(),
+			Timestamp:         TimeNow(),
 			SubjectAttributes: subjectAttributes,
 		}
 		ec.logger.LogAssignment(assignmentEvent)
