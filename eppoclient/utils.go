@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 )
 
 type dictionary map[string]interface{}
@@ -49,4 +50,8 @@ func ToFloat64(val interface{}) (float64, error) {
 	default:
 		return 0, errors.New("value is neither a float64 nor a convertible string")
 	}
+}
+
+func TimeNow() string {
+	return time.Now().UTC().Format(time.RFC3339)
 }

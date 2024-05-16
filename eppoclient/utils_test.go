@@ -2,6 +2,7 @@ package eppoclient
 
 import (
 	"testing"
+	"time"
 )
 
 func TestToFloat64(t *testing.T) {
@@ -30,5 +31,13 @@ func TestToFloat64(t *testing.T) {
 				t.Errorf("ToFloat64(%v) = %v, want %v", tt.input, result, tt.expected)
 			}
 		})
+	}
+}
+
+func TestTimeNow(t *testing.T) {
+	result := TimeNow()
+	_, err := time.Parse(time.RFC3339, result)
+	if err != nil {
+		t.Errorf("TimeNow() = %v, want %v", result, "")
 	}
 }
