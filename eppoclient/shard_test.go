@@ -27,7 +27,7 @@ func Test_isShardInRange_Fail(t *testing.T) {
 	input := 5
 	inputRange := shardRange{Start: 1, End: 5}
 	expected := false
-	result := isShardInRange(input, inputRange)
+	result := isShardInRange(int64(input), inputRange)
 
 	assert.Equal(t, expected, result)
 }
@@ -36,7 +36,7 @@ func Test_isShardInRange_Success(t *testing.T) {
 	input := 3
 	inputRange := shardRange{Start: 1, End: 7}
 	expected := true
-	result := isShardInRange(input, inputRange)
+	result := isShardInRange(int64(input), inputRange)
 
 	assert.Equal(t, expected, result)
 }
