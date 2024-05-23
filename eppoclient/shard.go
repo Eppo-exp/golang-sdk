@@ -6,8 +6,8 @@ import (
 )
 
 type shardRange struct {
-	Start int `json:"start"`
-	End   int `json:"end"`
+	Start int64 `json:"start"`
+	End   int64 `json:"end"`
 }
 
 func getShard(input string, subjectShards int64) int64 {
@@ -17,6 +17,6 @@ func getShard(input string, subjectShards int64) int64 {
 	return intVal % subjectShards
 }
 
-func isShardInRange(shard int, shardRange shardRange) bool {
+func isShardInRange(shard int64, shardRange shardRange) bool {
 	return shard >= shardRange.Start && shard < shardRange.End
 }

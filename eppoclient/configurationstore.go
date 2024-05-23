@@ -22,7 +22,7 @@ type Allocation struct {
 type experimentConfiguration struct {
 	Name          string                `json:"name"`
 	Enabled       bool                  `json:"enabled"`
-	SubjectShards int                   `json:"subjectShards"`
+	SubjectShards int64                 `json:"subjectShards"`
 	Rules         []rule                `json:"rules"`
 	Overrides     map[string]Value      `json:"typedOverrides"`
 	Allocations   map[string]Allocation `json:"allocations"`
