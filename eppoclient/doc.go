@@ -1,6 +1,6 @@
 /*
 	EppoClient is a client sdk for the `eppo.cloud` randomization API.
-	It is used to retrieve the experiments data and put it to in-memory cache, and then get assignments information.
+	It is used to retrieve the experiments data and put it to in-memory store, and then get assignments information.
 
 	Usage:
 

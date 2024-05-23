@@ -59,6 +59,6 @@ func (ecr *experimentConfigurationRequestor) FetchAndStoreConfigurations() {
 	// Pass this map directly to SetConfigurations
 	err = ecr.configStore.SetConfigurations(wrapper.Flags)
 	if err != nil {
-		fmt.Println("Failed to set configurations in cache", err)
+		fmt.Println("Failed to set configurations in configuration store", err)
 	}
 }

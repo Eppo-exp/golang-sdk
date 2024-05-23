@@ -13,7 +13,7 @@ func InitClient(config Config) *EppoClient {
 	sdkParams := SDKParams{apiKey: config.ApiKey, sdkName: "go", sdkVersion: __version__}
 
 	httpClient := newHttpClient(config.BaseUrl, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
-	configStore := newConfigurationStore(MAX_CACHE_ENTRIES)
+	configStore := newConfigurationStore()
 	requestor := newExperimentConfigurationRequestor(*httpClient, configStore)
 	assignmentLogger := config.AssignmentLogger
 

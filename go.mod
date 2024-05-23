@@ -2,10 +2,7 @@ module github.com/Eppo-exp/golang-sdk/v2
 
 go 1.19
 
-require (
-	github.com/hashicorp/golang-lru/v2 v2.0.7
-	github.com/stretchr/testify v1.8.0
-)
+require github.com/stretchr/testify v1.8.0
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
