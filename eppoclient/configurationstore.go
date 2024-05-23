@@ -2,11 +2,10 @@ package eppoclient
 
 import (
 	"errors"
-	lru "github.com/hashicorp/golang-lru/v2"
 )
 
 type configurationStore struct {
-	cache *lru.Cache[string, experimentConfiguration]
+	configs map[string]experimentConfiguration
 }
 
 type Variation struct {
@@ -29,32 +28,22 @@ type experimentConfiguration struct {
 	Allocations   map[string]Allocation `json:"allocations"`
 }
 
-func newConfigurationStore(maxEntries int) *configurationStore {
-	var configStore = &configurationStore{}
-
-	lruCache, err := lru.New[string, experimentConfiguration](maxEntries)
-	configStore.cache = lruCache
-
-	if err != nil {
-		panic(err)
+func newConfigurationStore() *configurationStore {
+	return &configurationStore{
+		configs: make(map[string]experimentConfiguration),
 	}
-
-	return configStore
 }
 
 func (cs *configurationStore) GetConfiguration(key string) (expConfig experimentConfiguration, err error) {
-	// Attempt to get the value from the cache
-	expConfig, ok := cs.cache.Get(key)
+	expConfig, ok := cs.configs[key]
 	if !ok {
-		return expConfig, errors.New("configuration not found in cache")
+		return expConfig, errors.New("configuration not found in configuration store")
 	}
 
 	return expConfig, nil
 }
 
 func (cs *configurationStore) SetConfigurations(configs map[string]experimentConfiguration) error {
-	for key, config := range configs {
-		cs.cache.Add(key, config)
-	}
+	cs.configs = configs
 	return nil
 }
