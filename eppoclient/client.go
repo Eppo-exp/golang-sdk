@@ -27,31 +27,31 @@ func newEppoClient(configRequestor iConfigRequestor, assignmentLogger IAssignmen
 }
 
 // GetAssignment is maintained for backwards capability. It will return a string value for the assignment.
-func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
+func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes) (string, error) {
 	return ec.GetStringAssignment(subjectKey, flagKey, subjectAttributes)
 }
 
-func (ec *EppoClient) GetBoolAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (bool, error) {
+func (ec *EppoClient) GetBoolAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes) (bool, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, BoolType)
 	return variation.BoolValue, err
 }
 
-func (ec *EppoClient) GetNumericAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (float64, error) {
+func (ec *EppoClient) GetNumericAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes) (float64, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, NumericType)
 	return variation.NumericValue, err
 }
 
-func (ec *EppoClient) GetStringAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
+func (ec *EppoClient) GetStringAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes) (string, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, StringType)
 	return variation.StringValue, err
 }
 
-func (ec *EppoClient) GetJSONStringAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
+func (ec *EppoClient) GetJSONStringAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes) (string, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, StringType)
 	return variation.StringValue, err
 }
 
-func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAttributes dictionary, valueType ValueType) (Value, error) {
+func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, valueType ValueType) (Value, error) {
 	if subjectKey == "" {
 		panic("no subject key provided")
 	}

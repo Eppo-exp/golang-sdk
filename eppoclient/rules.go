@@ -22,7 +22,7 @@ type rule struct {
 	Conditions    []condition `json:"conditions"`
 }
 
-func findMatchingRule(subjectAttributes dictionary, rules []rule) (rule, error) {
+func findMatchingRule(subjectAttributes SubjectAttributes, rules []rule) (rule, error) {
 	for _, rule := range rules {
 		if matchesRule(subjectAttributes, rule) {
 			return rule, nil
@@ -32,7 +32,7 @@ func findMatchingRule(subjectAttributes dictionary, rules []rule) (rule, error) 
 	return rule{}, errors.New("no matching rule")
 }
 
-func matchesRule(subjectAttributes dictionary, rule rule) bool {
+func matchesRule(subjectAttributes SubjectAttributes, rule rule) bool {
 	for _, condition := range rule.Conditions {
 		if !evaluateCondition(subjectAttributes, condition) {
 			return false
@@ -42,7 +42,7 @@ func matchesRule(subjectAttributes dictionary, rule rule) bool {
 	return true
 }
 
-func evaluateCondition(subjectAttributes dictionary, condition condition) bool {
+func evaluateCondition(subjectAttributes SubjectAttributes, condition condition) bool {
 	subjectValue, exists := subjectAttributes[condition.Attribute]
 	if !exists {
 		return false

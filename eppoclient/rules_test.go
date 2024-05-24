@@ -20,7 +20,7 @@ var ruleWithEmptyConditions = rule{Conditions: []condition{}}
 var expectedNoMatchErrorMessage = "no matching rule"
 
 func Test_findMatchingRule_withEmptyRules(t *testing.T) {
-	subjectAttributes := make(dictionary)
+	subjectAttributes := make(SubjectAttributes)
 	subjectAttributes["age"] = 20
 	subjectAttributes["country"] = "US"
 
@@ -30,7 +30,7 @@ func Test_findMatchingRule_withEmptyRules(t *testing.T) {
 }
 
 func Test_findMatchingRule_whenNoRulesMatch(t *testing.T) {
-	subjectAttributes := make(dictionary)
+	subjectAttributes := make(SubjectAttributes)
 	subjectAttributes["age"] = 99
 	subjectAttributes["country"] = "US"
 	subjectAttributes["email"] = "test@example.com"
@@ -44,7 +44,7 @@ func Test_findMatchingRule_Success(t *testing.T) {
 	// both numeric and string wrapped numeric attributes must match.
 
 	// Test with a numeric value
-	subjectAttributes := make(dictionary)
+	subjectAttributes := make(SubjectAttributes)
 	subjectAttributes["age"] = 99.0
 
 	result, err := findMatchingRule(subjectAttributes, []rule{numericRule})
@@ -53,7 +53,7 @@ func Test_findMatchingRule_Success(t *testing.T) {
 	assert.Equal(t, numericRule, result)
 
 	// Test with a string value
-	subjectAttributes = make(dictionary)
+	subjectAttributes = make(SubjectAttributes)
 	subjectAttributes["age"] = "99.0"
 
 	result, err = findMatchingRule(subjectAttributes, []rule{numericRule})
@@ -63,7 +63,7 @@ func Test_findMatchingRule_Success(t *testing.T) {
 }
 
 func Test_findMatchingSemVerRule_Success(t *testing.T) {
-	subjectAttributes := make(dictionary)
+	subjectAttributes := make(SubjectAttributes)
 	subjectAttributes["age"] = 99.0
 	subjectAttributes["appVersion"] = "1.15.0"
 
@@ -73,7 +73,7 @@ func Test_findMatchingSemVerRule_Success(t *testing.T) {
 }
 
 func Test_findMatchingRule_NoAttributeForCondition(t *testing.T) {
-	subjectAttributes := make(dictionary)
+	subjectAttributes := make(SubjectAttributes)
 
 	_, err := findMatchingRule(subjectAttributes, []rule{numericRule})
 
@@ -81,7 +81,7 @@ func Test_findMatchingRule_NoAttributeForCondition(t *testing.T) {
 }
 
 func Test_findMatchingRule_NoConditionsForRule(t *testing.T) {
-	subjectAttributes := make(dictionary)
+	subjectAttributes := make(SubjectAttributes)
 
 	result, _ := findMatchingRule(subjectAttributes, []rule{ruleWithEmptyConditions})
 
@@ -89,7 +89,7 @@ func Test_findMatchingRule_NoConditionsForRule(t *testing.T) {
 }
 
 func Test_findMatchingRule_NumericOperatorWithString(t *testing.T) {
-	subjectAttributes := make(dictionary)
+	subjectAttributes := make(SubjectAttributes)
 	subjectAttributes["age"] = "something"
 
 	_, err := findMatchingRule(subjectAttributes, []rule{numericRule})
@@ -101,7 +101,7 @@ func Test_findMatchingRule_NumericValueAndRegex(t *testing.T) {
 	cdn := condition{Operator: "MATCHES", Value: "[0-9]+", Attribute: "age"}
 	rl := rule{Conditions: []condition{cdn}}
 
-	subjectAttributes := make(dictionary)
+	subjectAttributes := make(SubjectAttributes)
 	subjectAttributes["age"] = 99
 
 	result, _ := findMatchingRule(subjectAttributes, []rule{rl})
@@ -110,7 +110,7 @@ func Test_findMatchingRule_NumericValueAndRegex(t *testing.T) {
 }
 
 type MatchesAnyRuleTest []struct {
-	a             dictionary
+	a             SubjectAttributes
 	b             []rule
 	expectedRule  rule
 	expectedError string
@@ -120,10 +120,10 @@ func Test_findMatchingRule_oneOfOperatorWithBoolean(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"true"}, Attribute: "enabled"}}}
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"True"}, Attribute: "enabled"}}}
 
-	subjectAttributesEnabled := make(dictionary)
+	subjectAttributesEnabled := make(SubjectAttributes)
 	subjectAttributesEnabled["enabled"] = "true"
 
-	subjectAttributesDisabled := make(dictionary)
+	subjectAttributesDisabled := make(SubjectAttributes)
 	subjectAttributesDisabled["enabled"] = "false"
 
 	var tests = MatchesAnyRuleTest{
@@ -145,10 +145,10 @@ func Test_findMatchingRule_oneOfOperatorWithBoolean(t *testing.T) {
 
 func Test_findMatchingRule_OneOfOperatorCaseInsensitive(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"1Ab", "Ron"}, Attribute: "name"}}}
-	subjectAttributes0 := make(dictionary)
+	subjectAttributes0 := make(SubjectAttributes)
 	subjectAttributes0["name"] = "ron"
 
-	subjectAttributes1 := make(dictionary)
+	subjectAttributes1 := make(SubjectAttributes)
 	subjectAttributes1["name"] = "1AB"
 
 	var tests = MatchesAnyRuleTest{
@@ -168,10 +168,10 @@ func Test_findMatchingRule_OneOfOperatorCaseInsensitive(t *testing.T) {
 
 func Test_findMatchingRule_NotOneOfOperatorCaseInsensitive(t *testing.T) {
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"bbB", "1.1.ab"}, Attribute: "name"}}}
-	subjectAttributes0 := make(dictionary)
+	subjectAttributes0 := make(SubjectAttributes)
 	subjectAttributes0["name"] = "BBB"
 
-	subjectAttributes1 := make(dictionary)
+	subjectAttributes1 := make(SubjectAttributes)
 	subjectAttributes1["name"] = "1.1.AB"
 
 	var tests = MatchesAnyRuleTest{
@@ -191,13 +191,13 @@ func Test_findMatchingRule_OneOfOperatorWithString(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"john", "ron"}, Attribute: "name"}}}
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"ron"}, Attribute: "name"}}}
 
-	subjectAttributesJohn := make(dictionary)
+	subjectAttributesJohn := make(SubjectAttributes)
 	subjectAttributesJohn["name"] = "john"
 
-	subjectAttributesRon := make(dictionary)
+	subjectAttributesRon := make(SubjectAttributes)
 	subjectAttributesRon["name"] = "ron"
 
-	subjectAttributesSam := make(dictionary)
+	subjectAttributesSam := make(SubjectAttributes)
 	subjectAttributesSam["name"] = "sam"
 
 	var tests = MatchesAnyRuleTest{
@@ -222,19 +222,19 @@ func Test_findMatchingRule_OneOfOperatorWithNumber(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"14", "15.11", "15"}, Attribute: "number"}}}
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"10"}, Attribute: "number"}}}
 
-	subjectAttributes0 := make(dictionary)
+	subjectAttributes0 := make(SubjectAttributes)
 	subjectAttributes0["number"] = "14"
 
-	subjectAttributes1 := make(dictionary)
+	subjectAttributes1 := make(SubjectAttributes)
 	subjectAttributes1["number"] = 15.11
 
-	subjectAttributes2 := make(dictionary)
+	subjectAttributes2 := make(SubjectAttributes)
 	subjectAttributes2["number"] = 15
 
-	subjectAttributes3 := make(dictionary)
+	subjectAttributes3 := make(SubjectAttributes)
 	subjectAttributes3["number"] = "10"
 
-	subjectAttributes4 := make(dictionary)
+	subjectAttributes4 := make(SubjectAttributes)
 	subjectAttributes4["number"] = 11
 
 	var tests = MatchesAnyRuleTest{

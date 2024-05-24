@@ -17,7 +17,7 @@ func Test_AssignBlankExperiment(t *testing.T) {
 	client := newEppoClient(mockConfigRequestor, mockLogger)
 
 	assert.Panics(t, func() {
-		_, err := client.GetStringAssignment("subject-1", "", dictionary{})
+		_, err := client.GetStringAssignment("subject-1", "", SubjectAttributes{})
 		if err != nil {
 			log.Println(err)
 		}
@@ -30,7 +30,7 @@ func Test_AssignBlankSubject(t *testing.T) {
 	client := newEppoClient(mockConfigRequestor, mockLogger)
 
 	assert.Panics(t, func() {
-		_, err := client.GetStringAssignment("", "experiment-1", dictionary{})
+		_, err := client.GetStringAssignment("", "experiment-1", SubjectAttributes{})
 		if err != nil {
 			log.Println(err)
 		}
@@ -62,7 +62,7 @@ func Test_SubjectNotInSample(t *testing.T) {
 
 	client := newEppoClient(mockConfigRequestor, mockLogger)
 
-	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", dictionary{})
+	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", SubjectAttributes{})
 
 	assert.Equal(t, "", assignment)
 	assert.NotNil(t, err)
@@ -95,7 +95,7 @@ func Test_LogAssignment(t *testing.T) {
 
 	client := newEppoClient(mockConfigRequestor, mockLogger)
 
-	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", dictionary{})
+	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", SubjectAttributes{})
 	expected := "control"
 
 	assert.Nil(t, err)
@@ -130,7 +130,7 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 
 	client := newEppoClient(mockConfigRequestor, mockLogger)
 
-	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", dictionary{})
+	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", SubjectAttributes{})
 	expected := "control"
 
 	assert.Nil(t, err)
@@ -166,14 +166,14 @@ func Test_AssignSubjectWithAttributesAndRules(t *testing.T) {
 	tests := []struct {
 		a    string
 		b    string
-		c    dictionary
+		c    SubjectAttributes
 		want string
 	}{
-		{"user-1", "experiment-key-1", dictionary{}, ""},
-		{"user-1", "experiment-key-1", dictionary{
+		{"user-1", "experiment-key-1", SubjectAttributes{}, ""},
+		{"user-1", "experiment-key-1", SubjectAttributes{
 			"email": "test@example.com",
 		}, ""},
-		{"user-1", "experiment-key-1", dictionary{
+		{"user-1", "experiment-key-1", SubjectAttributes{
 			"email": "test@eppo.com",
 		}, "control"},
 	}
@@ -230,19 +230,19 @@ func Test_WithSubjectInOverrides(t *testing.T) {
 
 			switch tt.inputValueType {
 			case StringType:
-				assignment, _ := client.GetStringAssignment("user-1", "experiment-key-1", dictionary{})
+				assignment, _ := client.GetStringAssignment("user-1", "experiment-key-1", SubjectAttributes{})
 
 				if assignment != tt.want.StringValue {
 					t.Errorf("got %s, want %s", assignment, tt.want.StringValue)
 				}
 			case NumericType:
-				assignment, _ := client.GetNumericAssignment("user-1", "experiment-key-1", dictionary{})
+				assignment, _ := client.GetNumericAssignment("user-1", "experiment-key-1", SubjectAttributes{})
 
 				if assignment != tt.want.NumericValue {
 					t.Errorf("got %T, want %T", assignment, tt.want.NumericValue)
 				}
 			case BoolType:
-				assignment, _ := client.GetBoolAssignment("user-1", "experiment-key-1", dictionary{})
+				assignment, _ := client.GetBoolAssignment("user-1", "experiment-key-1", SubjectAttributes{})
 
 				if assignment != tt.want.BoolValue {
 					t.Errorf("got %t, want %t", assignment, tt.want.BoolValue)
@@ -283,7 +283,7 @@ func Test_WithSubjectInOverridesExpDisabled(t *testing.T) {
 	client := newEppoClient(mockConfigRequestor, mockLogger)
 
 	expected := "override-variation"
-	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", dictionary{})
+	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", SubjectAttributes{})
 
 	assert.Nil(t, err)
 	assert.Equal(t, expected, assignment)
@@ -299,7 +299,7 @@ func Test_WithNullExpConfig(t *testing.T) {
 	client := newEppoClient(mockConfigRequestor, mockLogger)
 
 	expected := ""
-	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", dictionary{})
+	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", SubjectAttributes{})
 
 	assert.NotNil(t, err)
 	assert.Equal(t, expected, assignment)

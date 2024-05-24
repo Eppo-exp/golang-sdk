@@ -73,28 +73,28 @@ func Test_e2e(t *testing.T) {
 		for _, subject := range experiment.Subjects {
 			switch experiment.ValueType {
 			case "boolean":
-				booleanAssignment, err := client.GetBoolAssignment(subject, expName, dictionary{})
+				booleanAssignment, err := client.GetBoolAssignment(subject, expName, SubjectAttributes{})
 				if err == nil {
 					assert.Nil(t, err)
 				}
 
 				booleanAssignments = append(booleanAssignments, booleanAssignment)
 			case "json":
-				jsonAssignment, err := client.GetJSONStringAssignment(subject, expName, dictionary{})
+				jsonAssignment, err := client.GetJSONStringAssignment(subject, expName, SubjectAttributes{})
 				if err == nil {
 					assert.Nil(t, err)
 				}
 
 				jsonAssignments = append(jsonAssignments, jsonAssignment)
 			case "numeric":
-				numericAssignment, err := client.GetNumericAssignment(subject, expName, dictionary{})
+				numericAssignment, err := client.GetNumericAssignment(subject, expName, SubjectAttributes{})
 				if err == nil {
 					assert.Nil(t, err)
 				}
 
 				numericAssignments = append(numericAssignments, numericAssignment)
 			case "string":
-				stringAssignment, err := client.GetStringAssignment(subject, expName, dictionary{})
+				stringAssignment, err := client.GetStringAssignment(subject, expName, SubjectAttributes{})
 
 				if err == nil {
 					assert.Nil(t, err)
@@ -153,7 +153,7 @@ func initFixture() string {
 	return server.URL
 }
 
-func getTestData() dictionary {
+func getTestData() SubjectAttributes {
 	files, err := os.ReadDir(TEST_DATA_DIR)
 
 	if err != nil {
