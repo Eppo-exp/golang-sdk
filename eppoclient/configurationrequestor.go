@@ -5,30 +5,26 @@ import (
 	"fmt"
 )
 
-const RAC_ENDPOINT = "/randomized_assignment/v3/config"
-
-type racResponse struct {
-	Flags map[string]experimentConfiguration `json:"flags"`
-}
+const UFC_ENDPOINT = "/flag-config/v1/config"
 
 type iConfigRequestor interface {
-	GetConfiguration(key string) (experimentConfiguration, error)
+	GetConfiguration(key string) (flagConfiguration, error)
 	FetchAndStoreConfigurations()
 }
 
-type experimentConfigurationRequestor struct {
+type configurationRequestor struct {
 	httpClient  httpClient
 	configStore *configurationStore
 }
 
-func newExperimentConfigurationRequestor(httpClient httpClient, configStore *configurationStore) *experimentConfigurationRequestor {
-	return &experimentConfigurationRequestor{
+func newConfigurationRequestor(httpClient httpClient, configStore *configurationStore) *configurationRequestor {
+	return &configurationRequestor{
 		httpClient:  httpClient,
 		configStore: configStore,
 	}
 }
 
-func (ecr *experimentConfigurationRequestor) GetConfiguration(experimentKey string) (experimentConfiguration, error) {
+func (ecr *configurationRequestor) GetConfiguration(experimentKey string) (flagConfiguration, error) {
 	if ecr.httpClient.isUnauthorized {
 		// should we panic here or return an error?
 		panic("Unauthorized: please check your API key")
@@ -39,18 +35,17 @@ func (ecr *experimentConfigurationRequestor) GetConfiguration(experimentKey stri
 	return result, err
 }
 
-func (ecr *experimentConfigurationRequestor) FetchAndStoreConfigurations() {
-	result, err := ecr.httpClient.get(RAC_ENDPOINT)
+func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
+	result, err := ecr.httpClient.get(UFC_ENDPOINT)
 	if err != nil {
-		fmt.Println("Failed to fetch RAC response", err)
+		fmt.Println("Failed to fetch UFC response", err)
 		return
 	}
-	var wrapper racResponse
 
-	// Unmarshal JSON data directly into the wrapper struct
+	var wrapper ufcResponse
 	err = json.Unmarshal([]byte(result), &wrapper)
 	if err != nil {
-		fmt.Println("Failed to unmarshal RAC response JSON", result)
+		fmt.Println("Failed to unmarshal UFC response JSON", result)
 		fmt.Println(err)
 		return
 	}

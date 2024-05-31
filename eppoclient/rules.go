@@ -11,30 +11,9 @@ import (
 	semver "github.com/Masterminds/semver/v3"
 )
 
-type condition struct {
-	Attribute string      `json:"attribute"`
-	Value     interface{} `json:"value"`
-	Operator  string      `validator:"regexp=^(MATCHES|GTE|GT|LTE|LT|ONE_OF|NOT_ONE_OF)$" json:"operator"`
-}
-
-type rule struct {
-	AllocationKey string      `json:"allocationKey"`
-	Conditions    []condition `json:"conditions"`
-}
-
-func findMatchingRule(subjectAttributes SubjectAttributes, rules []rule) (rule, error) {
-	for _, rule := range rules {
-		if matchesRule(subjectAttributes, rule) {
-			return rule, nil
-		}
-	}
-
-	return rule{}, errors.New("no matching rule")
-}
-
-func matchesRule(subjectAttributes SubjectAttributes, rule rule) bool {
+func (rule rule) matches(subjectAttributes SubjectAttributes) bool {
 	for _, condition := range rule.Conditions {
-		if !evaluateCondition(subjectAttributes, condition) {
+		if !condition.matches(subjectAttributes) {
 			return false
 		}
 	}
@@ -42,8 +21,18 @@ func matchesRule(subjectAttributes SubjectAttributes, rule rule) bool {
 	return true
 }
 
-func evaluateCondition(subjectAttributes SubjectAttributes, condition condition) bool {
+func (condition condition) matches(subjectAttributes SubjectAttributes) bool {
 	subjectValue, exists := subjectAttributes[condition.Attribute]
+	if condition.Operator == "IS_NULL" {
+		isNull := !exists || subjectValue == nil
+		expectedNull, ok := condition.Value.(bool)
+		if !ok {
+			return false
+		}
+
+		return isNull == expectedNull
+	}
+
 	if !exists {
 		return false
 	}
@@ -59,11 +48,11 @@ func evaluateCondition(subjectAttributes SubjectAttributes, condition condition)
 	case "ONE_OF":
 		return isOneOf(subjectValue, convertToStringArray(condition.Value))
 	case "NOT_ONE_OF":
-		return isNotOneOf(subjectValue, convertToStringArray(condition.Value))
+		return !isOneOf(subjectValue, convertToStringArray(condition.Value))
 	case "GTE", "GT", "LTE", "LT":
 		// Attempt to coerce both values to float64 and compare them.
-		subjectValueNumeric, isNumericSubjectErr := ToFloat64(subjectValue)
-		conditionValueNumeric, isNumericConditionErr := ToFloat64(condition.Value)
+		subjectValueNumeric, isNumericSubjectErr := toFloat64(subjectValue)
+		conditionValueNumeric, isNumericConditionErr := toFloat64(condition.Value)
 		if isNumericSubjectErr == nil && isNumericConditionErr == nil {
 			return evaluateNumericCondition(subjectValueNumeric, conditionValueNumeric, condition)
 		}
@@ -101,43 +90,32 @@ func convertToStringArray(conditionValue interface{}) []string {
 }
 
 func isOneOf(attributeValue interface{}, conditionValue []string) bool {
-	matches := getMatchingStringValues(attributeValue, conditionValue)
-	return len(matches) > 0
-}
-
-func isNotOneOf(attributeValue interface{}, conditionValue []string) bool {
-	matches := getMatchingStringValues(attributeValue, conditionValue)
-	return len(matches) == 0
-}
-
-func getMatchingStringValues(attributeValue interface{}, conditionValue []string) []string {
 	v := reflect.ValueOf(attributeValue)
 
 	if v.Kind() != reflect.String {
 		attributeValue = fmt.Sprintf("%v", attributeValue)
 	}
 
-	var result []string
-
 	for _, value := range conditionValue {
 		if strings.EqualFold(value, attributeValue.(string)) {
-			result = append(result, value)
+			return true
 		}
 	}
 
-	return result
+	return false
 }
 
 func evaluateSemVerCondition(subjectValue *semver.Version, conditionValue *semver.Version, condition condition) bool {
+	comp := subjectValue.Compare(conditionValue)
 	switch condition.Operator {
 	case "GT":
-		return subjectValue.GreaterThan(conditionValue)
+		return comp > 0
 	case "GTE":
-		return subjectValue.GreaterThan(conditionValue) || subjectValue.Equal(conditionValue)
+		return comp >= 0
 	case "LT":
-		return subjectValue.LessThan(conditionValue)
+		return comp < 0
 	case "LTE":
-		return subjectValue.LessThan(conditionValue) || subjectValue.Equal(conditionValue)
+		return comp <= 0
 	default:
 		panic("Incorrect condition operator")
 	}
@@ -155,5 +133,23 @@ func evaluateNumericCondition(subjectValue float64, conditionValue float64, cond
 		return subjectValue <= conditionValue
 	default:
 		panic("Incorrect condition operator")
+	}
+}
+
+// toFloat64 attempts to convert an interface{} value to a float64.
+// It supports inputs of type float64 or string (which can be parsed as float64).
+// Returns a float64 and nil error on success, or 0 and an error on failure.
+func toFloat64(val interface{}) (float64, error) {
+	switch v := val.(type) {
+	case float64:
+		return v, nil
+	case string:
+		floatVal, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			return 0, fmt.Errorf("cannot convert string '%s' to float64: %w", v, err)
+		}
+		return floatVal, nil
+	default:
+		return 0, errors.New("value is neither a float64 nor a convertible string")
 	}
 }

@@ -6,39 +6,33 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testAllocationMap = make(map[string]Allocation)
-
-var testExp = experimentConfiguration{
-	SubjectShards: 1000,
-	Enabled:       true,
-	Allocations:   testAllocationMap,
-	Rules:         []rule{},
-	Name:          "randomization_algo",
-}
-
 func Test_GetConfiguration_unknownKey(t *testing.T) {
 	var store = newConfigurationStore()
-	err := store.SetConfigurations(map[string]experimentConfiguration{
-		"randomization_algo": testExp,
-	})
+	err := store.SetConfigurations(map[string]flagConfiguration{})
 
 	assert.NoError(t, err)
 	result, err := store.GetConfiguration("unknown_exp")
 
 	assert.Error(t, err)
-	assert.Equal(t, experimentConfiguration{}, result)
+	assert.Equal(t, flagConfiguration{}, result)
 }
 
 func Test_GetConfiguration_knownKey(t *testing.T) {
+	config := map[string]flagConfiguration{
+		"experiment-key-1": flagConfiguration{
+			Key:           "experiment-key-1",
+			Enabled:       false,
+			VariationType: stringVariation,
+		},
+	}
+
 	var store = newConfigurationStore()
-	err := store.SetConfigurations(map[string]experimentConfiguration{
-		"randomization_algo": testExp,
-	})
+	err := store.SetConfigurations(config)
 	assert.NoError(t, err)
-	result, err := store.GetConfiguration("randomization_algo")
+	result, err := store.GetConfiguration("experiment-key-1")
 
-	expected := "randomization_algo"
+	expected := "experiment-key-1"
 
 	assert.NoError(t, err)
-	assert.Equal(t, expected, result.Name)
+	assert.Equal(t, expected, result.Key)
 }
