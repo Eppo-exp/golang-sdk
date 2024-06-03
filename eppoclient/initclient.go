@@ -17,7 +17,14 @@ func InitClient(config Config) *EppoClient {
 	requestor := newConfigurationRequestor(*httpClient, configStore)
 	assignmentLogger := config.AssignmentLogger
 
-	client := newEppoClient(requestor, assignmentLogger)
+	pollerInterval := config.PollerInterval
+	if pollerInterval == 0 {
+		pollerInterval = 10
+	}
+
+	poller := newPoller(pollerInterval, requestor.FetchAndStoreConfigurations)
+
+	client := newEppoClient(requestor, poller, assignmentLogger)
 
 	client.poller.Start()
 

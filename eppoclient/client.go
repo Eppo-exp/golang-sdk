@@ -14,10 +14,9 @@ type EppoClient struct {
 	logger          IAssignmentLogger
 }
 
-func newEppoClient(configRequestor iConfigRequestor, assignmentLogger IAssignmentLogger) *EppoClient {
+func newEppoClient(configRequestor iConfigRequestor, poller *poller, assignmentLogger IAssignmentLogger) *EppoClient {
 	var ec = &EppoClient{}
 
-	var poller = newPoller(10, configRequestor.FetchAndStoreConfigurations)
 	ec.poller = *poller
 	ec.configRequestor = configRequestor
 	ec.logger = assignmentLogger

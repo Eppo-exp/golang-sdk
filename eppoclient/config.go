@@ -6,6 +6,7 @@ type Config struct {
 	BaseUrl          string
 	ApiKey           string
 	AssignmentLogger IAssignmentLogger
+	PollerInterval   int `default:"10"`
 }
 
 func (cfg *Config) validate() {

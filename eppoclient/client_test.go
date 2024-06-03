@@ -10,8 +10,9 @@ import (
 
 func Test_AssignBlankExperiment(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
+	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(mockConfigRequestor, mockLogger)
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
 
 	assert.Panics(t, func() {
 		_, err := client.GetStringAssignment("subject-1", "", SubjectAttributes{}, "")
@@ -23,8 +24,9 @@ func Test_AssignBlankExperiment(t *testing.T) {
 
 func Test_AssignBlankSubject(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
+	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(mockConfigRequestor, mockLogger)
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
 
 	assert.Panics(t, func() {
 		_, err := client.GetStringAssignment("", "experiment-1", SubjectAttributes{}, "")
@@ -38,6 +40,7 @@ func Test_LogAssignment(t *testing.T) {
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
 	var mockConfigRequestor = new(mockConfigRequestor)
+	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
 
 	config := map[string]flagConfiguration{
 		"experiment-key-1": flagConfiguration{
@@ -76,7 +79,7 @@ func Test_LogAssignment(t *testing.T) {
 
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(config["experiment-key-1"], nil)
 
-	client := newEppoClient(mockConfigRequestor, mockLogger)
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
 
 	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", SubjectAttributes{}, "")
 	expected := "control"
@@ -91,6 +94,8 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Panic("logging panic")
 
 	var mockConfigRequestor = new(mockConfigRequestor)
+	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
+
 	config := map[string]flagConfiguration{
 		"experiment-key-1": flagConfiguration{
 			Key:           "experiment-key-1",
@@ -127,7 +132,7 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 	}
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(config["experiment-key-1"], nil)
 
-	client := newEppoClient(mockConfigRequestor, mockLogger)
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
 
 	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", SubjectAttributes{}, "")
 	expected := "control"
