@@ -74,7 +74,8 @@ func (condition condition) matches(subjectAttributes SubjectAttributes) bool {
 		// Fallback logic if neither numeric nor semver comparison is applicable.
 		return false
 	default:
-		panic(fmt.Sprintf("unknown condition operator: %s", condition.Operator))
+		fmt.Printf("unknown condition operator: %s", condition.Operator)
+		return false
 	}
 }
 

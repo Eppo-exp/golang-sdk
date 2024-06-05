@@ -103,7 +103,7 @@ func (ty variationType) valueToAssignmentValue(value interface{}) (interface{}, 
 		}
 		return result, nil
 	default:
-		panic("unexpected variationType")
+		return nil, fmt.Errorf("unexpected variation type: %v", ty)
 	}
 }
 
