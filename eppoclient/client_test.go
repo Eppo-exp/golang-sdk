@@ -65,7 +65,7 @@ func Test_LogAssignment(t *testing.T) {
 									Ranges: []shardRange{
 										{
 											Start: 0,
-											End:   10001,
+											End:   10000,
 										},
 									},
 								},
@@ -119,7 +119,7 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 									Ranges: []shardRange{
 										{
 											Start: 0,
-											End:   10001,
+											End:   10000,
 										},
 									},
 								},
