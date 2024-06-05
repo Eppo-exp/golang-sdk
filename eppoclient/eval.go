@@ -22,6 +22,8 @@ func (flag flagConfiguration) eval(subjectKey string, subjectAttributes SubjectA
 	now := time.Now()
 	augmentedSubjectAttributes := augmentWithSubjectKey(subjectAttributes, subjectKey)
 
+	// Go doesn't have a good/quick way to set defaults during
+	// parsing, so defaulting is handled here
 	totalShards := flag.TotalShards
 	if totalShards == 0 {
 		totalShards = 10000
