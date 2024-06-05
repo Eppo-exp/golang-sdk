@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
-	"strings"
 
 	semver "github.com/Masterminds/semver/v3"
 )
@@ -98,7 +97,7 @@ func isOneOf(attributeValue interface{}, conditionValue []string) bool {
 	}
 
 	for _, value := range conditionValue {
-		if strings.EqualFold(value, attributeValue.(string)) {
+		if value == attributeValue.(string) {
 			return true
 		}
 	}

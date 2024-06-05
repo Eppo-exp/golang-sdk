@@ -97,7 +97,7 @@ func (tests MatchesRuleTest) run(t *testing.T) {
 
 func Test_ruleMatches_oneOfOperatorWithBoolean(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"true"}, Attribute: "enabled"}}}
-	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"True"}, Attribute: "enabled"}}}
+	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"true"}, Attribute: "enabled"}}}
 
 	subjectAttributesEnabled := make(SubjectAttributes)
 	subjectAttributesEnabled["enabled"] = "true"
@@ -114,7 +114,7 @@ func Test_ruleMatches_oneOfOperatorWithBoolean(t *testing.T) {
 	tests.run(t)
 }
 
-func Test_ruleMatches_OneOfOperatorCaseInsensitive(t *testing.T) {
+func Test_ruleMatches_OneOfOperatorCaseSensitive(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"1Ab", "Ron"}, Attribute: "name"}}}
 
 	subjectAttributes0 := make(SubjectAttributes)
@@ -124,12 +124,12 @@ func Test_ruleMatches_OneOfOperatorCaseInsensitive(t *testing.T) {
 	subjectAttributes1["name"] = "1AB"
 
 	MatchesRuleTest{
-		{subjectAttributes0, oneOfRule, true},
-		{subjectAttributes1, oneOfRule, true},
+		{subjectAttributes0, oneOfRule, false},
+		{subjectAttributes1, oneOfRule, false},
 	}.run(t)
 }
 
-func Test_ruleMatches_NotOneOfOperatorCaseInsensitive(t *testing.T) {
+func Test_ruleMatches_NotOneOfOperatorCaseSensitive(t *testing.T) {
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"bbB", "1.1.ab"}, Attribute: "name"}}}
 	subjectAttributes0 := make(SubjectAttributes)
 	subjectAttributes0["name"] = "BBB"
@@ -138,8 +138,8 @@ func Test_ruleMatches_NotOneOfOperatorCaseInsensitive(t *testing.T) {
 	subjectAttributes1["name"] = "1.1.AB"
 
 	MatchesRuleTest{
-		{subjectAttributes0, notOneOfRule, false},
-		{subjectAttributes1, notOneOfRule, false},
+		{subjectAttributes0, notOneOfRule, true},
+		{subjectAttributes1, notOneOfRule, true},
 	}.run(t)
 }
 
