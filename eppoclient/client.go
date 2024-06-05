@@ -26,43 +26,55 @@ func newEppoClient(configRequestor iConfigRequestor, poller *poller, assignmentL
 
 func (ec *EppoClient) GetBoolAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue bool) (bool, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, booleanVariation)
-	if variation == nil {
+	if err != nil || variation == nil {
 		return defaultValue, err
 	}
-	result, _ := variation.(bool)
+	result, ok := variation.(bool)
+	if !ok {
+		return defaultValue, fmt.Errorf("failed to cast %v to bool", variation)
+	}
 	return result, err
 }
 
 func (ec *EppoClient) GetNumericAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue float64) (float64, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, numericVariation)
-	if variation == nil {
+	if err != nil || variation == nil {
 		return defaultValue, err
 	}
-	result, _ := variation.(float64)
+	result, ok := variation.(float64)
+	if !ok {
+		return defaultValue, fmt.Errorf("failed to cast %v to float64", variation)
+	}
 	return result, err
 }
 
 func (ec *EppoClient) GetIntegerAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue int64) (int64, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, integerVariation)
-	if variation == nil {
+	if err != nil || variation == nil {
 		return defaultValue, err
 	}
-	result, _ := variation.(int64)
+	result, ok := variation.(int64)
+	if !ok {
+		return defaultValue, fmt.Errorf("failed to cast %v to int64", variation)
+	}
 	return result, err
 }
 
 func (ec *EppoClient) GetStringAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue string) (string, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, stringVariation)
-	if variation == nil {
+	if err != nil || variation == nil {
 		return defaultValue, err
 	}
-	result, _ := variation.(string)
+	result, ok := variation.(string)
+	if !ok {
+		return defaultValue, fmt.Errorf("failed to cast %v to string", variation)
+	}
 	return result, err
 }
 
 func (ec *EppoClient) GetJSONAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue interface{}) (interface{}, error) {
 	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, jsonVariation)
-	if variation == nil {
+	if err != nil || variation == nil {
 		return defaultValue, err
 	}
 	return variation, err
