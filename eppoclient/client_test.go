@@ -46,6 +46,7 @@ func Test_LogAssignment(t *testing.T) {
 		"experiment-key-1": flagConfiguration{
 			Key:           "experiment-key-1",
 			Enabled:       true,
+			TotalShards:   10000,
 			VariationType: stringVariation,
 			Variations: map[string]variation{
 				"control": variation{
@@ -100,6 +101,7 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 		"experiment-key-1": flagConfiguration{
 			Key:           "experiment-key-1",
 			Enabled:       true,
+			TotalShards:   10000,
 			VariationType: stringVariation,
 			Variations: map[string]variation{
 				"control": variation{
