@@ -1,6 +1,7 @@
 package eppoclient
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -89,9 +90,11 @@ type MatchesRuleTest []struct {
 }
 
 func (tests MatchesRuleTest) run(t *testing.T) {
-	for _, tt := range tests {
-		result := tt.rule.matches(tt.attributes)
-		assert.Equal(t, tt.expected, result)
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			result := tt.rule.matches(tt.attributes)
+			assert.Equal(t, tt.expected, result)
+		})
 	}
 }
 

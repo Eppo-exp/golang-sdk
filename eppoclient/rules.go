@@ -90,19 +90,87 @@ func convertToStringArray(conditionValue interface{}) []string {
 }
 
 func isOneOf(attributeValue interface{}, conditionValue []string) bool {
-	v := reflect.ValueOf(attributeValue)
-
-	if v.Kind() != reflect.String {
-		attributeValue = fmt.Sprintf("%v", attributeValue)
-	}
-
 	for _, value := range conditionValue {
-		if value == attributeValue.(string) {
+		if isOne(attributeValue, value) {
 			return true
 		}
 	}
 
 	return false
+}
+
+// Return true if `attributeValue` is the same as `s` under eppo
+// evaluation rules.
+func isOne(attributeValue interface{}, s string) bool {
+	switch attributeValue.(type) {
+	case string:
+		return attributeValue == s
+	case float32:
+		value, err := strconv.ParseFloat(s, 32)
+		if err != nil {
+			return false
+		}
+		return attributeValue == value
+	case float64:
+		value, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			return false
+		}
+		return attributeValue == value
+	case int, int8, int16, int32, int64:
+		value, err := strconv.ParseInt(s, 0, 64)
+		if err != nil {
+			return false
+		}
+		return promoteInt(attributeValue) == value
+	case uint, uint8, uint16, uint32, uint64:
+		value, err := strconv.ParseUint(s, 0, 64)
+		if err != nil {
+			return false
+		}
+		return promoteUint(attributeValue) == value
+	case bool:
+		value, err := strconv.ParseBool(s)
+		if err != nil {
+			return false
+		}
+		return attributeValue == value
+	default:
+		attributeValue = fmt.Sprintf("%v", attributeValue)
+		return attributeValue == s
+	}
+}
+
+func promoteInt(i interface{}) int64 {
+	switch i := i.(type) {
+	case int:
+		return int64(i)
+	case int8:
+		return int64(i)
+	case int16:
+		return int64(i)
+	case int32:
+		return int64(i)
+	case int64:
+		return i
+	}
+	panic(fmt.Errorf("unexpected type passed to promoteInt: %T", i))
+}
+
+func promoteUint(i interface{}) uint64 {
+	switch i := i.(type) {
+	case uint:
+		return uint64(i)
+	case uint8:
+		return uint64(i)
+	case uint16:
+		return uint64(i)
+	case uint32:
+		return uint64(i)
+	case uint64:
+		return i
+	}
+	panic(fmt.Errorf("unexpected type passed to promoteUint: %T", i))
 }
 
 func evaluateSemVerCondition(subjectValue *semver.Version, conditionValue *semver.Version, condition condition) bool {
