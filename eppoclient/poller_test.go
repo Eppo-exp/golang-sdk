@@ -22,7 +22,7 @@ func Test_PollerPoll_InvokesCallbackUntilStoped(t *testing.T) {
 	callbackMock := CallbackMock{}
 	callbackMock.On("CallbackFn").Return()
 
-	var poller = newPoller(1, callbackMock.CallbackFn)
+	var poller = newPoller(1*time.Second, callbackMock.CallbackFn)
 	poller.Start()
 	time.Sleep(5 * time.Second)
 	poller.Stop()
@@ -34,7 +34,7 @@ func Test_PollerPoll_StopsOnError(t *testing.T) {
 	callCount := 0
 	expected := 3
 
-	var poller = newPoller(1, func() {
+	var poller = newPoller(1*time.Second, func() {
 		callCount++
 		if callCount == 3 {
 			panic("some_error")
@@ -52,7 +52,7 @@ func Test_PollerPoll_ManualStop(t *testing.T) {
 	callbackMock := CallbackMock{}
 	callbackMock.On("CallbackFn").Return()
 
-	var poller = newPoller(1, callbackMock.CallbackFn)
+	var poller = newPoller(1*time.Second, callbackMock.CallbackFn)
 	poller.Start()
 
 	time.Sleep(2500 * time.Millisecond)

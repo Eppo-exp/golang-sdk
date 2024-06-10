@@ -1,11 +1,10 @@
 package eppoclient
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	"errors"
 	"fmt"
 )
+
+type SubjectAttributes map[string]interface{}
 
 // Client for eppo.cloud. Instance of this struct will be created on calling InitClient.
 // EppoClient will then immediately start polling experiments data from Eppo.
@@ -15,10 +14,9 @@ type EppoClient struct {
 	logger          IAssignmentLogger
 }
 
-func newEppoClient(configRequestor iConfigRequestor, assignmentLogger IAssignmentLogger) *EppoClient {
+func newEppoClient(configRequestor iConfigRequestor, poller *poller, assignmentLogger IAssignmentLogger) *EppoClient {
 	var ec = &EppoClient{}
 
-	var poller = newPoller(10, configRequestor.FetchAndStoreConfigurations)
 	ec.poller = *poller
 	ec.configRequestor = configRequestor
 	ec.logger = assignmentLogger
@@ -26,32 +24,63 @@ func newEppoClient(configRequestor iConfigRequestor, assignmentLogger IAssignmen
 	return ec
 }
 
-// GetAssignment is maintained for backwards capability. It will return a string value for the assignment.
-func (ec *EppoClient) GetAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
-	return ec.GetStringAssignment(subjectKey, flagKey, subjectAttributes)
+func (ec *EppoClient) GetBoolAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue bool) (bool, error) {
+	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, booleanVariation)
+	if err != nil || variation == nil {
+		return defaultValue, err
+	}
+	result, ok := variation.(bool)
+	if !ok {
+		return defaultValue, fmt.Errorf("failed to cast %v to bool", variation)
+	}
+	return result, err
 }
 
-func (ec *EppoClient) GetBoolAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (bool, error) {
-	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, BoolType)
-	return variation.BoolValue, err
+func (ec *EppoClient) GetNumericAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue float64) (float64, error) {
+	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, numericVariation)
+	if err != nil || variation == nil {
+		return defaultValue, err
+	}
+	result, ok := variation.(float64)
+	if !ok {
+		return defaultValue, fmt.Errorf("failed to cast %v to float64", variation)
+	}
+	return result, err
 }
 
-func (ec *EppoClient) GetNumericAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (float64, error) {
-	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, NumericType)
-	return variation.NumericValue, err
+func (ec *EppoClient) GetIntegerAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue int64) (int64, error) {
+	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, integerVariation)
+	if err != nil || variation == nil {
+		return defaultValue, err
+	}
+	result, ok := variation.(int64)
+	if !ok {
+		return defaultValue, fmt.Errorf("failed to cast %v to int64", variation)
+	}
+	return result, err
 }
 
-func (ec *EppoClient) GetStringAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
-	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, StringType)
-	return variation.StringValue, err
+func (ec *EppoClient) GetStringAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue string) (string, error) {
+	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, stringVariation)
+	if err != nil || variation == nil {
+		return defaultValue, err
+	}
+	result, ok := variation.(string)
+	if !ok {
+		return defaultValue, fmt.Errorf("failed to cast %v to string", variation)
+	}
+	return result, err
 }
 
-func (ec *EppoClient) GetJSONStringAssignment(subjectKey string, flagKey string, subjectAttributes dictionary) (string, error) {
-	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, StringType)
-	return variation.StringValue, err
+func (ec *EppoClient) GetJSONAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue interface{}) (interface{}, error) {
+	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, jsonVariation)
+	if err != nil || variation == nil {
+		return defaultValue, err
+	}
+	return variation, err
 }
 
-func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAttributes dictionary, valueType ValueType) (Value, error) {
+func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, variationType variationType) (interface{}, error) {
 	if subjectKey == "" {
 		panic("no subject key provided")
 	}
@@ -60,86 +89,35 @@ func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAt
 		panic("no flag key provided")
 	}
 
-	config, err := ec.configRequestor.GetConfiguration(flagKey)
+	flag, err := ec.configRequestor.GetConfiguration(flagKey)
 	if err != nil {
-		return Null(), err
+		return nil, err
 	}
 
-	override := getSubjectVariationOverride(config, subjectKey, valueType)
-	if override != Null() {
-		return override, nil
-	}
-
-	// Check if disabled
-	if !config.Enabled {
-		return Null(), errors.New("the experiment or flag is not enabled")
-	}
-
-	// Find matching rule
-	rule, err := findMatchingRule(subjectAttributes, config.Rules)
+	err = flag.verifyType(variationType)
 	if err != nil {
-		return Null(), err
+		return nil, err
 	}
 
-	// Check if in sample population
-	allocation := config.Allocations[rule.AllocationKey]
-	if !isInExperimentSample(subjectKey, flagKey, config.SubjectShards, allocation.PercentExposure) {
-		return Null(), errors.New("subject not part of the sample population")
+	assignmentValue, assignmentEvent, err := flag.eval(subjectKey, subjectAttributes)
+	if err != nil {
+		return nil, err
 	}
 
-	// Get assigned variation
-	assignmentKey := "assignment-" + subjectKey + "-" + flagKey
-	shard := getShard(assignmentKey, config.SubjectShards)
-	variations := allocation.Variations
-	var variationShard Variation
+	if assignmentEvent != nil {
+		func() {
+			// need to catch panics from Logger and continue
+			defer func() {
+				r := recover()
+				if r != nil {
+					fmt.Println("panic occurred:", r)
+				}
+			}()
 
-	for _, variation := range variations {
-		if isShardInRange(shard, variation.ShardRange) {
-			variationShard = variation
-		}
-	}
-
-	assignedVariation := variationShard.Value
-
-	func() {
-		// need to catch panics from Logger and continue
-		defer func() {
-			r := recover()
-			if r != nil {
-				fmt.Println("panic occurred:", r)
-			}
+			// Log assignment
+			ec.logger.LogAssignment(*assignmentEvent)
 		}()
-
-		// Log assignment
-		assignmentEvent := AssignmentEvent{
-			Experiment:        flagKey + "-" + rule.AllocationKey,
-			FeatureFlag:       flagKey,
-			Allocation:        rule.AllocationKey,
-			Variation:         assignedVariation,
-			Subject:           subjectKey,
-			Timestamp:         TimeNow(),
-			SubjectAttributes: subjectAttributes,
-		}
-		ec.logger.LogAssignment(assignmentEvent)
-	}()
-
-	return assignedVariation, nil
-}
-
-func getSubjectVariationOverride(experimentConfig experimentConfiguration, subject string, valueType ValueType) Value {
-	hash := md5.Sum([]byte(subject))
-	hashOutput := hex.EncodeToString(hash[:])
-
-	if val, ok := experimentConfig.Overrides[hashOutput]; ok {
-		return val
 	}
 
-	return Null()
-}
-
-func isInExperimentSample(subjectKey string, flagKey string, subjectShards int64, percentExposure float32) bool {
-	shardKey := "exposure-" + subjectKey + "-" + flagKey
-	shard := getShard(shardKey, subjectShards)
-
-	return float64(shard) <= float64(percentExposure)*float64(subjectShards)
+	return assignmentValue, nil
 }

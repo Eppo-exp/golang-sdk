@@ -7,13 +7,15 @@ type IAssignmentLogger interface {
 }
 
 type AssignmentEvent struct {
-	Experiment        string     `json:"experiment"`
-	FeatureFlag       string     `json:"featureFlag"`
-	Allocation        string     `json:"allocation"`
-	Variation         Value      `json:"variation"`
-	Subject           string     `json:"subject"`
-	Timestamp         string     `json:"timestamp"`
-	SubjectAttributes dictionary `json:"subjectAttributes,omitempty"`
+	Experiment        string            `json:"experiment"`
+	FeatureFlag       string            `json:"featureFlag"`
+	Allocation        string            `json:"allocation"`
+	Variation         string            `json:"variation"`
+	Subject           string            `json:"subject"`
+	SubjectAttributes SubjectAttributes `json:"subjectAttributes,omitempty"`
+	Timestamp         string            `json:"timestamp"`
+	MetaData          map[string]string `json:"metaData"`
+	ExtraLogging      map[string]string `json:"extraLogging,omitempty"`
 }
 
 type AssignmentLogger struct {

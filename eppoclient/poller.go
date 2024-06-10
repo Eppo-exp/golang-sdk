@@ -6,12 +6,12 @@ import (
 )
 
 type poller struct {
-	interval  int `default:"10"`
+	interval  time.Duration
 	callback  func()
 	isStopped bool `default:"false"`
 }
 
-func newPoller(interval int, callback func()) *poller {
+func newPoller(interval time.Duration, callback func()) *poller {
 	var pl = &poller{}
 
 	pl.interval = interval
@@ -38,7 +38,7 @@ func (p *poller) poll() {
 			break
 		}
 		p.callback()
-		time.Sleep(time.Duration(p.interval) * time.Second)
+		time.Sleep(p.interval)
 	}
 }
 

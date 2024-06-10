@@ -15,10 +15,21 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-const TEST_DATA_DIR = "test-data/assignment-v2"
-const MOCK_RAC_RESPONSE_FILE = "test-data/rac-experiments-v3.json"
+const TEST_DATA_DIR = "test-data/ufc/tests"
+const MOCK_UFC_RESPONSE_FILE = "test-data/ufc/flags-v1.json"
 
-var tstData = []testData{}
+type testData struct {
+	Flag          string        `json:"flag"`
+	VariationType variationType `json:"variationType"`
+	DefaultValue  interface{}   `json:"defaultValue"`
+	Subjects      []struct {
+		SubjectKey        string            `json:"subjectKey"`
+		SubjectAttributes SubjectAttributes `json:"subjectAttributes"`
+		Assignment        interface{}       `json:"assignment"`
+	} `json:"subjects"`
+}
+
+var tstData = map[string]testData{}
 
 func Test_e2e(t *testing.T) {
 	serverUrl := initFixture()
@@ -27,111 +38,36 @@ func Test_e2e(t *testing.T) {
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 	client := InitClient(Config{BaseUrl: serverUrl, ApiKey: "dummy", AssignmentLogger: mockLogger})
 
+	// give client the time to "fetch" the mock config
 	time.Sleep(2 * time.Second)
 
-	for _, experiment := range tstData {
-		expName := experiment.Experiment
+	for name, test := range tstData {
+		t.Run(name, func(t *testing.T) {
+			for _, subject := range test.Subjects {
+				t.Run(subject.SubjectKey, func(t *testing.T) {
+					switch test.VariationType {
+					case booleanVariation:
+						value, _ := client.GetBoolAssignment(subject.SubjectKey, test.Flag, subject.SubjectAttributes, test.DefaultValue.(bool))
+						assert.Equal(t, subject.Assignment, value)
+					case numericVariation:
+						value, _ := client.GetNumericAssignment(subject.SubjectKey, test.Flag, subject.SubjectAttributes, test.DefaultValue.(float64))
+						assert.Equal(t, subject.Assignment, value)
+					case integerVariation:
+						value, _ := client.GetIntegerAssignment(subject.SubjectKey, test.Flag, subject.SubjectAttributes, int64(test.DefaultValue.(float64)))
+						assert.Equal(t, int64(subject.Assignment.(float64)), value)
 
-		booleanAssignments := []bool{}
-		jsonAssignments := []string{}
-		numericAssignments := []float64{}
-		stringAssignments := []string{}
-
-		for _, subject := range experiment.SubjectsWithAttributes {
-			switch experiment.ValueType {
-			case "boolean":
-				booleanAssignment, err := client.GetBoolAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
-				if err == nil {
-					assert.Nil(t, err)
-				}
-
-				booleanAssignments = append(booleanAssignments, booleanAssignment)
-			case "numeric":
-				numericAssignment, err := client.GetNumericAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
-				if err == nil {
-					assert.Nil(t, err)
-				}
-
-				numericAssignments = append(numericAssignments, numericAssignment)
-			case "json":
-				jsonAssignment, err := client.GetJSONStringAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
-				if err == nil {
-					assert.Nil(t, err)
-				}
-
-				jsonAssignments = append(jsonAssignments, jsonAssignment)
-			case "string":
-				stringAssignment, err := client.GetStringAssignment(subject.SubjectKey, expName, subject.SubjectAttributes)
-				if err == nil {
-					assert.Nil(t, err)
-				}
-
-				stringAssignments = append(stringAssignments, stringAssignment)
+					case jsonVariation:
+						value, _ := client.GetJSONAssignment(subject.SubjectKey, test.Flag, subject.SubjectAttributes, test.DefaultValue)
+						assert.Equal(t, subject.Assignment, value)
+					case stringVariation:
+						value, _ := client.GetStringAssignment(subject.SubjectKey, test.Flag, subject.SubjectAttributes, test.DefaultValue.(string))
+						assert.Equal(t, subject.Assignment, value)
+					default:
+						panic(fmt.Sprintf("unknown variation: %v", test.VariationType))
+					}
+				})
 			}
-		}
-
-		for _, subject := range experiment.Subjects {
-			switch experiment.ValueType {
-			case "boolean":
-				booleanAssignment, err := client.GetBoolAssignment(subject, expName, dictionary{})
-				if err == nil {
-					assert.Nil(t, err)
-				}
-
-				booleanAssignments = append(booleanAssignments, booleanAssignment)
-			case "json":
-				jsonAssignment, err := client.GetJSONStringAssignment(subject, expName, dictionary{})
-				if err == nil {
-					assert.Nil(t, err)
-				}
-
-				jsonAssignments = append(jsonAssignments, jsonAssignment)
-			case "numeric":
-				numericAssignment, err := client.GetNumericAssignment(subject, expName, dictionary{})
-				if err == nil {
-					assert.Nil(t, err)
-				}
-
-				numericAssignments = append(numericAssignments, numericAssignment)
-			case "string":
-				stringAssignment, err := client.GetStringAssignment(subject, expName, dictionary{})
-
-				if err == nil {
-					assert.Nil(t, err)
-				}
-
-				stringAssignments = append(stringAssignments, stringAssignment)
-			}
-		}
-
-		switch experiment.ValueType {
-		case "boolean":
-			expectedAssignments := []bool{}
-			for _, assignment := range experiment.ExpectedAssignments {
-				expectedAssignments = append(expectedAssignments, assignment.BoolValue)
-			}
-			assert.Equal(t, expectedAssignments, booleanAssignments)
-		case "json":
-			expectedAssignments := []string{}
-			for _, assignment := range experiment.ExpectedAssignments {
-				expectedAssignments = append(expectedAssignments, assignment.StringValue)
-			}
-			assert.Equal(t, expectedAssignments, jsonAssignments)
-		case "numeric":
-			expectedAssignments := []float64{}
-			for _, assignment := range experiment.ExpectedAssignments {
-				expectedAssignments = append(expectedAssignments, assignment.NumericValue)
-			}
-			assert.Equal(t, expectedAssignments, numericAssignments)
-		case "string":
-			expectedAssignments := []string{}
-			for _, assignment := range experiment.ExpectedAssignments {
-				expectedAssignments = append(expectedAssignments, assignment.StringValue)
-			}
-			assert.Equal(t, expectedAssignments, stringAssignments)
-		}
-
-		mockLogger.AssertCalled(t, "LogAssignment", mock.Anything)
+		})
 	}
 }
 
@@ -140,7 +76,7 @@ func initFixture() string {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch strings.TrimSpace(r.URL.Path) {
-		case "/randomized_assignment/v3/config":
+		case "/flag-config/v1/config":
 			err := json.NewEncoder(w).Encode(testResponse)
 			if err != nil {
 				fmt.Println("Error encoding test response")
@@ -153,7 +89,7 @@ func initFixture() string {
 	return server.URL
 }
 
-func getTestData() dictionary {
+func getTestData() ufcResponse {
 	files, err := os.ReadDir(TEST_DATA_DIR)
 
 	if err != nil {
@@ -175,19 +111,20 @@ func getTestData() dictionary {
 		if err != nil {
 			fmt.Println("Error reading test case file")
 		}
-		tstData = append(tstData, testCaseDict)
+		tstData[file.Name()] = testCaseDict
 	}
 
-	var racResponseData map[string]interface{}
-	racResponseJsonFile, _ := os.Open(MOCK_RAC_RESPONSE_FILE)
-	byteValue, _ := io.ReadAll(racResponseJsonFile)
-	err = json.Unmarshal(byteValue, &racResponseData)
+	var ufcResponse ufcResponse
+	ufcResponseJsonFile, _ := os.Open(MOCK_UFC_RESPONSE_FILE)
+	byteValue, _ := io.ReadAll(ufcResponseJsonFile)
+	err = json.Unmarshal(byteValue, &ufcResponse)
 	if err != nil {
-		fmt.Println("Error reading mock RAC response file")
+		fmt.Println("Error reading mock UFC response file")
 	}
 
 	if err != nil {
-		fmt.Println("Error reading mock RAC response file")
+		fmt.Println("Error reading mock UFC response file")
 	}
-	return racResponseData
+
+	return ufcResponse
 }
