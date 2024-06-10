@@ -36,7 +36,7 @@ func Test_e2e(t *testing.T) {
 
 	mockLogger := new(mockLogger)
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
-	client := InitClient(Config{BaseUrl: serverUrl, ApiKey: "dummy", AssignmentLogger: mockLogger})
+	client := InitClient(Config{BaseUrl: serverUrl, SdkKey: "dummy", AssignmentLogger: mockLogger})
 
 	// give client the time to "fetch" the mock config
 	time.Sleep(2 * time.Second)

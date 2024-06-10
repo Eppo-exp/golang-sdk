@@ -30,7 +30,7 @@ func TestHttpClientGet(t *testing.T) {
 
 	client := &http.Client{}
 	hc := newHttpClient(server.URL, client, SDKParams{
-		apiKey:     "testApiKey",
+		sdkKey:     "testSdkKey",
 		sdkName:    "testSdkName",
 		sdkVersion: "testSdkVersion",
 	})

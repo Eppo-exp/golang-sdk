@@ -9,7 +9,7 @@ import (
 
 func Test_config_defaultPollerInterval(t *testing.T) {
 	cfg := Config{
-		ApiKey: "blah",
+		SdkKey: "blah",
 	}
 
 	cfg.validate()

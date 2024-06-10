@@ -12,7 +12,7 @@
 
 	func main() {
 		eppoClient = eppoclient.InitClient(eppoclient.Config{
-			ApiKey:           "<your_api_key>",
+			SdkKey:           "<your_sdk_key>",
 			AssignmentLogger: eppoclient.AssignmentLogger{},
 		})
 	}

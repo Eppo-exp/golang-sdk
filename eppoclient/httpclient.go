@@ -18,7 +18,7 @@ type httpClient struct {
 }
 
 type SDKParams struct {
-	apiKey     string
+	sdkKey     string
 	sdkName    string
 	sdkVersion string
 }
@@ -43,7 +43,8 @@ func (hc *httpClient) get(resource string) (string, error) {
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
 	q := req.URL.Query()
-	q.Add("apiKey", hc.sdkParams.apiKey)
+	// todo: migrate to bearer token authorization header
+	q.Add("apiKey", hc.sdkParams.sdkKey) // origin server uses apiKey
 	q.Add("sdkName", hc.sdkParams.sdkName)
 	q.Add("sdkVersion", hc.sdkParams.sdkVersion)
 	req.URL.RawQuery = q.Encode()

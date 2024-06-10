@@ -22,14 +22,14 @@ In your `go.mod`, add the SDK package as a dependency:
 
 ```
 require (
-    github.com/Eppo-exp/golang-sdk/v2
+    github.com/Eppo-exp/golang-sdk/v3
 )
 ```
 
 Or you can install the SDK from the command line with:
 
 ```
-go get github.com/Eppo-exp/golang-sdk/v2
+go get github.com/Eppo-exp/golang-sdk/v3
 ```
 
 ## Quick start
@@ -40,7 +40,7 @@ Begin by initializing a singleton instance of Eppo's client. Once initialized, t
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v2/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v3/eppoclient"
 )
 
 var eppoClient = &eppoclient.EppoClient{}
@@ -49,7 +49,7 @@ func main() {
     assignmentLogger := NewExampleAssignmentLogger()
 
     eppoClient = eppoclient.InitClient(eppoclient.Config{
-        ApiKey:           "<your_sdk_key>",
+        SdkKey:           "<your_sdk_key>",
         AssignmentLogger: assignmentLogger,
     })
 }
@@ -60,7 +60,7 @@ func main() {
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v2/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v3/eppoclient"
 )
 
 var eppoClient = &eppoclient.EppoClient{}
