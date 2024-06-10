@@ -38,12 +38,9 @@ func (condition condition) matches(subjectAttributes SubjectAttributes) bool {
 
 	switch condition.Operator {
 	case "MATCHES":
-		v := reflect.ValueOf(subjectValue)
-		if v.Kind() != reflect.String {
-			subjectValue = strconv.Itoa(subjectValue.(int))
-		}
-		r, _ := regexp.MatchString(condition.Value.(string), subjectValue.(string))
-		return r
+		return matches(subjectValue, condition.Value.(string))
+	case "NOT_MATCHES":
+		return !matches(subjectValue, condition.Value.(string))
 	case "ONE_OF":
 		return isOneOf(subjectValue, convertToStringArray(condition.Value))
 	case "NOT_ONE_OF":
@@ -87,6 +84,27 @@ func convertToStringArray(conditionValue interface{}) []string {
 		conditionValueStrings[i] = v.(string)
 	}
 	return conditionValueStrings
+}
+
+func matches(subjectValue interface{}, conditionValue string) bool {
+	var v string
+	switch subjectValue := subjectValue.(type) {
+	case string:
+		v = subjectValue
+	case int:
+		v = strconv.Itoa(subjectValue)
+	case bool:
+		if subjectValue {
+			v = "true"
+		} else {
+			v = "false"
+		}
+	default:
+		return false
+	}
+
+	r, _ := regexp.MatchString(conditionValue, v)
+	return r
 }
 
 func isOneOf(attributeValue interface{}, conditionValue []string) bool {
