@@ -10,7 +10,7 @@ var __version__ = "3.0.0"
 // an instance of EppoClient, which could be used to get assignments information.
 func InitClient(config Config) *EppoClient {
 	config.validate()
-	sdkParams := SDKParams{apiKey: config.ApiKey, sdkName: "go", sdkVersion: __version__}
+	sdkParams := SDKParams{sdkKey: config.SdkKey, sdkName: "go", sdkVersion: __version__}
 
 	httpClient := newHttpClient(config.BaseUrl, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
 	configStore := newConfigurationStore()

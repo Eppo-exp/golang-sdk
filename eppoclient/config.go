@@ -6,14 +6,14 @@ const default_base_url = "https://fscdn.eppo.cloud/api"
 
 type Config struct {
 	BaseUrl          string
-	ApiKey           string
+	SdkKey           string
 	AssignmentLogger IAssignmentLogger
 	PollerInterval   time.Duration
 }
 
 func (cfg *Config) validate() {
-	if cfg.ApiKey == "" {
-		panic("api key not set")
+	if cfg.SdkKey == "" {
+		panic("sdk key not set")
 	}
 
 	if cfg.BaseUrl == "" {

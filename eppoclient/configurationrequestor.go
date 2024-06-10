@@ -27,7 +27,7 @@ func newConfigurationRequestor(httpClient httpClient, configStore *configuration
 func (ecr *configurationRequestor) GetConfiguration(experimentKey string) (flagConfiguration, error) {
 	if ecr.httpClient.isUnauthorized {
 		// should we panic here or return an error?
-		panic("Unauthorized: please check your API key")
+		panic("Unauthorized: please check your SDK key")
 	}
 
 	result, err := ecr.configStore.GetConfiguration(experimentKey)
