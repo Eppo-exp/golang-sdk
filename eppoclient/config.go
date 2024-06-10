@@ -13,7 +13,7 @@ type Config struct {
 
 func (cfg *Config) validate() {
 	if cfg.SdkKey == "" {
-		panic("api key not set")
+		panic("sdk key not set")
 	}
 
 	if cfg.BaseUrl == "" {
