@@ -60,7 +60,7 @@ func evaluateCondition(subjectAttributes dictionary, condition condition) bool {
 		return isOneOf(subjectValue, convertToStringArray(condition.Value))
 	case "NOT_ONE_OF":
 		return isNotOneOf(subjectValue, convertToStringArray(condition.Value))
-	default:
+	case "GTE", "GT", "LTE", "LT":
 		// Attempt to coerce both values to float64 and compare them.
 		subjectValueNumeric, isNumericSubjectErr := ToFloat64(subjectValue)
 		conditionValueNumeric, isNumericConditionErr := ToFloat64(condition.Value)
@@ -84,6 +84,8 @@ func evaluateCondition(subjectAttributes dictionary, condition condition) bool {
 
 		// Fallback logic if neither numeric nor semver comparison is applicable.
 		return false
+	default:
+		panic(fmt.Sprintf("unknown condition operator: %s", condition.Operator))
 	}
 }
 

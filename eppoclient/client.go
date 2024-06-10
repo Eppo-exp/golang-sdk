@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"time"
 )
 
 // Client for eppo.cloud. Instance of this struct will be created on calling InitClient.
@@ -90,12 +89,12 @@ func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAt
 
 	// Get assigned variation
 	assignmentKey := "assignment-" + subjectKey + "-" + flagKey
-	shard := getShard(assignmentKey, int64(config.SubjectShards))
+	shard := getShard(assignmentKey, config.SubjectShards)
 	variations := allocation.Variations
 	var variationShard Variation
 
 	for _, variation := range variations {
-		if isShardInRange(int(shard), variation.ShardRange) {
+		if isShardInRange(shard, variation.ShardRange) {
 			variationShard = variation
 		}
 	}
@@ -118,7 +117,7 @@ func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAt
 			Allocation:        rule.AllocationKey,
 			Variation:         assignedVariation,
 			Subject:           subjectKey,
-			Timestamp:         time.Now().String(),
+			Timestamp:         TimeNow(),
 			SubjectAttributes: subjectAttributes,
 		}
 		ec.logger.LogAssignment(assignmentEvent)
@@ -138,9 +137,9 @@ func getSubjectVariationOverride(experimentConfig experimentConfiguration, subje
 	return Null()
 }
 
-func isInExperimentSample(subjectKey string, flagKey string, subjectShards int, percentExposure float32) bool {
+func isInExperimentSample(subjectKey string, flagKey string, subjectShards int64, percentExposure float32) bool {
 	shardKey := "exposure-" + subjectKey + "-" + flagKey
-	shard := getShard(shardKey, int64(subjectShards))
+	shard := getShard(shardKey, subjectShards)
 
 	return float64(shard) <= float64(percentExposure)*float64(subjectShards)
 }

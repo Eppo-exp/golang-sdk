@@ -2,26 +2,21 @@ package eppoclient
 
 import (
 	"crypto/md5"
-	"encoding/hex"
-	"strconv"
+	"encoding/binary"
 )
 
 type shardRange struct {
-	Start int `json:"start"`
-	End   int `json:"end"`
+	Start int64 `json:"start"`
+	End   int64 `json:"end"`
 }
 
 func getShard(input string, subjectShards int64) int64 {
 	hash := md5.Sum([]byte(input))
-	hashOutput := hex.EncodeToString(hash[:])
-
-	// get the first 4 bytes of the md5 hex string and parse it using base 16
-	// (8 hex characters represent 4 bytes, e.g. 0xffffffff represents the max 4-byte integer)
-	intVal, _ := strconv.ParseInt(hashOutput[0:8], 16, 0)
-
+	// Only first 4 bytes of md5 are used for the shard value.
+	intVal := int64(binary.BigEndian.Uint32(hash[:4]))
 	return intVal % subjectShards
 }
 
-func isShardInRange(shard int, shardRange shardRange) bool {
+func isShardInRange(shard int64, shardRange shardRange) bool {
 	return shard >= shardRange.Start && shard < shardRange.End
 }
