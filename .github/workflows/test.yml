@@ -1,7 +1,11 @@
 name: Test SDK
 on:
   pull_request:
-    path: '**/*'
+    paths:
+      - '**/*'
+  push:
+    branches:
+      - main
 
 jobs:
   test-sdk:
