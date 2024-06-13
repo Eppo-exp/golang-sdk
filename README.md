@@ -66,10 +66,10 @@ import (
 var eppoClient = &eppoclient.EppoClient{}
 
 variation := eppoClient.GetStringAssignment(
-   'new-user-onboarding', 
-   user.id, 
-   user.attributes, 
-   'control'
+  user.id, 
+  'new-user-onboarding', 
+  user.attributes, 
+  'control'
 );
 ```
 
@@ -89,9 +89,9 @@ Each function has the same signature, but returns the type in the function name.
 
 ```go
 func getBooleanAssignment(
-	flagKey string, 
 	subjectKey string, 
-	subjectAttributes map[string]interface{}, 
+	flagKey string, 
+	subjectAttributes SubjectAttributes, 
 	defaultValue string
 ) bool
   ```
