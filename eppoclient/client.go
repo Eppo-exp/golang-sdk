@@ -37,7 +37,7 @@ func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subje
 }
 
 func (ec *EppoClient) GetNumericAssignment(flagKey string, subjectKey string, subjectAttributes SubjectAttributes, defaultValue float64) (float64, error) {
-	variation, err := ec.getAssignment(flagKey, subjectKey,subjectAttributes, numericVariation)
+	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, numericVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -49,7 +49,7 @@ func (ec *EppoClient) GetNumericAssignment(flagKey string, subjectKey string, su
 }
 
 func (ec *EppoClient) GetIntegerAssignment(flagKey string, subjectKey string, subjectAttributes SubjectAttributes, defaultValue int64) (int64, error) {
-	variation, err := ec.getAssignment(flagKey, subjectKey,subjectAttributes, integerVariation)
+	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, integerVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -61,7 +61,7 @@ func (ec *EppoClient) GetIntegerAssignment(flagKey string, subjectKey string, su
 }
 
 func (ec *EppoClient) GetStringAssignment(flagKey string, subjectKey string, subjectAttributes SubjectAttributes, defaultValue string) (string, error) {
-	variation, err := ec.getAssignment(flagKey, subjectKey,subjectAttributes, stringVariation)
+	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, stringVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -73,7 +73,7 @@ func (ec *EppoClient) GetStringAssignment(flagKey string, subjectKey string, sub
 }
 
 func (ec *EppoClient) GetJSONAssignment(flagKey string, subjectKey string, subjectAttributes SubjectAttributes, defaultValue interface{}) (interface{}, error) {
-	variation, err := ec.getAssignment(flagKey, subjectKey,subjectAttributes, jsonVariation)
+	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, jsonVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
