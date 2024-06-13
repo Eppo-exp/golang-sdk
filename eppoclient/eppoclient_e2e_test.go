@@ -50,7 +50,7 @@ func Test_e2e(t *testing.T) {
 						value, _ := client.GetBoolAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, test.DefaultValue.(bool))
 						assert.Equal(t, subject.Assignment, value)
 					case numericVariation:
-						value, _ := client.GetNumericAssignment(test.Flag, ssubject.SubjectKey, ubject.SubjectAttributes, test.DefaultValue.(float64))
+						value, _ := client.GetNumericAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, test.DefaultValue.(float64))
 						assert.Equal(t, subject.Assignment, value)
 					case integerVariation:
 						value, _ := client.GetIntegerAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, int64(test.DefaultValue.(float64)))
