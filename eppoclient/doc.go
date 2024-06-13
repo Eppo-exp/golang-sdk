@@ -5,7 +5,7 @@
 	Usage:
 
 	import (
-		"github.com/Eppo-exp/golang-sdk/v2/eppoclient"
+		"github.com/Eppo-exp/golang-sdk/v4/eppoclient"
 	)
 
 	var eppoClient = &eppoclient.EppoClient{}
@@ -18,7 +18,7 @@
 	}
 
 	func apiEndpoint() {
-		assignment, _ := eppoClient.GetStringAssignment("subject-1", "experiment_5", sbjAttrs)
+		assignment, _ := eppoClient.GetStringAssignment("experiment_5", "subject-1", sbjAttrs, "control")
 
 		if assignment == "control" {
 			// do something
