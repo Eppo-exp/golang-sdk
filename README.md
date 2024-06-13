@@ -66,16 +66,16 @@ import (
 var eppoClient = &eppoclient.EppoClient{}
 
 variation := eppoClient.GetStringAssignment(
-   'new-user-onboarding', 
-   user.id, 
-   user.attributes, 
+   user.id,
+   'new-user-onboarding',
+   user.attributes,
    'control'
 );
 ```
 
 ## Assignment functions
 
-Every Eppo flag has a return type that is set once on creation in the dashboard. Once a flag is created, assignments in code should be made using the corresponding typed function: 
+Every Eppo flag has a return type that is set once on creation in the dashboard. Once a flag is created, assignments in code should be made using the corresponding typed function:
 
 ```go
 GetBooleanAssignment(...)
@@ -89,14 +89,14 @@ Each function has the same signature, but returns the type in the function name.
 
 ```go
 func getBooleanAssignment(
-	flagKey string, 
-	subjectKey string, 
-	subjectAttributes map[string]interface{}, 
+	subjectKey string,
+	flagKey string,
+	subjectAttributes SubjectAttributes,
 	defaultValue string
 ) bool
   ```
 
-## Assignment logger 
+## Assignment logger
 
 If you are using the Eppo SDK for experiment assignment (i.e randomization), pass in a callback logging function to the `InitClient` function on SDK initialization. The SDK invokes the callback to capture assignment data whenever a variation is assigned.
 
