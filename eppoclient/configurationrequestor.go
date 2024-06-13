@@ -7,11 +7,6 @@ import (
 
 const UFC_ENDPOINT = "/flag-config/v1/config"
 
-type iConfigRequestor interface {
-	GetConfiguration(key string) (flagConfiguration, error)
-	FetchAndStoreConfigurations()
-}
-
 type configurationRequestor struct {
 	httpClient  httpClient
 	configStore *configurationStore
@@ -24,15 +19,8 @@ func newConfigurationRequestor(httpClient httpClient, configStore *configuration
 	}
 }
 
-func (ecr *configurationRequestor) GetConfiguration(experimentKey string) (flagConfiguration, error) {
-	if ecr.httpClient.isUnauthorized {
-		// should we panic here or return an error?
-		panic("Unauthorized: please check your SDK key")
-	}
-
-	result, err := ecr.configStore.GetConfiguration(experimentKey)
-
-	return result, err
+func (ecr *configurationRequestor) IsAuthorized() bool {
+	return !ecr.httpClient.isUnauthorized
 }
 
 func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
@@ -52,7 +40,7 @@ func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
 
 	// Now wrapper.Flags contains all configurations mapped by their keys
 	// Pass this map directly to SetConfigurations
-	err = ecr.configStore.SetConfigurations(wrapper.Flags)
+	err = ecr.configStore.setFlagsConfiguration(wrapper.Flags)
 	if err != nil {
 		fmt.Println("Failed to set configurations in configuration store", err)
 	}

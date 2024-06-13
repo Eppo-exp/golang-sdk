@@ -16,11 +16,5 @@ type mockConfigRequestor struct {
 	mock.Mock
 }
 
-func (mcr *mockConfigRequestor) GetConfiguration(flagKey string) (flagConfiguration, error) {
-	args := mcr.Called(flagKey)
-
-	return args.Get(0).(flagConfiguration), args.Error(1)
-}
-
 func (mcr *mockConfigRequestor) FetchAndStoreConfigurations() {
 }

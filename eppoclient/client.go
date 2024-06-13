@@ -9,19 +9,19 @@ type Attributes map[string]interface{}
 // Client for eppo.cloud. Instance of this struct will be created on calling InitClient.
 // EppoClient will then immediately start polling experiments data from Eppo.
 type EppoClient struct {
-	configRequestor iConfigRequestor
-	poller          poller
-	logger          IAssignmentLogger
+	configurationStore *configurationStore
+	configRequestor    *configurationRequestor
+	poller             *poller
+	logger             IAssignmentLogger
 }
 
-func newEppoClient(configRequestor iConfigRequestor, poller *poller, assignmentLogger IAssignmentLogger) *EppoClient {
-	var ec = &EppoClient{}
-
-	ec.poller = *poller
-	ec.configRequestor = configRequestor
-	ec.logger = assignmentLogger
-
-	return ec
+func newEppoClient(configurationStore *configurationStore, configRequestor *configurationRequestor, poller *poller, assignmentLogger IAssignmentLogger) *EppoClient {
+	return &EppoClient{
+		configurationStore: configurationStore,
+		configRequestor:    configRequestor,
+		poller:             poller,
+		logger:             assignmentLogger,
+	}
 }
 
 func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue bool) (bool, error) {
@@ -89,7 +89,11 @@ func (ec *EppoClient) getAssignment(flagKey string, subjectKey string, subjectAt
 		panic("no flag key provided")
 	}
 
-	flag, err := ec.configRequestor.GetConfiguration(flagKey)
+	if ec.configRequestor != nil && !ec.configRequestor.IsAuthorized() {
+		panic("Unauthorized: please check your SDK key")
+	}
+
+	flag, err := ec.configurationStore.getFlagConfiguration(flagKey)
 	if err != nil {
 		return nil, err
 	}

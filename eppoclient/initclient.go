@@ -19,7 +19,7 @@ func InitClient(config Config) *EppoClient {
 
 	poller := newPoller(config.PollerInterval, requestor.FetchAndStoreConfigurations)
 
-	client := newEppoClient(requestor, poller, assignmentLogger)
+	client := newEppoClient(configStore, requestor, poller, assignmentLogger)
 
 	client.poller.Start()
 

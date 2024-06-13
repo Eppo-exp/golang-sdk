@@ -5,25 +5,23 @@ import (
 )
 
 type configurationStore struct {
-	configs map[string]flagConfiguration
+	flags   map[string]flagConfiguration
 }
 
 func newConfigurationStore() *configurationStore {
-	return &configurationStore{
-		configs: make(map[string]flagConfiguration),
-	}
+	return &configurationStore{}
 }
 
-func (cs *configurationStore) GetConfiguration(key string) (flag flagConfiguration, err error) {
-	flag, ok := cs.configs[key]
+func (cs *configurationStore) getFlagConfiguration(key string) (flag flagConfiguration, err error) {
+	flag, ok := cs.flags[key]
 	if !ok {
-		return flag, errors.New("configuration not found in configuration store")
+		return flag, errors.New("flag configuration not found in configuration store")
 	}
 
 	return flag, nil
 }
 
-func (cs *configurationStore) SetConfigurations(configs map[string]flagConfiguration) error {
-	cs.configs = configs
+func (cs *configurationStore) setFlagsConfiguration(configs map[string]flagConfiguration) error {
+	cs.flags = configs
 	return nil
 }
