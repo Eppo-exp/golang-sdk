@@ -23,9 +23,9 @@ type testData struct {
 	VariationType variationType `json:"variationType"`
 	DefaultValue  interface{}   `json:"defaultValue"`
 	Subjects      []struct {
-		SubjectKey        string            `json:"subjectKey"`
-		SubjectAttributes SubjectAttributes `json:"subjectAttributes"`
-		Assignment        interface{}       `json:"assignment"`
+		SubjectKey        string      `json:"subjectKey"`
+		SubjectAttributes Attributes  `json:"subjectAttributes"`
+		Assignment        interface{} `json:"assignment"`
 	} `json:"subjects"`
 }
 

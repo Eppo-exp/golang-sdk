@@ -10,7 +10,7 @@ import (
 	semver "github.com/Masterminds/semver/v3"
 )
 
-func (rule rule) matches(subjectAttributes SubjectAttributes) bool {
+func (rule rule) matches(subjectAttributes Attributes) bool {
 	for _, condition := range rule.Conditions {
 		if !condition.matches(subjectAttributes) {
 			return false
@@ -20,7 +20,7 @@ func (rule rule) matches(subjectAttributes SubjectAttributes) bool {
 	return true
 }
 
-func (condition condition) matches(subjectAttributes SubjectAttributes) bool {
+func (condition condition) matches(subjectAttributes Attributes) bool {
 	subjectValue, exists := subjectAttributes[condition.Attribute]
 	if condition.Operator == "IS_NULL" {
 		isNull := !exists || subjectValue == nil
