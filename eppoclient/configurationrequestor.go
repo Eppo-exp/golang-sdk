@@ -43,7 +43,7 @@ func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
 	}
 
 	var wrapper ufcResponse
-	err = json.Unmarshal([]byte(result), &wrapper)
+	err = json.Unmarshal(result, &wrapper)
 	if err != nil {
 		fmt.Println("Failed to unmarshal UFC response JSON", result)
 		fmt.Println(err)
