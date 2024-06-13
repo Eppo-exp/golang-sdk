@@ -91,7 +91,7 @@ Each function has the same signature, but returns the type in the function name.
 func getBooleanAssignment(
 	subjectKey string,
 	flagKey string,
-	subjectAttributes map[string]interface{},
+	subjectAttributes SubjectAttributes,
 	defaultValue string
 ) bool
   ```
