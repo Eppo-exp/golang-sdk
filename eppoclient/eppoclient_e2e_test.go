@@ -47,20 +47,20 @@ func Test_e2e(t *testing.T) {
 				t.Run(subject.SubjectKey, func(t *testing.T) {
 					switch test.VariationType {
 					case booleanVariation:
-						value, _ := client.GetBoolAssignment(subject.SubjectKey, test.Flag, subject.SubjectAttributes, test.DefaultValue.(bool))
+						value, _ := client.GetBoolAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, test.DefaultValue.(bool))
 						assert.Equal(t, subject.Assignment, value)
 					case numericVariation:
-						value, _ := client.GetNumericAssignment(subject.SubjectKey, test.Flag, subject.SubjectAttributes, test.DefaultValue.(float64))
+						value, _ := client.GetNumericAssignment(test.Flag, ssubject.SubjectKey, ubject.SubjectAttributes, test.DefaultValue.(float64))
 						assert.Equal(t, subject.Assignment, value)
 					case integerVariation:
-						value, _ := client.GetIntegerAssignment(subject.SubjectKey, test.Flag, subject.SubjectAttributes, int64(test.DefaultValue.(float64)))
+						value, _ := client.GetIntegerAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, int64(test.DefaultValue.(float64)))
 						assert.Equal(t, int64(subject.Assignment.(float64)), value)
 
 					case jsonVariation:
-						value, _ := client.GetJSONAssignment(subject.SubjectKey, test.Flag, subject.SubjectAttributes, test.DefaultValue)
+						value, _ := client.GetJSONAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, test.DefaultValue)
 						assert.Equal(t, subject.Assignment, value)
 					case stringVariation:
-						value, _ := client.GetStringAssignment(subject.SubjectKey, test.Flag, subject.SubjectAttributes, test.DefaultValue.(string))
+						value, _ := client.GetStringAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, test.DefaultValue.(string))
 						assert.Equal(t, subject.Assignment, value)
 					default:
 						panic(fmt.Sprintf("unknown variation: %v", test.VariationType))

@@ -15,7 +15,7 @@ func Test_AssignBlankExperiment(t *testing.T) {
 	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
 
 	assert.Panics(t, func() {
-		_, err := client.GetStringAssignment("subject-1", "", SubjectAttributes{}, "")
+		_, err := client.GetStringAssignment("", "subject-1", SubjectAttributes{}, "")
 		if err != nil {
 			log.Println(err)
 		}
@@ -29,7 +29,7 @@ func Test_AssignBlankSubject(t *testing.T) {
 	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
 
 	assert.Panics(t, func() {
-		_, err := client.GetStringAssignment("", "experiment-1", SubjectAttributes{}, "")
+		_, err := client.GetStringAssignment("experiment-1", "", SubjectAttributes{}, "")
 		if err != nil {
 			log.Println(err)
 		}
@@ -82,7 +82,7 @@ func Test_LogAssignment(t *testing.T) {
 
 	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
 
-	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", SubjectAttributes{}, "")
+	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1",SubjectAttributes{}, "")
 	expected := "control"
 
 	assert.Nil(t, err)
@@ -136,7 +136,7 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 
 	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
 
-	assignment, err := client.GetStringAssignment("user-1", "experiment-key-1", SubjectAttributes{}, "")
+	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", SubjectAttributes{}, "")
 	expected := "control"
 
 	assert.Nil(t, err)
