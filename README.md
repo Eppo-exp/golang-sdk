@@ -1,6 +1,6 @@
 # Eppo Go SDK
 
-[![Test and lint SDK](https://github.com/Eppo-exp/java-server-sdk/actions/workflows/lint-test-sdk.yml/badge.svg)](https://github.com/Eppo-exp/java-server-sdk/actions/workflows/lint-test-sdk.yml)
+[![Test SDK](https://github.com/Eppo-exp/golang-sdk/actions/workflows/test.yml/badge.svg)](https://github.com/Eppo-exp/golang-sdk/actions/workflows/test.yml)
 
 EppoClient is a client sdk for the `eppo.cloud` randomization API.
 It is used to retrieve the experiments data and put it to in-memory store, and then get assignments information.
