@@ -6,6 +6,7 @@ import (
 )
 
 const UFC_ENDPOINT = "/flag-config/v1/config"
+const BANDIT_ENDPOINT = "/flag-config/v1/bandits"
 
 type configurationRequestor struct {
 	httpClient  httpClient
@@ -38,10 +39,27 @@ func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
 		return
 	}
 
-	// Now wrapper.Flags contains all configurations mapped by their keys
-	// Pass this map directly to SetConfigurations
-	err = ecr.configStore.setFlagsConfiguration(wrapper.Flags)
-	if err != nil {
-		fmt.Println("Failed to set configurations in configuration store", err)
+	ecr.configStore.setFlagsConfiguration(wrapper.Flags)
+
+	if wrapper.Bandits != nil {
+		ecr.fetchAndStoreBandits()
 	}
+}
+
+func (ecr *configurationRequestor) fetchAndStoreBandits() {
+	result, err := ecr.httpClient.get(BANDIT_ENDPOINT)
+	if err != nil {
+		fmt.Println("Failed to fetch bandit response", err)
+		return
+	}
+
+	var bandits banditResponse
+	err = json.Unmarshal(result, &bandits)
+	if err != nil {
+		fmt.Println("Failed to unmarshal bandit response JSON", result)
+		fmt.Println(err)
+		return
+	}
+
+	ecr.configStore.setBanditsConfiguration(bandits.Bandits)
 }

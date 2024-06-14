@@ -2,6 +2,7 @@ package eppoclient
 
 import (
 	"fmt"
+	"time"
 )
 
 type Attributes map[string]interface{}
@@ -78,6 +79,76 @@ func (ec *EppoClient) GetJSONAssignment(flagKey string, subjectKey string, subje
 		return defaultValue, err
 	}
 	return variation, err
+}
+
+type BanditResult struct {
+	Variation string
+	Action    *string
+}
+
+func (ec *EppoClient) GetBanditAction(flagKey string, subjectKey string, subjectAttributes ContextAttributes, actions map[string]ContextAttributes, defaultVariation string) BanditResult {
+	// ignoring the error here as we can always proceed with default variation
+	variation, _ := ec.GetStringAssignment(flagKey, subjectKey, subjectAttributes.toGenericAttributes(), defaultVariation)
+
+	bandit, err := ec.configurationStore.getBanditConfiguration(variation)
+	if err != nil {
+		// no bandit configuration
+		return BanditResult{
+			Variation: variation,
+			Action:    nil,
+		}
+	}
+
+	evaluation := bandit.ModelData.evaluate(banditEvaluationContext{
+		flagKey:           flagKey,
+		subjectKey:        subjectKey,
+		subjectAttributes: subjectAttributes,
+		actions:           actions,
+	})
+	if evaluation.result == nil {
+		return BanditResult{
+			Variation: variation,
+			Action:    nil,
+		}
+	}
+
+	if logger, ok := ec.logger.(BanditActionLogger); ok {
+		event := BanditEvent{
+			FlagKey:                      flagKey,
+			BanditKey:                    bandit.BanditKey,
+			Subject:                      subjectKey,
+			Action:                       evaluation.result.actionKey,
+			ActionProbability:            evaluation.result.actionWeight,
+			OptimalityGap:                evaluation.result.optimalityGap,
+			ModelVersion:                 bandit.ModelVersion,
+			Timestamp:                    time.Now().UTC().Format(time.RFC3339),
+			SubjectNumericAttributes:     evaluation.subjectAttributes.Numeric,
+			SubjectCategoricalAttributes: evaluation.subjectAttributes.Categorical,
+			ActionNumericAttributes:      evaluation.result.actionAttributes.Numeric,
+			ActionCategoricalAttributes:  evaluation.result.actionAttributes.Categorical,
+			MetaData: map[string]string{
+				"sdkLanguage": "go",
+				"sdkVersion":  __version__,
+			},
+		}
+
+		func() {
+			// need to catch panics from Logger and continue
+			defer func() {
+				r := recover()
+				if r != nil {
+					fmt.Println("panic occurred:", r)
+				}
+			}()
+
+			logger.LogBanditAction(event)
+		}()
+	}
+
+	return BanditResult{
+		Variation: variation,
+		Action:    &evaluation.result.actionKey,
+	}
 }
 
 func (ec *EppoClient) getAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, variationType variationType) (interface{}, error) {

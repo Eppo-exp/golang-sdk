@@ -81,6 +81,39 @@ func Test_LogAssignment(t *testing.T) {
 	mockLogger.AssertNumberOfCalls(t, "LogAssignment", 1)
 }
 
+func Test_client_loggerIsCalledWithProperBanditEvent(t *testing.T) {
+	var logger = new(mockLogger)
+	logger.Mock.On("LogAssignment", mock.Anything).Return()
+	logger.Mock.On("LogBanditAction", mock.Anything).Return()
+
+	flags := map[string]flagConfiguration{}
+	bandits := map[string]banditConfiguration{
+		"bandit": {
+			BanditKey:    "bandit",
+			ModelName:    "falcon",
+			ModelVersion: "v123",
+			ModelData: banditModelData{
+				Gamma:                  0,
+				DefaultActionScore:     0,
+				ActionProbabilityFloor: 0,
+				Coefficients:           map[string]banditCoefficients{},
+			},
+		},
+	}
+
+	client := newEppoClient(&configurationStore{flags: flags, bandits: bandits}, nil, nil, logger)
+	actions := map[string]ContextAttributes{
+		"action1": {},
+	}
+	client.GetBanditAction("testFlag", "subject", ContextAttributes{}, actions, "bandit")
+
+	event := logger.Calls[0].Arguments[0].(BanditEvent)
+	assert.Equal(t, "testFlag", event.FlagKey)
+	assert.Equal(t, "bandit", event.BanditKey)
+	assert.Equal(t, "subject", event.Subject)
+	assert.Equal(t, "action1", event.Action)
+}
+
 func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 	var mockLogger = new(mockLogger)
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Panic("logging panic")
@@ -128,4 +161,66 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, expected, assignment)
+}
+
+func Test_client_handlesBanditLoggerPanic(t *testing.T) {
+	var logger = new(mockLogger)
+	logger.Mock.On("LogAssignment", mock.Anything).Return()
+	logger.Mock.On("LogBanditAction", mock.Anything).Panic("logging panic")
+
+	flags := map[string]flagConfiguration{}
+	bandits := map[string]banditConfiguration{
+		"bandit": {
+			BanditKey:    "bandit",
+			ModelName:    "falcon",
+			ModelVersion: "v123",
+			ModelData: banditModelData{
+				Gamma:                  0,
+				DefaultActionScore:     0,
+				ActionProbabilityFloor: 0,
+				Coefficients:           map[string]banditCoefficients{},
+			},
+		},
+	}
+
+	client := newEppoClient(&configurationStore{flags: flags, bandits: bandits}, nil, nil, logger)
+	actions := map[string]ContextAttributes{
+		"action1": {},
+	}
+	client.GetBanditAction("testFlag", "subject", ContextAttributes{}, actions, "bandit")
+
+	logger.AssertNumberOfCalls(t, "LogBanditAction", 1)
+}
+
+func Test_client_correctActionIsReturnedIfBanditLoggerPanics(t *testing.T) {
+	var logger = new(mockLogger)
+	logger.Mock.On("LogAssignment", mock.Anything).Return()
+	logger.Mock.On("LogBanditAction", mock.Anything).Panic("logging panic")
+
+	flags := map[string]flagConfiguration{}
+	bandits := map[string]banditConfiguration{
+		"bandit": {
+			BanditKey:    "bandit",
+			ModelName:    "falcon",
+			ModelVersion: "v123",
+			ModelData: banditModelData{
+				Gamma:                  0,
+				DefaultActionScore:     0,
+				ActionProbabilityFloor: 0,
+				Coefficients:           map[string]banditCoefficients{},
+			},
+		},
+	}
+
+	client := newEppoClient(&configurationStore{flags: flags, bandits: bandits}, nil, nil, logger)
+	actions := map[string]ContextAttributes{
+		"action1": {},
+	}
+	result := client.GetBanditAction("testFlag", "subject", ContextAttributes{}, actions, "bandit")
+
+	expectedAction := "action1"
+	assert.Equal(t, BanditResult{
+		Variation: "bandit",
+		Action:    &expectedAction,
+	}, result)
 }

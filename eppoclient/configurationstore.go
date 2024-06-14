@@ -6,6 +6,7 @@ import (
 
 type configurationStore struct {
 	flags   map[string]flagConfiguration
+	bandits map[string]banditConfiguration
 }
 
 func newConfigurationStore() *configurationStore {
@@ -21,7 +22,19 @@ func (cs *configurationStore) getFlagConfiguration(key string) (flag flagConfigu
 	return flag, nil
 }
 
-func (cs *configurationStore) setFlagsConfiguration(configs map[string]flagConfiguration) error {
+func (cs *configurationStore) setFlagsConfiguration(configs map[string]flagConfiguration) {
 	cs.flags = configs
-	return nil
+}
+
+func (cs *configurationStore) getBanditConfiguration(key string) (bandit banditConfiguration, err error) {
+	bandit, ok := cs.bandits[key]
+	if !ok {
+		return bandit, errors.New("bandit configuration not found in configuration store")
+	}
+
+	return bandit, nil
+}
+
+func (cs *configurationStore) setBanditsConfiguration(configs map[string]banditConfiguration) {
+	cs.bandits = configs
 }

@@ -8,9 +8,8 @@ import (
 
 func Test_GetConfiguration_unknownKey(t *testing.T) {
 	var store = newConfigurationStore()
-	err := store.setFlagsConfiguration(map[string]flagConfiguration{})
+	store.setFlagsConfiguration(map[string]flagConfiguration{})
 
-	assert.NoError(t, err)
 	result, err := store.getFlagConfiguration("unknown_exp")
 
 	assert.Error(t, err)
@@ -27,8 +26,8 @@ func Test_GetConfiguration_knownKey(t *testing.T) {
 	}
 
 	var store = newConfigurationStore()
-	err := store.setFlagsConfiguration(config)
-	assert.NoError(t, err)
+	store.setFlagsConfiguration(config)
+
 	result, err := store.getFlagConfiguration("experiment-key-1")
 
 	expected := "experiment-key-1"

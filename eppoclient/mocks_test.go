@@ -9,12 +9,9 @@ type mockLogger struct {
 }
 
 func (ml *mockLogger) LogAssignment(event AssignmentEvent) {
-	ml.Called(event)
+	ml.MethodCalled("LogAssignment", event)
 }
 
-type mockConfigRequestor struct {
-	mock.Mock
-}
-
-func (mcr *mockConfigRequestor) FetchAndStoreConfigurations() {
+func (ml *mockLogger) LogBanditAction(event BanditEvent) {
+	ml.MethodCalled("LogBanditAction", event)
 }
