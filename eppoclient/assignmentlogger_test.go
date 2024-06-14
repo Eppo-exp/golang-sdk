@@ -26,7 +26,7 @@ func TestAssignmentEventSerialization(t *testing.T) {
 			Variation:         "true",
 			Subject:           "testSubject",
 			Timestamp:         "testTimestamp",
-			SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+			SubjectAttributes: Attributes{"testKey": "testValue"},
 		},
 		{
 			Experiment:        "testExperiment",
@@ -35,7 +35,7 @@ func TestAssignmentEventSerialization(t *testing.T) {
 			Variation:         "123.45",
 			Subject:           "testSubject",
 			Timestamp:         "testTimestamp",
-			SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+			SubjectAttributes: Attributes{"testKey": "testValue"},
 		},
 		{
 			Experiment:        "testExperiment",
@@ -44,7 +44,7 @@ func TestAssignmentEventSerialization(t *testing.T) {
 			Variation:         "testVariation",
 			Subject:           "testSubject",
 			Timestamp:         "testTimestamp",
-			SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+			SubjectAttributes: Attributes{"testKey": "testValue"},
 		},
 		{
 			Experiment:        "testExperiment",
@@ -53,7 +53,7 @@ func TestAssignmentEventSerialization(t *testing.T) {
 			Variation:         "jsonVariation",
 			Subject:           "testSubject",
 			Timestamp:         "testTimestamp",
-			SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+			SubjectAttributes: Attributes{"testKey": "testValue"},
 		},
 	}
 

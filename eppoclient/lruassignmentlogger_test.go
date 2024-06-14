@@ -20,7 +20,7 @@ func Test_LruAssignmentLogger_cacheAssignment(t *testing.T) {
 		Variation:         "123.45",
 		Subject:           "testSubject",
 		Timestamp:         "testTimestamp",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	}
 
 	logger.LogAssignment(event)
@@ -42,7 +42,7 @@ func Test_LruAssignmentLogger_timestampAndAttributesAreNotImportant(t *testing.T
 		Subject:           "testSubject",
 		Experiment:        "testExperiment",
 		Timestamp:         "t1",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue1"},
+		SubjectAttributes: Attributes{"testKey": "testValue1"},
 	})
 	logger.LogAssignment(AssignmentEvent{
 		FeatureFlag:       "testFeatureFlag",
@@ -51,7 +51,7 @@ func Test_LruAssignmentLogger_timestampAndAttributesAreNotImportant(t *testing.T
 		Subject:           "testSubject",
 		Experiment:        "testExperiment",
 		Timestamp:         "t2",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue2"},
+		SubjectAttributes: Attributes{"testKey": "testValue2"},
 	})
 
 	innerLogger.AssertNumberOfCalls(t, "LogAssignment", 1)
@@ -70,7 +70,7 @@ func Test_LruAssignmentLogger_panicsAreNotCached(t *testing.T) {
 		Variation:         "123.45",
 		Subject:           "testSubject",
 		Timestamp:         "testTimestamp",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	}
 
 	assert.Panics(t, func() {
@@ -96,7 +96,7 @@ func Test_LruAssignmentLogger_changeInAllocationCausesLogging(t *testing.T) {
 		Variation:         "variation",
 		Subject:           "testSubject",
 		Timestamp:         "testTimestamp",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -105,7 +105,7 @@ func Test_LruAssignmentLogger_changeInAllocationCausesLogging(t *testing.T) {
 		Variation:         "variation",
 		Subject:           "testSubject",
 		Timestamp:         "testTimestamp",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 
 	innerLogger.AssertNumberOfCalls(t, "LogAssignment", 2)
@@ -124,7 +124,7 @@ func Test_LruAssignmentLogger_changeInVariationCausesLogging(t *testing.T) {
 		Variation:         "variation1",
 		Subject:           "testSubject",
 		Timestamp:         "testTimestamp",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -133,7 +133,7 @@ func Test_LruAssignmentLogger_changeInVariationCausesLogging(t *testing.T) {
 		Variation:         "variation2",
 		Subject:           "testSubject",
 		Timestamp:         "testTimestamp",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 
 	innerLogger.AssertNumberOfCalls(t, "LogAssignment", 2)
@@ -152,7 +152,7 @@ func Test_LruAssignmentLogger_allocationOscillationOnlyLoggedOnce(t *testing.T) 
 		Variation:         "variation",
 		Subject:           "testSubject",
 		Timestamp:         "t1",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -161,7 +161,7 @@ func Test_LruAssignmentLogger_allocationOscillationOnlyLoggedOnce(t *testing.T) 
 		Variation:         "variation",
 		Subject:           "testSubject",
 		Timestamp:         "t2",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -170,7 +170,7 @@ func Test_LruAssignmentLogger_allocationOscillationOnlyLoggedOnce(t *testing.T) 
 		Variation:         "variation",
 		Subject:           "testSubject",
 		Timestamp:         "t3",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -179,7 +179,7 @@ func Test_LruAssignmentLogger_allocationOscillationOnlyLoggedOnce(t *testing.T) 
 		Variation:         "variation",
 		Subject:           "testSubject",
 		Timestamp:         "t4",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 
 	innerLogger.AssertNumberOfCalls(t, "LogAssignment", 2)
@@ -198,7 +198,7 @@ func Test_LruAssignmentLogger_variationOscillationOnlyLoggedOnce(t *testing.T) {
 		Variation:         "variation1",
 		Subject:           "testSubject",
 		Timestamp:         "t1",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -207,7 +207,7 @@ func Test_LruAssignmentLogger_variationOscillationOnlyLoggedOnce(t *testing.T) {
 		Variation:         "variation2",
 		Subject:           "testSubject",
 		Timestamp:         "t2",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -216,7 +216,7 @@ func Test_LruAssignmentLogger_variationOscillationOnlyLoggedOnce(t *testing.T) {
 		Variation:         "variation1",
 		Subject:           "testSubject",
 		Timestamp:         "t3",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -225,7 +225,7 @@ func Test_LruAssignmentLogger_variationOscillationOnlyLoggedOnce(t *testing.T) {
 		Variation:         "variation2",
 		Subject:           "testSubject",
 		Timestamp:         "t4",
-		SubjectAttributes: SubjectAttributes{"testKey": "testValue"},
+		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 
 	innerLogger.AssertNumberOfCalls(t, "LogAssignment", 2)

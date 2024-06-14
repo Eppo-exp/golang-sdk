@@ -12,7 +12,7 @@ type AssignmentEvent struct {
 	Allocation        string            `json:"allocation"`
 	Variation         string            `json:"variation"`
 	Subject           string            `json:"subject"`
-	SubjectAttributes SubjectAttributes `json:"subjectAttributes,omitempty"`
+	SubjectAttributes Attributes        `json:"subjectAttributes,omitempty"`
 	Timestamp         string            `json:"timestamp"`
 	MetaData          map[string]string `json:"metaData"`
 	ExtraLogging      map[string]string `json:"extraLogging,omitempty"`

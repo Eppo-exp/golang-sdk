@@ -14,7 +14,7 @@ func (flag flagConfiguration) verifyType(ty variationType) error {
 	}
 }
 
-func (flag flagConfiguration) eval(subjectKey string, subjectAttributes SubjectAttributes) (interface{}, *AssignmentEvent, error) {
+func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attributes) (interface{}, *AssignmentEvent, error) {
 	if !flag.Enabled {
 		return nil, nil, errors.New("the experiment or flag is not enabled")
 	}
@@ -70,7 +70,7 @@ func (flag flagConfiguration) eval(subjectKey string, subjectAttributes SubjectA
 // `subjectKey` if "id" is not already present.
 //
 // This is used so that rules can reference subject key in coditions.
-func augmentWithSubjectKey(subjectAttributes SubjectAttributes, subjectKey string) SubjectAttributes {
+func augmentWithSubjectKey(subjectAttributes Attributes, subjectKey string) Attributes {
 	_, hasId := subjectAttributes["id"]
 	if hasId {
 		return subjectAttributes
@@ -85,7 +85,7 @@ func augmentWithSubjectKey(subjectAttributes SubjectAttributes, subjectKey strin
 	return augmentedSubjectAttributes
 }
 
-func (allocation allocation) findMatchingSplit(subjectKey string, augmentedSubjectAttributes SubjectAttributes, totalShards int64, now time.Time) *split {
+func (allocation allocation) findMatchingSplit(subjectKey string, augmentedSubjectAttributes Attributes, totalShards int64, now time.Time) *split {
 	if !allocation.StartAt.IsZero() && now.Before(allocation.StartAt) {
 		return nil
 	}

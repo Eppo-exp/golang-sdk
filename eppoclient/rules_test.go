@@ -24,7 +24,7 @@ var textRule = rule{Conditions: []condition{
 var ruleWithEmptyConditions = rule{Conditions: []condition{}}
 
 func Test_TextRule_NoMatch(t *testing.T) {
-	subjectAttributes := make(SubjectAttributes)
+	subjectAttributes := make(Attributes)
 	subjectAttributes["age"] = 99
 	subjectAttributes["country"] = "US"
 	subjectAttributes["email"] = "test@example.com"
@@ -33,21 +33,21 @@ func Test_TextRule_NoMatch(t *testing.T) {
 }
 
 func Test_numericRule_Success(t *testing.T) {
-	subjectAttributes := make(SubjectAttributes)
+	subjectAttributes := make(Attributes)
 	subjectAttributes["age"] = 99.0
 
 	assert.True(t, numericRule.matches(subjectAttributes))
 }
 
 func Test_numericRule_WithString(t *testing.T) {
-	subjectAttributes := make(SubjectAttributes)
+	subjectAttributes := make(Attributes)
 	subjectAttributes["age"] = "99.0"
 
 	assert.True(t, numericRule.matches(subjectAttributes))
 }
 
 func Test_semverRule_Success(t *testing.T) {
-	subjectAttributes := make(SubjectAttributes)
+	subjectAttributes := make(Attributes)
 	subjectAttributes["age"] = 99.0
 	subjectAttributes["appVersion"] = "1.15.0"
 
@@ -55,18 +55,18 @@ func Test_semverRule_Success(t *testing.T) {
 }
 
 func Test_numericRule_NoAttributeForcondition(t *testing.T) {
-	subjectAttributes := make(SubjectAttributes)
+	subjectAttributes := make(Attributes)
 	assert.False(t, numericRule.matches(subjectAttributes))
 }
 
 func Test_ruleWithEmptycondition_NoConditionsForRule(t *testing.T) {
-	subjectAttributes := make(SubjectAttributes)
+	subjectAttributes := make(Attributes)
 
 	assert.True(t, ruleWithEmptyConditions.matches(subjectAttributes))
 }
 
 func Test_numericRule_NumericOperatorWithString(t *testing.T) {
-	subjectAttributes := make(SubjectAttributes)
+	subjectAttributes := make(Attributes)
 	subjectAttributes["age"] = "something"
 
 	assert.False(t, numericRule.matches(subjectAttributes))
@@ -75,7 +75,7 @@ func Test_numericRule_NumericOperatorWithString(t *testing.T) {
 func Test_regex_NumericValueAndRegex(t *testing.T) {
 	rule := rule{Conditions: []condition{{Operator: "MATCHES", Value: "[0-9]+", Attribute: "age"}}}
 
-	subjectAttributes := make(SubjectAttributes)
+	subjectAttributes := make(Attributes)
 	subjectAttributes["age"] = 99
 
 	result := rule.matches(subjectAttributes)
@@ -84,7 +84,7 @@ func Test_regex_NumericValueAndRegex(t *testing.T) {
 }
 
 type MatchesRuleTest []struct {
-	attributes SubjectAttributes
+	attributes Attributes
 	rule       rule
 	expected   bool
 }
@@ -102,10 +102,10 @@ func Test_ruleMatches_oneOfOperatorWithBoolean(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"true"}, Attribute: "enabled"}}}
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"true"}, Attribute: "enabled"}}}
 
-	subjectAttributesEnabled := make(SubjectAttributes)
+	subjectAttributesEnabled := make(Attributes)
 	subjectAttributesEnabled["enabled"] = "true"
 
-	subjectAttributesDisabled := make(SubjectAttributes)
+	subjectAttributesDisabled := make(Attributes)
 	subjectAttributesDisabled["enabled"] = "false"
 
 	var tests = MatchesRuleTest{
@@ -120,10 +120,10 @@ func Test_ruleMatches_oneOfOperatorWithBoolean(t *testing.T) {
 func Test_ruleMatches_OneOfOperatorCaseSensitive(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"1Ab", "Ron"}, Attribute: "name"}}}
 
-	subjectAttributes0 := make(SubjectAttributes)
+	subjectAttributes0 := make(Attributes)
 	subjectAttributes0["name"] = "ron"
 
-	subjectAttributes1 := make(SubjectAttributes)
+	subjectAttributes1 := make(Attributes)
 	subjectAttributes1["name"] = "1AB"
 
 	MatchesRuleTest{
@@ -134,10 +134,10 @@ func Test_ruleMatches_OneOfOperatorCaseSensitive(t *testing.T) {
 
 func Test_ruleMatches_NotOneOfOperatorCaseSensitive(t *testing.T) {
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"bbB", "1.1.ab"}, Attribute: "name"}}}
-	subjectAttributes0 := make(SubjectAttributes)
+	subjectAttributes0 := make(Attributes)
 	subjectAttributes0["name"] = "BBB"
 
-	subjectAttributes1 := make(SubjectAttributes)
+	subjectAttributes1 := make(Attributes)
 	subjectAttributes1["name"] = "1.1.AB"
 
 	MatchesRuleTest{
@@ -150,13 +150,13 @@ func Test_ruleMatches_OneOfOperatorWithString(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"john", "ron"}, Attribute: "name"}}}
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"ron"}, Attribute: "name"}}}
 
-	subjectAttributesJohn := make(SubjectAttributes)
+	subjectAttributesJohn := make(Attributes)
 	subjectAttributesJohn["name"] = "john"
 
-	subjectAttributesRon := make(SubjectAttributes)
+	subjectAttributesRon := make(Attributes)
 	subjectAttributesRon["name"] = "ron"
 
-	subjectAttributesSam := make(SubjectAttributes)
+	subjectAttributesSam := make(Attributes)
 	subjectAttributesSam["name"] = "sam"
 
 	MatchesRuleTest{
@@ -172,19 +172,19 @@ func Test_matchesRule_OneOfOperatorWithNumber(t *testing.T) {
 	oneOfRule := rule{Conditions: []condition{{Operator: "ONE_OF", Value: []string{"14", "15.11", "15"}, Attribute: "number"}}}
 	notOneOfRule := rule{Conditions: []condition{{Operator: "NOT_ONE_OF", Value: []string{"10"}, Attribute: "number"}}}
 
-	subjectAttributes0 := make(SubjectAttributes)
+	subjectAttributes0 := make(Attributes)
 	subjectAttributes0["number"] = "14"
 
-	subjectAttributes1 := make(SubjectAttributes)
+	subjectAttributes1 := make(Attributes)
 	subjectAttributes1["number"] = 15.11
 
-	subjectAttributes2 := make(SubjectAttributes)
+	subjectAttributes2 := make(Attributes)
 	subjectAttributes2["number"] = 15
 
-	subjectAttributes3 := make(SubjectAttributes)
+	subjectAttributes3 := make(Attributes)
 	subjectAttributes3["number"] = "10"
 
-	subjectAttributes4 := make(SubjectAttributes)
+	subjectAttributes4 := make(Attributes)
 	subjectAttributes4["number"] = 11
 
 	MatchesRuleTest{
@@ -245,38 +245,38 @@ func Test_evaluateNumericcondition_IncorrectOperator(t *testing.T) {
 
 func Test_isNull_missingAttribute(t *testing.T) {
 	result := condition{Operator: "IS_NULL", Attribute: "name", Value: true}.matches(
-		SubjectAttributes{})
+		Attributes{})
 	assert.True(t, result)
 }
 func Test_isNotNull_missingAttribute(t *testing.T) {
 	result := condition{Operator: "IS_NULL", Attribute: "name", Value: false}.matches(
-		SubjectAttributes{})
+		Attributes{})
 	assert.False(t, result)
 }
 func Test_isNull_nilAttribute(t *testing.T) {
 	result := condition{Operator: "IS_NULL", Attribute: "name", Value: true}.matches(
-		SubjectAttributes{
+		Attributes{
 			"name": nil,
 		})
 	assert.True(t, result)
 }
 func Test_isNotNull_nilAttribute(t *testing.T) {
 	result := condition{Operator: "IS_NULL", Attribute: "name", Value: false}.matches(
-		SubjectAttributes{
+		Attributes{
 			"name": nil,
 		})
 	assert.False(t, result)
 }
 func Test_isNull_attributePresent(t *testing.T) {
 	result := condition{Operator: "IS_NULL", Attribute: "name", Value: true}.matches(
-		SubjectAttributes{
+		Attributes{
 			"name": "Alex",
 		})
 	assert.False(t, result)
 }
 func Test_isNotNull_attributePresent(t *testing.T) {
 	result := condition{Operator: "IS_NULL", Attribute: "name", Value: false}.matches(
-		SubjectAttributes{
+		Attributes{
 			"name": "Alex",
 		})
 	assert.True(t, result)
