@@ -24,8 +24,8 @@ func newEppoClient(configRequestor iConfigRequestor, poller *poller, assignmentL
 	return ec
 }
 
-func (ec *EppoClient) GetBoolAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue bool) (bool, error) {
-	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, booleanVariation)
+func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subjectAttributes SubjectAttributes, defaultValue bool) (bool, error) {
+	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, booleanVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -36,8 +36,8 @@ func (ec *EppoClient) GetBoolAssignment(subjectKey string, flagKey string, subje
 	return result, err
 }
 
-func (ec *EppoClient) GetNumericAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue float64) (float64, error) {
-	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, numericVariation)
+func (ec *EppoClient) GetNumericAssignment(flagKey string, subjectKey string, subjectAttributes SubjectAttributes, defaultValue float64) (float64, error) {
+	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, numericVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -48,8 +48,8 @@ func (ec *EppoClient) GetNumericAssignment(subjectKey string, flagKey string, su
 	return result, err
 }
 
-func (ec *EppoClient) GetIntegerAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue int64) (int64, error) {
-	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, integerVariation)
+func (ec *EppoClient) GetIntegerAssignment(flagKey string, subjectKey string, subjectAttributes SubjectAttributes, defaultValue int64) (int64, error) {
+	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, integerVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -60,8 +60,8 @@ func (ec *EppoClient) GetIntegerAssignment(subjectKey string, flagKey string, su
 	return result, err
 }
 
-func (ec *EppoClient) GetStringAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue string) (string, error) {
-	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, stringVariation)
+func (ec *EppoClient) GetStringAssignment(flagKey string, subjectKey string, subjectAttributes SubjectAttributes, defaultValue string) (string, error) {
+	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, stringVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -72,15 +72,15 @@ func (ec *EppoClient) GetStringAssignment(subjectKey string, flagKey string, sub
 	return result, err
 }
 
-func (ec *EppoClient) GetJSONAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, defaultValue interface{}) (interface{}, error) {
-	variation, err := ec.getAssignment(subjectKey, flagKey, subjectAttributes, jsonVariation)
+func (ec *EppoClient) GetJSONAssignment(flagKey string, subjectKey string, subjectAttributes SubjectAttributes, defaultValue interface{}) (interface{}, error) {
+	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, jsonVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
 	return variation, err
 }
 
-func (ec *EppoClient) getAssignment(subjectKey string, flagKey string, subjectAttributes SubjectAttributes, variationType variationType) (interface{}, error) {
+func (ec *EppoClient) getAssignment(flagKey string, subjectKey string, subjectAttributes SubjectAttributes, variationType variationType) (interface{}, error) {
 	if subjectKey == "" {
 		panic("no subject key provided")
 	}

@@ -22,14 +22,14 @@ In your `go.mod`, add the SDK package as a dependency:
 
 ```
 require (
-    github.com/Eppo-exp/golang-sdk/v3
+    github.com/Eppo-exp/golang-sdk/v4
 )
 ```
 
 Or you can install the SDK from the command line with:
 
 ```
-go get github.com/Eppo-exp/golang-sdk/v3
+go get github.com/Eppo-exp/golang-sdk/v4
 ```
 
 ## Quick start
@@ -40,7 +40,7 @@ Begin by initializing a singleton instance of Eppo's client. Once initialized, t
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v3/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
 )
 
 var eppoClient = &eppoclient.EppoClient{}
@@ -60,16 +60,16 @@ func main() {
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v3/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
 )
 
 var eppoClient = &eppoclient.EppoClient{}
 
 variation := eppoClient.GetStringAssignment(
+   "new-user-onboarding",
    user.id,
-   'new-user-onboarding',
    user.attributes,
-   'control'
+   "control"
 );
 ```
 
@@ -89,8 +89,8 @@ Each function has the same signature, but returns the type in the function name.
 
 ```go
 func getBooleanAssignment(
-	subjectKey string,
 	flagKey string,
+	subjectKey string,
 	subjectAttributes SubjectAttributes,
 	defaultValue string
 ) bool
@@ -105,7 +105,7 @@ The code below illustrates an example implementation of a logging callback using
 
 ```go
 import (
-  "github.com/Eppo-exp/golang-sdk/v2/eppoclient"
+  "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
   "gopkg.in/segmentio/analytics-go.v3"
 )
 
