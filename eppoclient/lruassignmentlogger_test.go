@@ -139,7 +139,7 @@ func Test_LruAssignmentLogger_changeInVariationCausesLogging(t *testing.T) {
 	innerLogger.AssertNumberOfCalls(t, "LogAssignment", 2)
 }
 
-func Test_LruAssignmentLogger_allocationOscillationOnlyLoggedOnce(t *testing.T) {
+func Test_LruAssignmentLogger_allocationOscillationLogsAll(t *testing.T) {
 	innerLogger := new(mockLogger)
 	innerLogger.On("LogAssignment", mock.Anything).Return()
 
@@ -182,10 +182,10 @@ func Test_LruAssignmentLogger_allocationOscillationOnlyLoggedOnce(t *testing.T) 
 		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 
-	innerLogger.AssertNumberOfCalls(t, "LogAssignment", 2)
+	innerLogger.AssertNumberOfCalls(t, "LogAssignment", 4)
 }
 
-func Test_LruAssignmentLogger_variationOscillationOnlyLoggedOnce(t *testing.T) {
+func Test_LruAssignmentLogger_variationOscillationLogsAll(t *testing.T) {
 	innerLogger := new(mockLogger)
 	innerLogger.On("LogAssignment", mock.Anything).Return()
 
@@ -228,5 +228,5 @@ func Test_LruAssignmentLogger_variationOscillationOnlyLoggedOnce(t *testing.T) {
 		SubjectAttributes: Attributes{"testKey": "testValue"},
 	})
 
-	innerLogger.AssertNumberOfCalls(t, "LogAssignment", 2)
+	innerLogger.AssertNumberOfCalls(t, "LogAssignment", 4)
 }
