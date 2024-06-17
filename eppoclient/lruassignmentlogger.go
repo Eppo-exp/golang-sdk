@@ -14,12 +14,12 @@ type LruAssignmentLogger struct {
 // knowing the latest assignment. Therefore, both allocation and
 // variation are part of the cacheKey.
 type cacheKey struct {
-	flag       string
-	subject    string
-	allocation string
-	variation  string
+	flag    string
+	subject string
 }
 type cacheValue struct {
+	allocation string
+	variation  string
 }
 
 func NewLruAssignmentLogger(logger IAssignmentLogger, cacheSize int) IAssignmentLogger {
@@ -37,12 +37,13 @@ func NewLruAssignmentLogger(logger IAssignmentLogger, cacheSize int) IAssignment
 
 func (self *LruAssignmentLogger) LogAssignment(event AssignmentEvent) {
 	key := cacheKey{
-		flag:       event.FeatureFlag,
-		subject:    event.Subject,
+		flag:    event.FeatureFlag,
+		subject: event.Subject,
+	}
+	value := cacheValue{
 		allocation: event.Allocation,
 		variation:  event.Variation,
 	}
-	value := cacheValue{}
 	previousValue, recentlyLogged := self.cache.Get(key)
 	if !recentlyLogged || previousValue != value {
 		self.inner.LogAssignment(event)
