@@ -2,22 +2,28 @@ package eppoclient
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
 type poller struct {
-	interval  time.Duration
-	callback  func()
-	isStopped bool `default:"false"`
+	interval time.Duration
+	callback func()
+	stopChan chan struct{}
+	stopOnce sync.Once
 }
 
+const defaultPollInterval = 10 * time.Second
+
 func newPoller(interval time.Duration, callback func()) *poller {
-	var pl = &poller{}
-
-	pl.interval = interval
-	pl.callback = callback
-
-	return pl
+	if interval == 0 {
+		interval = defaultPollInterval
+	}
+	return &poller{
+		interval: interval,
+		callback: callback,
+		stopChan: make(chan struct{}),
+	}
 }
 
 func (p *poller) Start() {
@@ -29,20 +35,27 @@ func (p *poller) Start() {
 func (p *poller) poll() {
 	defer func() {
 		if err := recover(); err != nil {
-			p.Stop()
+			fmt.Printf("Recovered from panic: %v\n", err)
 		}
+		p.Stop()
 	}()
 
+	ticker := time.NewTicker(p.interval)
+	defer ticker.Stop()
+
 	for {
-		if p.isStopped {
-			break
+		select {
+		case <-p.stopChan:
+			return
+		case <-ticker.C:
+			p.callback()
 		}
-		p.callback()
-		time.Sleep(p.interval)
 	}
 }
 
 func (p *poller) Stop() {
-	fmt.Println("Poller stopped")
-	p.isStopped = true
+	p.stopOnce.Do(func() {
+		fmt.Println("Poller stopped")
+		close(p.stopChan)
+	})
 }
