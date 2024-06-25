@@ -285,7 +285,7 @@ func Test_isNotNull_attributePresent(t *testing.T) {
 func Test_handles_all_numeric_types(t *testing.T) {
 	condition := condition{Operator: "GT", Attribute: "powerLevel", Value: "9000"}
 	// Floats
-  assert.True(t, condition.matches(Attributes{ "powerLevel": 9001.0}) )
+	assert.True(t, condition.matches(Attributes{ "powerLevel": 9001.0}) )
 	assert.False(t, condition.matches(Attributes{ "powerLevel": 9000.0}) )
 	assert.True(t, condition.matches(Attributes{ "powerLevel": float64(9001)}) )
 	assert.False(t, condition.matches(Attributes{ "powerLevel": float64(-9001.0)}) )
