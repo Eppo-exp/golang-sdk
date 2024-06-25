@@ -1,6 +1,9 @@
 package eppoclient
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 const default_base_url = "https://fscdn.eppo.cloud/api"
 
@@ -11,9 +14,9 @@ type Config struct {
 	PollerInterval   time.Duration
 }
 
-func (cfg *Config) validate() {
+func (cfg *Config) validate() error {
 	if cfg.SdkKey == "" {
-		panic("sdk key not set")
+		return fmt.Errorf("SDK key not set")
 	}
 
 	if cfg.BaseUrl == "" {
@@ -23,4 +26,6 @@ func (cfg *Config) validate() {
 	if cfg.PollerInterval <= 0 {
 		cfg.PollerInterval = 10 * time.Second
 	}
+
+	return nil
 }

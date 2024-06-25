@@ -14,6 +14,7 @@ type EppoClient struct {
 	logger          IAssignmentLogger
 }
 
+// newEppoClient is the unexported constructor function
 func newEppoClient(configRequestor iConfigRequestor, poller *poller, assignmentLogger IAssignmentLogger) *EppoClient {
 	var ec = &EppoClient{}
 
@@ -82,11 +83,11 @@ func (ec *EppoClient) GetJSONAssignment(flagKey string, subjectKey string, subje
 
 func (ec *EppoClient) getAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, variationType variationType) (interface{}, error) {
 	if subjectKey == "" {
-		panic("no subject key provided")
+		return nil, fmt.Errorf("no subject key provided")
 	}
 
 	if flagKey == "" {
-		panic("no flag key provided")
+		return nil, fmt.Errorf("no flag key provided")
 	}
 
 	flag, err := ec.configRequestor.GetConfiguration(flagKey)
