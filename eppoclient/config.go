@@ -21,6 +21,6 @@ func (cfg *Config) validate() {
 	}
 
 	if cfg.PollerInterval <= 0 {
-		cfg.PollerInterval = 10 * time.Second
+		cfg.PollerInterval = defaultPollInterval
 	}
 }

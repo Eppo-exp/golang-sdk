@@ -10,14 +10,14 @@ type Attributes map[string]interface{}
 // EppoClient will then immediately start polling experiments data from Eppo.
 type EppoClient struct {
 	configRequestor iConfigRequestor
-	poller          poller
+	poller          *poller
 	logger          IAssignmentLogger
 }
 
 func newEppoClient(configRequestor iConfigRequestor, poller *poller, assignmentLogger IAssignmentLogger) *EppoClient {
 	var ec = &EppoClient{}
 
-	ec.poller = *poller
+	ec.poller = poller
 	ec.configRequestor = configRequestor
 	ec.logger = assignmentLogger
 

@@ -1,6 +1,7 @@
 package eppoclient
 
 import (
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -20,28 +21,27 @@ func Test_PollerPoll_InvokesCallbackUntilStoped(t *testing.T) {
 	callbackMock := CallbackMock{}
 	callbackMock.On("CallbackFn").Return()
 
-	var poller = newPoller(1*time.Second, callbackMock.CallbackFn)
+	poller := newPoller(10*time.Millisecond, callbackMock.CallbackFn)
 	poller.Start()
-	time.Sleep(5 * time.Second + 500 * time.Millisecond) // half second buffer to allow polling thread to execute
+	time.Sleep(55 * time.Millisecond + 500 * time.Millisecond) // half second buffer to allow polling thread to execute)
 	poller.Stop()
 	expected := 6 // One call for start(), and then another call each second for 5 seconds before stopped at 5.5 seconds
 	callbackMock.AssertNumberOfCalls(t, "CallbackFn", expected)
 }
 
 func Test_PollerPoll_StopsOnError(t *testing.T) {
-	callCount := 0
-	expected := 3
+	var callCount int32
+	var expected int32 = 3
 
-	var poller = newPoller(1*time.Second, func() {
-		callCount++
-		if callCount == 3 {
+	poller := newPoller(10*time.Millisecond, func() {
+		if atomic.AddInt32(&callCount, 1) == 3 {
 			panic("some_error")
 		}
 	})
 	poller.Start()
 
-	time.Sleep(5 * time.Second)
-	assert.Equal(t, expected, callCount)
+	time.Sleep(55 * time.Millisecond)
+	assert.Equal(t, expected, atomic.LoadInt32(&callCount))
 }
 
 func Test_PollerPoll_ManualStop(t *testing.T) {
@@ -50,13 +50,15 @@ func Test_PollerPoll_ManualStop(t *testing.T) {
 	callbackMock := CallbackMock{}
 	callbackMock.On("CallbackFn").Return()
 
-	var poller = newPoller(1*time.Second, callbackMock.CallbackFn)
+	var poller = newPoller(10*time.Millisecond, callbackMock.CallbackFn)
 	poller.Start()
 
-	time.Sleep(2500 * time.Millisecond)
+	time.Sleep(35 * time.Millisecond)
 
 	poller.Stop()
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(20 * time.Millisecond)
 	callbackMock.AssertNumberOfCalls(t, "CallbackFn", expected)
+
+	poller.Stop()
 }
