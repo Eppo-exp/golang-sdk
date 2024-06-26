@@ -159,38 +159,6 @@ func isOne(attributeValue interface{}, s string) bool {
 	}
 }
 
-func promoteInt(i interface{}) int64 {
-	switch i := i.(type) {
-	case int:
-		return int64(i)
-	case int8:
-		return int64(i)
-	case int16:
-		return int64(i)
-	case int32:
-		return int64(i)
-	case int64:
-		return i
-	}
-	panic(fmt.Errorf("unexpected type passed to promoteInt: %T", i))
-}
-
-func promoteUint(i interface{}) uint64 {
-	switch i := i.(type) {
-	case uint:
-		return uint64(i)
-	case uint8:
-		return uint64(i)
-	case uint16:
-		return uint64(i)
-	case uint32:
-		return uint64(i)
-	case uint64:
-		return i
-	}
-	panic(fmt.Errorf("unexpected type passed to promoteUint: %T", i))
-}
-
 func evaluateSemVerCondition(subjectValue *semver.Version, conditionValue *semver.Version, condition condition) bool {
 	comp := subjectValue.Compare(conditionValue)
 	switch condition.Operator {
@@ -227,8 +195,12 @@ func evaluateNumericCondition(subjectValue float64, conditionValue float64, cond
 // Returns a float64 and nil error on success, or 0 and an error on failure.
 func toFloat64(val interface{}) (float64, error) {
 	switch v := val.(type) {
-	case float64:
-		return v, nil
+	case float32, float64:
+		return promoteFloat(v), nil 
+	case int, int8, int16, int32, int64:
+		return float64(promoteInt(v)), nil
+	case uint, uint8, uint16, uint32, uint64:
+		return float64(promoteUint(v)), nil
 	case string:
 		floatVal, err := strconv.ParseFloat(v, 64)
 		if err != nil {
@@ -236,6 +208,48 @@ func toFloat64(val interface{}) (float64, error) {
 		}
 		return floatVal, nil
 	default:
-		return 0, errors.New("value is neither a float64 nor a convertible string")
+		return 0, errors.New("value is neither a number nor a convertible string")
 	}
+}
+
+func promoteInt(i interface{}) int64 {
+	switch i := i.(type) {
+	case int:
+		return int64(i)
+	case int8:
+		return int64(i)
+	case int16:
+		return int64(i)
+	case int32:
+		return int64(i)
+	case int64:
+		return i
+	}
+	panic(fmt.Errorf("unexpected type passed to promoteInt: %T", i))
+}
+
+func promoteUint(i interface{}) uint64 {
+	switch i := i.(type) {
+	case uint:
+		return uint64(i)
+	case uint8:
+		return uint64(i)
+	case uint16:
+		return uint64(i)
+	case uint32:
+		return uint64(i)
+	case uint64:
+		return i
+	}
+	panic(fmt.Errorf("unexpected type passed to promoteUint: %T", i))
+}
+
+func promoteFloat(f interface{}) float64 {
+	switch f := f.(type) {
+	case float32:
+		return float64(f)
+	case float64:
+		return f
+	}
+	panic(fmt.Errorf("unexpected type passed to promoteFloat: %T", f))
 }

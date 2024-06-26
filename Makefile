@@ -22,7 +22,7 @@ test-data:
 	git clone -b ${branchName} --depth 1 --single-branch ${githubRepoLink} ${testDataDir}
 
 test: test-data
-	go test ./...
+	go test -v ./...
 
 lint:
 	golangci-lint run
