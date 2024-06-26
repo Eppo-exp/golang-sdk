@@ -12,7 +12,7 @@ func Test_config_defaultPollerInterval(t *testing.T) {
 		SdkKey: "blah",
 	}
 
-	cfg.validate()
-
+	err := cfg.validate()
+	assert.NoError(t, err)
 	assert.Equal(t, 10*time.Second, cfg.PollerInterval)
 }

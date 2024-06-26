@@ -43,18 +43,20 @@ import (
     "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
 )
 
-var eppoClient = &eppoclient.EppoClient{}
+var eppoClient *eppoclient.EppoClient
 
 func main() {
     assignmentLogger := NewExampleAssignmentLogger()
 
-    eppoClient = eppoclient.InitClient(eppoclient.Config{
+    eppoClient, err = eppoclient.InitClient(eppoclient.Config{
         SdkKey:           "<your_sdk_key>",
         AssignmentLogger: assignmentLogger,
     })
+    if err != nil {
+        log.Fatalf("Failed to initialize Eppo client: %v", err)
+    }
 }
 ```
-
 
 #### Assign anywhere
 
@@ -63,7 +65,7 @@ import (
     "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
 )
 
-var eppoClient = &eppoclient.EppoClient{}
+var eppoClient *eppoclient.EppoClient
 
 variation := eppoClient.GetStringAssignment(
    "new-user-onboarding",
@@ -128,6 +130,38 @@ func main() {
       Properties: event
     })
   }
+}
+```
+
+### De-duplication of assignments
+
+The SDK may see many duplicate assignments in a short period of time, and if you
+have configured a logging function, they will be transmitted to your downstream
+event store. This increases the cost of storage as well as warehouse costs during experiment analysis.
+
+To mitigate this, an in-memory assignment cache is optionally available with expiration based on the least recently accessed time.
+
+It can be configured with a maximum size to fit your desired memory allocation.
+
+```go
+import (
+  "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
+)
+
+var eppoClient *eppoclient.EppoClient
+
+func main() {
+  assignmentLogger := NewExampleAssignmentLogger()
+
+  eppoClient = eppoclient.InitClient(eppoclient.Config{
+    ApiKey:           "<your_sdk_key>",
+    // 10000 is the maximum number of assignments to cache
+    // Depending on the length of your flag and subject keys, taking a median
+    // length of 32 characters, each assignment cache entry uses approximately 112 bytes.
+    // Use this calculation to determine the maximum number of assignments to cache
+    // for the memory you wish to allocate.
+    AssignmentLogger: eppoclient.NewLruAssignmentLogger(assignmentLogger, 10000),
+  })
 }
 ```
 
