@@ -132,27 +132,21 @@ func (ec *EppoClient) GetBanditAction(flagKey string, subjectKey string, subject
 		subjectAttributes: subjectAttributes,
 		actions:           actions,
 	})
-	if evaluation.result == nil {
-		return BanditResult{
-			Variation: variation,
-			Action:    nil,
-		}
-	}
 
 	if logger, ok := ec.logger.(BanditActionLogger); ok {
 		event := BanditEvent{
 			FlagKey:                      flagKey,
 			BanditKey:                    bandit.BanditKey,
 			Subject:                      subjectKey,
-			Action:                       evaluation.result.actionKey,
-			ActionProbability:            evaluation.result.actionWeight,
-			OptimalityGap:                evaluation.result.optimalityGap,
+			Action:                       evaluation.actionKey,
+			ActionProbability:            evaluation.actionWeight,
+			OptimalityGap:                evaluation.optimalityGap,
 			ModelVersion:                 bandit.ModelVersion,
 			Timestamp:                    time.Now().UTC().Format(time.RFC3339),
 			SubjectNumericAttributes:     evaluation.subjectAttributes.Numeric,
 			SubjectCategoricalAttributes: evaluation.subjectAttributes.Categorical,
-			ActionNumericAttributes:      evaluation.result.actionAttributes.Numeric,
-			ActionCategoricalAttributes:  evaluation.result.actionAttributes.Categorical,
+			ActionNumericAttributes:      evaluation.actionAttributes.Numeric,
+			ActionCategoricalAttributes:  evaluation.actionAttributes.Categorical,
 			MetaData: map[string]string{
 				"sdkLanguage": "go",
 				"sdkVersion":  __version__,
@@ -174,7 +168,7 @@ func (ec *EppoClient) GetBanditAction(flagKey string, subjectKey string, subject
 
 	return BanditResult{
 		Variation: variation,
-		Action:    &evaluation.result.actionKey,
+		Action:    &evaluation.actionKey,
 	}
 }
 

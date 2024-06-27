@@ -77,15 +77,12 @@ type banditEvaluationDetails struct {
 	flagKey           string
 	subjectKey        string
 	subjectAttributes ContextAttributes
-	result            *banditEvaluationResult
-}
-type banditEvaluationResult struct {
-	actionKey        string
-	actionAttributes ContextAttributes
-	actionScore      float64
-	actionWeight     float64
-	gamma            float64
-	optimalityGap    float64
+	actionKey         string
+	actionAttributes  ContextAttributes
+	actionScore       float64
+	actionWeight      float64
+	gamma             float64
+	optimalityGap     float64
 }
 
 type action struct {
@@ -98,14 +95,6 @@ func (model *banditModelData) evaluate(ctx banditEvaluationContext) banditEvalua
 	var totalShards int64 = 10_000
 
 	nActions := len(ctx.actions)
-	if nActions == 0 {
-		return banditEvaluationDetails{
-			flagKey:           ctx.flagKey,
-			subjectKey:        ctx.subjectKey,
-			subjectAttributes: ctx.subjectAttributes,
-			result:            nil,
-		}
-	}
 
 	scores := make(map[string]float64, nActions)
 	for actionKey, actionAttributes := range ctx.actions {
@@ -186,14 +175,12 @@ func (model *banditModelData) evaluate(ctx banditEvaluationContext) banditEvalua
 		flagKey:           ctx.flagKey,
 		subjectKey:        ctx.subjectKey,
 		subjectAttributes: ctx.subjectAttributes,
-		result: &banditEvaluationResult{
-			actionKey:        selectedAction,
-			actionAttributes: ctx.actions[selectedAction],
-			actionScore:      scores[selectedAction],
-			actionWeight:     weights[selectedAction],
-			gamma:            model.Gamma,
-			optimalityGap:    optimalityGap,
-		},
+		actionKey:         selectedAction,
+		actionAttributes:  ctx.actions[selectedAction],
+		actionScore:       scores[selectedAction],
+		actionWeight:      weights[selectedAction],
+		gamma:             model.Gamma,
+		optimalityGap:     optimalityGap,
 	}
 }
 
