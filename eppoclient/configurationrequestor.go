@@ -20,37 +20,61 @@ func newConfigurationRequestor(httpClient httpClient, configStore *configuration
 	}
 }
 
-func (ecr *configurationRequestor) IsAuthorized() bool {
-	return !ecr.httpClient.isUnauthorized
+func (cr *configurationRequestor) IsAuthorized() bool {
+	return !cr.httpClient.isUnauthorized
 }
 
-func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
-	result, err := ecr.httpClient.get(UFC_ENDPOINT)
+func (cr *configurationRequestor) FetchAndStoreConfigurations() {
+	configuration, err := cr.fetchConfiguration()
 	if err != nil {
-		fmt.Println("Failed to fetch UFC response", err)
 		return
 	}
 
-	var wrapper ufcResponse
-	err = json.Unmarshal(result, &wrapper)
+	cr.configStore.setConfiguration(configuration)
+}
+
+func (cr *configurationRequestor) fetchConfiguration() (configuration, error) {
+	var config configuration
+	var err error
+
+	config.ufc, err = cr.fetchUfc()
+	if err != nil {
+		return configuration{}, err
+	}
+
+	if config.ufc.Bandits != nil {
+		config.bandits, err = cr.fetchBandits()
+		if err != nil {
+			return configuration{}, err
+		}
+	}
+
+	return config, nil
+}
+
+func (cr *configurationRequestor) fetchUfc() (ufcResponse, error) {
+	result, err := cr.httpClient.get(UFC_ENDPOINT)
+	if err != nil {
+		fmt.Println("Failed to fetch UFC response", err)
+		return ufcResponse{}, err
+	}
+
+	var ufc ufcResponse
+	err = json.Unmarshal(result, &ufc)
 	if err != nil {
 		fmt.Println("Failed to unmarshal UFC response JSON", result)
 		fmt.Println(err)
-		return
+		return ufcResponse{}, err
 	}
 
-	ecr.configStore.setFlagsConfiguration(wrapper.Flags)
-
-	if wrapper.Bandits != nil {
-		ecr.fetchAndStoreBandits()
-	}
+	return ufc, nil
 }
 
-func (ecr *configurationRequestor) fetchAndStoreBandits() {
-	result, err := ecr.httpClient.get(BANDIT_ENDPOINT)
+func (cr *configurationRequestor) fetchBandits() (banditResponse, error) {
+	result, err := cr.httpClient.get(BANDIT_ENDPOINT)
 	if err != nil {
 		fmt.Println("Failed to fetch bandit response", err)
-		return
+		return banditResponse{}, err
 	}
 
 	var bandits banditResponse
@@ -58,8 +82,8 @@ func (ecr *configurationRequestor) fetchAndStoreBandits() {
 	if err != nil {
 		fmt.Println("Failed to unmarshal bandit response JSON", result)
 		fmt.Println(err)
-		return
+		return banditResponse{}, err
 	}
 
-	ecr.configStore.setBanditsConfiguration(bandits.Bandits)
+	return bandits, nil
 }

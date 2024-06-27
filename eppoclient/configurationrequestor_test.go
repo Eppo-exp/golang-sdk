@@ -17,12 +17,14 @@ func Test_configurationRequestor_requestBandits(t *testing.T) {
 
 	sdkParams := SDKParams{sdkKey: "blah", sdkName: "go", sdkVersion: __version__}
 	httpClient := newHttpClient(server.URL, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
-	configurationStore := newConfigurationStore()
+	configurationStore := newConfigurationStore(configuration{})
 	configurationRequestor := newConfigurationRequestor(*httpClient, configurationStore)
 
 	configurationRequestor.FetchAndStoreConfigurations()
 
-	assert.NotEmpty(t, configurationStore.bandits)
+	config := configurationStore.getConfiguration()
+
+	assert.NotEmpty(t, config.bandits.Bandits)
 }
 
 func Test_configurationRequestor_shouldNotRequestBanditsIfNotPresentInFlags(t *testing.T) {
@@ -34,12 +36,14 @@ func Test_configurationRequestor_shouldNotRequestBanditsIfNotPresentInFlags(t *t
 
 	sdkParams := SDKParams{sdkKey: "blah", sdkName: "go", sdkVersion: __version__}
 	httpClient := newHttpClient(server.URL, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
-	configurationStore := newConfigurationStore()
+	configurationStore := newConfigurationStore(configuration{})
 	configurationRequestor := newConfigurationRequestor(*httpClient, configurationStore)
 
 	configurationRequestor.FetchAndStoreConfigurations()
 
-	assert.Empty(t, configurationStore.bandits)
+	config := configurationStore.getConfiguration()
+
+	assert.Empty(t, config.bandits.Bandits)
 }
 
 func newTestServer(ufcResponse ufcResponse, banditsResponse banditResponse) *httptest.Server {

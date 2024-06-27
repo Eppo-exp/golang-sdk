@@ -2,39 +2,89 @@ package eppoclient
 
 import (
 	"errors"
+	"sync/atomic"
 )
 
-type configurationStore struct {
-	flags   map[string]flagConfiguration
-	bandits map[string]banditConfiguration
+type configuration struct {
+	ufc     ufcResponse
+	bandits banditResponse
+	// flag key -> variation value -> banditVariation.
+	//
+	// This is cached from `ufc` field for easier access in
+	// evaluation.
+	banditFlagAssociations map[string]map[string]banditVariation
 }
 
-func newConfigurationStore() *configurationStore {
-	return &configurationStore{}
+func (c *configuration) refreshBanditFlagAssociations() {
+	associations := make(map[string]map[string]banditVariation)
+
+	for _, banditVariations := range c.ufc.Bandits {
+		for _, bandit := range banditVariations {
+			byVariation, ok := associations[bandit.FlagKey]
+			if !ok {
+				byVariation = make(map[string]banditVariation)
+				associations[bandit.FlagKey] = byVariation
+			}
+			byVariation[bandit.VariationValue] = bandit
+		}
+	}
+
+	c.banditFlagAssociations = associations
 }
 
-func (cs *configurationStore) getFlagConfiguration(key string) (flag flagConfiguration, err error) {
-	flag, ok := cs.flags[key]
+// Return `true` if `flagKey` has associated bandits.
+func (c configuration) isBanditFlag(flagKey string) bool {
+	_, ok := c.banditFlagAssociations[flagKey]
+	return ok
+}
+
+func (c configuration) getBanditVariant(flagKey, variation string) (result banditVariation, ok bool) {
+	byVariation, ok := c.banditFlagAssociations[flagKey]
 	if !ok {
-		return flag, errors.New("flag configuration not found in configuration store")
+		return result, false
+	}
+	result, ok = byVariation[variation]
+	return result, ok
+}
+
+func (c configuration) getFlagConfiguration(key string) (flagConfiguration, error) {
+	flag, ok := c.ufc.Flags[key]
+	if !ok {
+		return flag, errors.New("flag configuration not found")
 	}
 
 	return flag, nil
 }
 
-func (cs *configurationStore) setFlagsConfiguration(configs map[string]flagConfiguration) {
-	cs.flags = configs
-}
-
-func (cs *configurationStore) getBanditConfiguration(key string) (bandit banditConfiguration, err error) {
-	bandit, ok := cs.bandits[key]
+func (c configuration) getBanditConfiguration(key string) (banditConfiguration, error) {
+	bandit, ok := c.bandits.Bandits[key]
 	if !ok {
-		return bandit, errors.New("bandit configuration not found in configuration store")
+		return bandit, errors.New("bandit configuration not found")
 	}
 
 	return bandit, nil
 }
 
-func (cs *configurationStore) setBanditsConfiguration(configs map[string]banditConfiguration) {
-	cs.bandits = configs
+// `configurationStore` is a thread-safe in-memory storage. It stores
+// the currently active configuration and provides access to multiple
+// readers (e.g., flag/bandit evaluation) and writers (e.g.,
+// configuration requestor).
+type configurationStore struct {
+	configuration atomic.Pointer[configuration]
+}
+
+func newConfigurationStore(configuration configuration) *configurationStore {
+	store := &configurationStore{}
+	store.setConfiguration(configuration)
+	return store
+}
+
+// Returns a snapshot of the currently active configuration.
+func (cs *configurationStore) getConfiguration() configuration {
+	return *cs.configuration.Load()
+}
+
+func (cs *configurationStore) setConfiguration(configuration configuration) {
+	configuration.refreshBanditFlagAssociations()
+	cs.configuration.Store(&configuration)
 }

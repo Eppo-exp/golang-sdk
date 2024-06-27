@@ -51,16 +51,16 @@ func Test_InferContextAttributes(t *testing.T) {
 }
 
 func Test_bandits_sdkTestData(t *testing.T) {
-	flags := readJsonFile[ufcResponse]("test-data/ufc/bandit-flags-v1.json")
+	ufc := readJsonFile[ufcResponse]("test-data/ufc/bandit-flags-v1.json")
 	bandits := readJsonFile[banditResponse]("test-data/ufc/bandit-models-v1.json")
-	configStore := configurationStore{
-		flags:   flags.Flags,
-		bandits: bandits.Bandits,
-	}
+	configStore := newConfigurationStore(configuration{
+		ufc:     ufc,
+		bandits: bandits,
+	})
 	logger := new(mockLogger)
 	logger.Mock.On("LogAssignment", mock.Anything).Return()
 	logger.Mock.On("LogBanditAction", mock.Anything).Return()
-	client := newEppoClient(&configStore, nil, nil, logger)
+	client := newEppoClient(configStore, nil, nil, logger)
 
 	tests := readJsonDirectory[banditTest]("test-data/ufc/bandit-tests/")
 	for file, test := range tests {
