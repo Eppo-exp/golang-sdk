@@ -11,10 +11,13 @@ import (
 	"github.com/Eppo-exp/golang-sdk/v4/eppoclient/applicationlogger"
 )
 
+var (
+	zapLogger, _      = zap.NewDevelopment()
+	applicationLogger = applicationlogger.NewZapLogger(zapLogger)
+)
+
 func Test_AssignBlankExperiment(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
-	zapLogger, _ := zap.NewDevelopment()
-	applicationLogger := applicationlogger.NewZapLogger(zapLogger)
 
 	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
 	var mockLogger = new(mockLogger)
@@ -30,8 +33,6 @@ func Test_AssignBlankExperiment(t *testing.T) {
 
 func Test_AssignBlankSubject(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
-	zapLogger, _ := zap.NewDevelopment()
-	applicationLogger := applicationlogger.NewZapLogger(zapLogger)
 
 	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
 	var mockLogger = new(mockLogger)
@@ -47,9 +48,6 @@ func Test_AssignBlankSubject(t *testing.T) {
 func Test_LogAssignment(t *testing.T) {
 	var mockLogger = new(mockLogger)
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
-
-	zapLogger, _ := zap.NewDevelopment()
-	applicationLogger := applicationlogger.NewZapLogger(zapLogger)
 
 	var mockConfigRequestor = new(mockConfigRequestor)
 	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
@@ -107,9 +105,6 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Panic("logging panic")
 
 	var mockConfigRequestor = new(mockConfigRequestor)
-	zapLogger, _ := zap.NewDevelopment()
-	applicationLogger := applicationlogger.NewZapLogger(zapLogger)
-
 	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
 
 	config := map[string]flagConfiguration{
