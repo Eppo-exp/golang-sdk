@@ -145,6 +145,7 @@ import (
 
 type LogrusApplicationLogger struct {
     logger *logrus.Logger
+    logLevel logrus.Level
 }
 
 func NewLogrusApplicationLogger(logLevel logrus.Level) *LogrusApplicationLogger {
