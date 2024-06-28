@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/Eppo-exp/golang-sdk/v4/eppoclient/applicationlogger"
 )
 
 func (flag flagConfiguration) verifyType(ty variationType) error {
@@ -14,7 +16,7 @@ func (flag flagConfiguration) verifyType(ty variationType) error {
 	}
 }
 
-func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attributes) (interface{}, *AssignmentEvent, error) {
+func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attributes, applicationLogger applicationlogger.Logger) (interface{}, *AssignmentEvent, error) {
 	if !flag.Enabled {
 		return nil, nil, errors.New("the experiment or flag is not enabled")
 	}
@@ -25,7 +27,7 @@ func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attribut
 	var allocation *allocation
 	var split *split
 	for _, a := range flag.Allocations {
-		s := a.findMatchingSplit(subjectKey, augmentedSubjectAttributes, flag.TotalShards, now)
+		s := a.findMatchingSplit(subjectKey, augmentedSubjectAttributes, flag.TotalShards, now, applicationLogger)
 		if s != nil {
 			allocation, split = &a, s
 			break
@@ -85,7 +87,7 @@ func augmentWithSubjectKey(subjectAttributes Attributes, subjectKey string) Attr
 	return augmentedSubjectAttributes
 }
 
-func (allocation allocation) findMatchingSplit(subjectKey string, augmentedSubjectAttributes Attributes, totalShards int64, now time.Time) *split {
+func (allocation allocation) findMatchingSplit(subjectKey string, augmentedSubjectAttributes Attributes, totalShards int64, now time.Time, applicationLogger applicationlogger.Logger) *split {
 	if !allocation.StartAt.IsZero() && now.Before(allocation.StartAt) {
 		return nil
 	}
@@ -95,7 +97,7 @@ func (allocation allocation) findMatchingSplit(subjectKey string, augmentedSubje
 
 	matchesRule := false
 	for _, rule := range allocation.Rules {
-		if rule.matches(augmentedSubjectAttributes) {
+		if rule.matches(augmentedSubjectAttributes, applicationLogger) {
 			matchesRule = true
 			break
 		}

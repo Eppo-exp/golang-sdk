@@ -13,10 +13,12 @@ import (
 
 func Test_AssignBlankExperiment(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
+	zapLogger, _ := zap.NewDevelopment()
+	applicationLogger := applicationlogger.NewZapLogger(zapLogger)
+
 	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
 	var mockLogger = new(mockLogger)
-	zapLogger, _ := zap.NewDevelopment()
-	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationlogger.NewZapLogger(zapLogger))
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationLogger)
 
 	assert.Panics(t, func() {
 		_, err := client.GetStringAssignment("", "subject-1", Attributes{}, "")
@@ -28,10 +30,12 @@ func Test_AssignBlankExperiment(t *testing.T) {
 
 func Test_AssignBlankSubject(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
+	zapLogger, _ := zap.NewDevelopment()
+	applicationLogger := applicationlogger.NewZapLogger(zapLogger)
+
 	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
 	var mockLogger = new(mockLogger)
-	zapLogger, _ := zap.NewDevelopment()
-	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationlogger.NewZapLogger(zapLogger))
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationLogger)
 
 	assert.Panics(t, func() {
 		_, err := client.GetStringAssignment("experiment-1", "", Attributes{}, "")
@@ -43,6 +47,9 @@ func Test_AssignBlankSubject(t *testing.T) {
 func Test_LogAssignment(t *testing.T) {
 	var mockLogger = new(mockLogger)
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
+
+	zapLogger, _ := zap.NewDevelopment()
+	applicationLogger := applicationlogger.NewZapLogger(zapLogger)
 
 	var mockConfigRequestor = new(mockConfigRequestor)
 	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
@@ -85,8 +92,7 @@ func Test_LogAssignment(t *testing.T) {
 
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(config["experiment-key-1"], nil)
 
-	zapLogger, _ := zap.NewDevelopment()
-	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationlogger.NewZapLogger(zapLogger))
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationLogger)
 
 	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
 	expected := "control"
@@ -101,6 +107,9 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Panic("logging panic")
 
 	var mockConfigRequestor = new(mockConfigRequestor)
+	zapLogger, _ := zap.NewDevelopment()
+	applicationLogger := applicationlogger.NewZapLogger(zapLogger)
+
 	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
 
 	config := map[string]flagConfiguration{
@@ -140,8 +149,7 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 	}
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(config["experiment-key-1"], nil)
 
-	zapLogger, _ := zap.NewDevelopment()
-	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationlogger.NewZapLogger(zapLogger))
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationLogger)
 
 	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
 	expected := "control"
