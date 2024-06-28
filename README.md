@@ -131,6 +131,67 @@ func main() {
 }
 ```
 
+## Provide a custom logger
+
+If you want to provide a logging implementation to the SDK to capture errors and other application logs, you can do so by passing in an implementation of the `ApplicationLogger` interface to the `InitClient` function.
+
+You can use the `eppoclient.ScrubbingLogger` to scrub PII from the logs.
+
+```go
+import (
+    "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
+    "github.com/sirupsen/logrus"
+)
+
+type LogrusApplicationLogger struct {
+    logger *logrus.Logger
+}
+
+func NewLogrusApplicationLogger(logLevel logrus.Level) *LogrusApplicationLogger {
+    logger := logrus.New()
+    logger.SetFormatter(&logrus.JSONFormatter{})
+    return &LogrusApplicationLogger{logger: logger, logLevel: logLevel}
+}
+
+func (l *LogrusApplicationLogger) Debug(args ...interface{}) {
+    if l.logLevel <= logrus.DebugLevel {
+        l.logger.Debug(args...)
+    }
+}
+
+func (l *LogrusApplicationLogger) Info(args ...interface{}) {
+    if l.logLevel <= logrus.InfoLevel {
+        l.logger.Info(args...)
+    }
+}
+
+func (l *LogrusApplicationLogger) Warn(args ...interface{}) {
+    if l.logLevel <= logrus.WarnLevel {
+        l.logger.Warn(args...)
+    }
+}
+
+func (l *LogrusApplicationLogger) Error(args ...interface{}) {
+    if l.logLevel <= logrus.ErrorLevel {
+        l.logger.Error(args...)
+    }
+}
+
+func main() {
+  // Initialize a custom logger; example using logrus
+  // Set log level to Info
+  applicationLogger := NewLogrusApplicationLogger(logrus.InfoLevel)
+  scrubbingLogger := eppoclient.NewScrubbingLogger(applicationLogger)
+
+  // Initialize the Eppo client
+  eppoClient = eppoclient.InitClient(eppoclient.Config{
+      SdkKey:            "<your_sdk_key>",
+      AssignmentLogger:  assignmentLogger,
+      ApplicationLogger: scrubbingLogger,
+  })
+}
+```
+
 ## Philosophy
 
 Eppo's SDKs are built for simplicity, speed and reliability. Flag configurations are compressed and distributed over a global CDN (Fastly), typically reaching your servers in under 15ms. Server SDKs continue polling Eppo’s API at 10-second intervals. Configurations are then cached locally, ensuring that each assignment is made instantly. Evaluation logic within each SDK consists of a few lines of simple numeric and string comparisons. The typed functions listed above are all developers need to understand, abstracting away the complexity of the Eppo's underlying (and expanding) feature set.

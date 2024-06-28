@@ -6,13 +6,17 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
+
+	"github.com/Eppo-exp/golang-sdk/v4/eppoclient/applicationlogger"
 )
 
 func Test_AssignBlankExperiment(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
 	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
+	zapLogger, _ := zap.NewDevelopment()
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationlogger.NewZapLogger(zapLogger))
 
 	assert.Panics(t, func() {
 		_, err := client.GetStringAssignment("", "subject-1", Attributes{}, "")
@@ -26,7 +30,8 @@ func Test_AssignBlankSubject(t *testing.T) {
 	var mockConfigRequestor = new(mockConfigRequestor)
 	var poller = newPoller(10, mockConfigRequestor.FetchAndStoreConfigurations)
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
+	zapLogger, _ := zap.NewDevelopment()
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationlogger.NewZapLogger(zapLogger))
 
 	assert.Panics(t, func() {
 		_, err := client.GetStringAssignment("experiment-1", "", Attributes{}, "")
@@ -80,7 +85,8 @@ func Test_LogAssignment(t *testing.T) {
 
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(config["experiment-key-1"], nil)
 
-	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
+	zapLogger, _ := zap.NewDevelopment()
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationlogger.NewZapLogger(zapLogger))
 
 	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
 	expected := "control"
@@ -134,7 +140,8 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 	}
 	mockConfigRequestor.Mock.On("GetConfiguration", "experiment-key-1").Return(config["experiment-key-1"], nil)
 
-	client := newEppoClient(mockConfigRequestor, poller, mockLogger)
+	zapLogger, _ := zap.NewDevelopment()
+	client := newEppoClient(mockConfigRequestor, poller, mockLogger, applicationlogger.NewZapLogger(zapLogger))
 
 	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
 	expected := "control"

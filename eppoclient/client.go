@@ -2,6 +2,8 @@ package eppoclient
 
 import (
 	"fmt"
+
+	"github.com/Eppo-exp/golang-sdk/v4/eppoclient/applicationlogger"
 )
 
 type Attributes map[string]interface{}
@@ -9,17 +11,24 @@ type Attributes map[string]interface{}
 // Client for eppo.cloud. Instance of this struct will be created on calling InitClient.
 // EppoClient will then immediately start polling experiments data from Eppo.
 type EppoClient struct {
-	configRequestor iConfigRequestor
-	poller          poller
-	logger          IAssignmentLogger
+	configRequestor   iConfigRequestor
+	poller            poller
+	logger            IAssignmentLogger
+	applicationLogger applicationlogger.Logger
 }
 
-func newEppoClient(configRequestor iConfigRequestor, poller *poller, assignmentLogger IAssignmentLogger) *EppoClient {
+func newEppoClient(
+	configRequestor iConfigRequestor,
+	poller *poller,
+	assignmentLogger IAssignmentLogger,
+	applicationLogger applicationlogger.Logger,
+) *EppoClient {
 	var ec = &EppoClient{}
 
 	ec.poller = *poller
 	ec.configRequestor = configRequestor
 	ec.logger = assignmentLogger
+	ec.applicationLogger = applicationLogger
 
 	return ec
 }
@@ -31,6 +40,7 @@ func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subje
 	}
 	result, ok := variation.(bool)
 	if !ok {
+		ec.applicationLogger.Error("failed to cast %v to bool", variation)
 		return defaultValue, fmt.Errorf("failed to cast %v to bool", variation)
 	}
 	return result, err

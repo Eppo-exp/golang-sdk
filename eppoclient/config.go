@@ -1,14 +1,20 @@
 package eppoclient
 
-import "time"
+import (
+	"time"
+
+	"github.com/Eppo-exp/golang-sdk/v4/eppoclient/applicationlogger"
+	"go.uber.org/zap"
+)
 
 const default_base_url = "https://fscdn.eppo.cloud/api"
 
 type Config struct {
-	BaseUrl          string
-	SdkKey           string
-	AssignmentLogger IAssignmentLogger
-	PollerInterval   time.Duration
+	BaseUrl           string
+	SdkKey            string
+	AssignmentLogger  IAssignmentLogger
+	PollerInterval    time.Duration
+	ApplicationLogger applicationlogger.Logger
 }
 
 func (cfg *Config) validate() {
@@ -22,5 +28,10 @@ func (cfg *Config) validate() {
 
 	if cfg.PollerInterval <= 0 {
 		cfg.PollerInterval = 10 * time.Second
+	}
+
+	if cfg.ApplicationLogger == nil {
+		defaultLogger, _ := zap.NewProduction()
+		cfg.ApplicationLogger = applicationlogger.NewZapLogger(defaultLogger)
 	}
 }
