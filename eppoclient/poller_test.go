@@ -22,7 +22,7 @@ func Test_PollerPoll_InvokesCallbackUntilStoped(t *testing.T) {
 
 	var poller = newPoller(1*time.Second, callbackMock.CallbackFn)
 	poller.Start()
-	time.Sleep(5 * time.Second + 500 * time.Millisecond) // half second buffer to allow polling thread to execute
+	time.Sleep(5*time.Second + 500*time.Millisecond) // half second buffer to allow polling thread to execute
 	poller.Stop()
 	expected := 6 // One call for start(), and then another call each second for 5 seconds before stopped at 5.5 seconds
 	callbackMock.AssertNumberOfCalls(t, "CallbackFn", expected)

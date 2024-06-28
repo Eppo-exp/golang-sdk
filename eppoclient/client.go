@@ -2,6 +2,8 @@ package eppoclient
 
 import (
 	"fmt"
+
+	"github.com/Eppo-exp/golang-sdk/v4/eppoclient/applicationlogger"
 )
 
 type Attributes map[string]interface{}
@@ -9,17 +11,24 @@ type Attributes map[string]interface{}
 // Client for eppo.cloud. Instance of this struct will be created on calling InitClient.
 // EppoClient will then immediately start polling experiments data from Eppo.
 type EppoClient struct {
-	configRequestor iConfigRequestor
-	poller          poller
-	logger          IAssignmentLogger
+	configRequestor   iConfigRequestor
+	poller            poller
+	logger            IAssignmentLogger
+	applicationLogger applicationlogger.Logger
 }
 
-func newEppoClient(configRequestor iConfigRequestor, poller *poller, assignmentLogger IAssignmentLogger) *EppoClient {
+func newEppoClient(
+	configRequestor iConfigRequestor,
+	poller *poller,
+	assignmentLogger IAssignmentLogger,
+	applicationLogger applicationlogger.Logger,
+) *EppoClient {
 	var ec = &EppoClient{}
 
 	ec.poller = *poller
 	ec.configRequestor = configRequestor
 	ec.logger = assignmentLogger
+	ec.applicationLogger = applicationLogger
 
 	return ec
 }
@@ -31,6 +40,7 @@ func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subje
 	}
 	result, ok := variation.(bool)
 	if !ok {
+		ec.applicationLogger.Error("failed to cast %v to bool", variation)
 		return defaultValue, fmt.Errorf("failed to cast %v to bool", variation)
 	}
 	return result, err
@@ -43,6 +53,7 @@ func (ec *EppoClient) GetNumericAssignment(flagKey string, subjectKey string, su
 	}
 	result, ok := variation.(float64)
 	if !ok {
+		ec.applicationLogger.Error("failed to cast %v to float64", variation)
 		return defaultValue, fmt.Errorf("failed to cast %v to float64", variation)
 	}
 	return result, err
@@ -55,6 +66,7 @@ func (ec *EppoClient) GetIntegerAssignment(flagKey string, subjectKey string, su
 	}
 	result, ok := variation.(int64)
 	if !ok {
+		ec.applicationLogger.Error("failed to cast %v to int64", variation)
 		return defaultValue, fmt.Errorf("failed to cast %v to int64", variation)
 	}
 	return result, err
@@ -67,6 +79,7 @@ func (ec *EppoClient) GetStringAssignment(flagKey string, subjectKey string, sub
 	}
 	result, ok := variation.(string)
 	if !ok {
+		ec.applicationLogger.Error("failed to cast %v to string", variation)
 		return defaultValue, fmt.Errorf("failed to cast %v to string", variation)
 	}
 	return result, err
@@ -82,25 +95,30 @@ func (ec *EppoClient) GetJSONAssignment(flagKey string, subjectKey string, subje
 
 func (ec *EppoClient) getAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, variationType variationType) (interface{}, error) {
 	if subjectKey == "" {
+		ec.applicationLogger.Error("no subject key provided")
 		panic("no subject key provided")
 	}
 
 	if flagKey == "" {
+		ec.applicationLogger.Error("no flag key provided")
 		panic("no flag key provided")
 	}
 
 	flag, err := ec.configRequestor.GetConfiguration(flagKey)
 	if err != nil {
+		ec.applicationLogger.Info("failed to get flag configuration: %v", err)
 		return nil, err
 	}
 
 	err = flag.verifyType(variationType)
 	if err != nil {
+		ec.applicationLogger.Info("failed to verify flag type: %v", err)
 		return nil, err
 	}
 
-	assignmentValue, assignmentEvent, err := flag.eval(subjectKey, subjectAttributes)
+	assignmentValue, assignmentEvent, err := flag.eval(subjectKey, subjectAttributes, ec.applicationLogger)
 	if err != nil {
+		ec.applicationLogger.Info("failed to evaluate flag: %v", err)
 		return nil, err
 	}
 
@@ -110,7 +128,7 @@ func (ec *EppoClient) getAssignment(flagKey string, subjectKey string, subjectAt
 			defer func() {
 				r := recover()
 				if r != nil {
-					fmt.Println("panic occurred:", r)
+					ec.applicationLogger.Error("panic occurred: %v", r)
 				}
 			}()
 
