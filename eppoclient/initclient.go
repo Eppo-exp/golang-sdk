@@ -4,7 +4,7 @@ package eppoclient
 
 import "net/http"
 
-var __version__ = "4.0.1"
+var __version__ = "4.0.2"
 
 // InitClient is required to start polling of experiments configurations and create
 // an instance of EppoClient, which could be used to get assignments information.
@@ -19,7 +19,7 @@ func InitClient(config Config) *EppoClient {
 
 	poller := newPoller(config.PollerInterval, requestor.FetchAndStoreConfigurations)
 
-	client := newEppoClient(requestor, poller, assignmentLogger)
+	client := newEppoClient(requestor, poller, assignmentLogger, &config.ApplicationLogger)
 
 	client.poller.Start()
 
