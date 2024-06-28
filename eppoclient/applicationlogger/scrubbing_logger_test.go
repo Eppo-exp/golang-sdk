@@ -32,6 +32,11 @@ func Test_maskSensitiveInfo(t *testing.T) {
 			input:    "https://example.com?apiKey=123456&sdkKey=abcdef&anotherParam=foo",
 			expected: "https://example.com?apiKey=XXXXXX&sdkKey=XXXXXX&anotherParam=foo",
 		},
+		{
+			name:     "mask apiKey and sdkKey out of order",
+			input:    "https://example.com?anotherParam=foo&apiKey=123456&sdkKey=abcdef",
+			expected: "https://example.com?anotherParam=foo&apiKey=XXXXXX&sdkKey=XXXXXX",
+		},
 	}
 
 	for _, tt := range tests {
