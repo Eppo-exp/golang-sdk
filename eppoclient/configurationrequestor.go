@@ -41,8 +41,7 @@ func (ecr *configurationRequestor) GetConfiguration(experimentKey string) (flagC
 func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
 	result, err := ecr.httpClient.get(UFC_ENDPOINT)
 	if err != nil {
-		maskedErr := maskSensitiveInfo(err.Error())
-		ecr.applicationLogger.Error("Failed to fetch UFC response", maskedErr)
+		ecr.applicationLogger.Error("Failed to fetch UFC response", err)
 		return
 	}
 

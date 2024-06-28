@@ -1,4 +1,4 @@
-package eppoclient
+package applicationlogger
 
 import (
 	"testing"
@@ -26,6 +26,11 @@ func Test_maskSensitiveInfo(t *testing.T) {
 			name:     "no sensitive info",
 			input:    "https://example.com?param=value&anotherParam=foo",
 			expected: "https://example.com?param=value&anotherParam=foo",
+		},
+		{
+			name:     "mask apiKey and sdkKey",
+			input:    "https://example.com?apiKey=123456&sdkKey=abcdef&anotherParam=foo",
+			expected: "https://example.com?apiKey=XXXXXX&sdkKey=XXXXXX&anotherParam=foo",
 		},
 	}
 

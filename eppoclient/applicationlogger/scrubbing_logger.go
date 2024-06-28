@@ -26,7 +26,12 @@ func (s *ScrubbingLogger) scrub(args ...interface{}) []interface{} {
 	return scrubbedArgs
 }
 
+// maskSensitiveInfo replaces sensitive information (like apiKey or sdkKey)
+// in the error message with 'XXXXXX' to prevent exposure of these keys in
+// logs or error messages.
 func maskSensitiveInfo(errMsg string) string {
+	// Scrub apiKey and sdkKey from error messages containing URLs
+	// Matches any string that starts with apiKey or sdkKey followed by any characters until the next & or the end of the string
 	re := regexp.MustCompile(`(apiKey|sdkKey)=[^&]*`)
 	return re.ReplaceAllString(errMsg, "$1=XXXXXX")
 }
