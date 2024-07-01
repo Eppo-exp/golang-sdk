@@ -7,29 +7,29 @@ import (
 )
 
 func Test_GetConfiguration_unknownKey(t *testing.T) {
-	var store = newConfigurationStore()
-	err := store.SetConfigurations(map[string]flagConfiguration{})
+	var store = newConfigurationStore(configuration{})
 
-	assert.NoError(t, err)
-	result, err := store.GetConfiguration("unknown_exp")
+	config := store.getConfiguration()
+	result, err := config.getFlagConfiguration("unknown_exp")
 
 	assert.Error(t, err)
 	assert.Equal(t, flagConfiguration{}, result)
 }
 
 func Test_GetConfiguration_knownKey(t *testing.T) {
-	config := map[string]flagConfiguration{
-		"experiment-key-1": flagConfiguration{
-			Key:           "experiment-key-1",
-			Enabled:       false,
-			VariationType: stringVariation,
+	flags := configResponse{
+		Flags: map[string]flagConfiguration{
+			"experiment-key-1": flagConfiguration{
+				Key:           "experiment-key-1",
+				Enabled:       false,
+				VariationType: stringVariation,
+			},
 		},
 	}
+	var store = newConfigurationStore(configuration{flags: flags})
 
-	var store = newConfigurationStore()
-	err := store.SetConfigurations(config)
-	assert.NoError(t, err)
-	result, err := store.GetConfiguration("experiment-key-1")
+	config := store.getConfiguration()
+	result, err := config.getFlagConfiguration("experiment-key-1")
 
 	expected := "experiment-key-1"
 

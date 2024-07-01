@@ -6,8 +6,9 @@ import (
 	"time"
 )
 
-type ufcResponse struct {
-	Flags map[string]flagConfiguration `json:"flags"`
+type configResponse struct {
+	Flags   map[string]flagConfiguration `json:"flags"`
+	Bandits map[string][]banditVariation `json:"bandits,omitempty"`
 }
 
 type flagConfiguration struct {

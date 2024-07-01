@@ -33,12 +33,12 @@ func newHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) *ht
 	return hc
 }
 
-func (hc *httpClient) get(resource string) (string, error) {
+func (hc *httpClient) get(resource string) ([]byte, error) {
 	url := hc.baseUrl + resource
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return "", err // Return an empty string and the error
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
@@ -59,22 +59,22 @@ func (hc *httpClient) get(resource string) (string, error) {
 		// error.
 		//
 		// We should almost never expect to see this condition be executed.
-		return "", err // Return an empty string and the error
+		return nil, err
 	}
-	defer resp.Body.Close() // Ensure the response body is closed
+	defer resp.Body.Close()
 
 	if resp.StatusCode == 401 {
 		hc.isUnauthorized = true
-		return "", fmt.Errorf("unauthorized access") // Return an error indicating unauthorized access
+		return nil, fmt.Errorf("unauthorized access")
 	}
 
 	if resp.StatusCode >= 500 {
-		return "", fmt.Errorf("server error: %d", resp.StatusCode) // Handle server errors (status code > 500)
+		return nil, fmt.Errorf("server error: %d", resp.StatusCode)
 	}
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("server error: unreadable body") // Return an empty string and the error
+		return nil, fmt.Errorf("server error: unreadable body")
 	}
-	return string(b), nil // Return the response body as a string and nil for the error
+	return b, nil
 }
