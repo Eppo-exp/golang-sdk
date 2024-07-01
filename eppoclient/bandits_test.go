@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,8 +18,8 @@ type banditTest struct {
 	Subjects     []struct {
 		SubjectKey        string
 		SubjectAttributes struct {
-			Numeric     map[string]float64 `json:"numeric_attributes"`
-			Categorical map[string]string  `json:"categorical_attributes"`
+			Numeric     map[string]float64 `json:"numericAttributes"`
+			Categorical map[string]string  `json:"categoricalAttributes"`
 		}
 		Actions []struct {
 			ActionKey             string
@@ -120,7 +121,7 @@ func readJsonDirectory[T any](dirPath string) map[string]T {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() && filepath.Ext(path) == ".json" {
+		if !info.IsDir() && filepath.Ext(path) == ".json" && !strings.Contains(filepath.Base(path), ".dynamic-typing.") {
 			results[filepath.Base(path)] = readJsonFile[T](path)
 		}
 		return nil
