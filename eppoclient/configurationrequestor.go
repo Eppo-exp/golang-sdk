@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const UFC_ENDPOINT = "/flag-config/v1/config"
+const CONFIG_ENDPOINT = "/flag-config/v1/config"
 const BANDIT_ENDPOINT = "/flag-config/v1/bandits"
 
 type configurationRequestor struct {
@@ -37,12 +37,12 @@ func (cr *configurationRequestor) fetchConfiguration() (configuration, error) {
 	var config configuration
 	var err error
 
-	config.ufc, err = cr.fetchUfc()
+	config.flags, err = cr.fetchConfig()
 	if err != nil {
 		return configuration{}, err
 	}
 
-	if config.ufc.Bandits != nil {
+	if config.flags.Bandits != nil {
 		config.bandits, err = cr.fetchBandits()
 		if err != nil {
 			return configuration{}, err
@@ -52,22 +52,22 @@ func (cr *configurationRequestor) fetchConfiguration() (configuration, error) {
 	return config, nil
 }
 
-func (cr *configurationRequestor) fetchUfc() (ufcResponse, error) {
-	result, err := cr.httpClient.get(UFC_ENDPOINT)
+func (cr *configurationRequestor) fetchConfig() (configResponse, error) {
+	result, err := cr.httpClient.get(CONFIG_ENDPOINT)
 	if err != nil {
-		fmt.Println("Failed to fetch UFC response", err)
-		return ufcResponse{}, err
+		fmt.Println("Failed to fetch config response", err)
+		return configResponse{}, err
 	}
 
-	var ufc ufcResponse
-	err = json.Unmarshal(result, &ufc)
+	var response configResponse
+	err = json.Unmarshal(result, &response)
 	if err != nil {
-		fmt.Println("Failed to unmarshal UFC response JSON", result)
+		fmt.Println("Failed to unmarshal config response JSON", result)
 		fmt.Println(err)
-		return ufcResponse{}, err
+		return configResponse{}, err
 	}
 
-	return ufc, nil
+	return response, nil
 }
 
 func (cr *configurationRequestor) fetchBandits() (banditResponse, error) {
@@ -77,13 +77,13 @@ func (cr *configurationRequestor) fetchBandits() (banditResponse, error) {
 		return banditResponse{}, err
 	}
 
-	var bandits banditResponse
-	err = json.Unmarshal(result, &bandits)
+	var response banditResponse
+	err = json.Unmarshal(result, &response)
 	if err != nil {
 		fmt.Println("Failed to unmarshal bandit response JSON", result)
 		fmt.Println(err)
 		return banditResponse{}, err
 	}
 
-	return bandits, nil
+	return response, nil
 }

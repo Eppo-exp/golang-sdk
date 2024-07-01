@@ -6,11 +6,11 @@ import (
 )
 
 type configuration struct {
-	ufc     ufcResponse
+	flags   configResponse
 	bandits banditResponse
 	// flag key -> variation value -> banditVariation.
 	//
-	// This is cached from `ufc` field for easier access in
+	// This is cached from `flags` field for easier access in
 	// evaluation.
 	banditFlagAssociations map[string]map[string]banditVariation
 }
@@ -18,7 +18,7 @@ type configuration struct {
 func (c *configuration) refreshBanditFlagAssociations() {
 	associations := make(map[string]map[string]banditVariation)
 
-	for _, banditVariations := range c.ufc.Bandits {
+	for _, banditVariations := range c.flags.Bandits {
 		for _, bandit := range banditVariations {
 			byVariation, ok := associations[bandit.FlagKey]
 			if !ok {
@@ -48,7 +48,7 @@ func (c configuration) getBanditVariant(flagKey, variation string) (result bandi
 }
 
 func (c configuration) getFlagConfiguration(key string) (flagConfiguration, error) {
-	flag, ok := c.ufc.Flags[key]
+	flag, ok := c.flags.Flags[key]
 	if !ok {
 		return flag, errors.New("flag configuration not found")
 	}

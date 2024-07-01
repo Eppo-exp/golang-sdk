@@ -17,7 +17,7 @@ func Test_GetConfiguration_unknownKey(t *testing.T) {
 }
 
 func Test_GetConfiguration_knownKey(t *testing.T) {
-	ufc := ufcResponse{
+	flags := configResponse{
 		Flags: map[string]flagConfiguration{
 			"experiment-key-1": flagConfiguration{
 				Key:           "experiment-key-1",
@@ -26,7 +26,7 @@ func Test_GetConfiguration_knownKey(t *testing.T) {
 			},
 		},
 	}
-	var store = newConfigurationStore(configuration{ufc: ufc})
+	var store = newConfigurationStore(configuration{flags: flags})
 
 	config := store.getConfiguration()
 	result, err := config.getFlagConfiguration("experiment-key-1")

@@ -51,10 +51,10 @@ func Test_InferContextAttributes(t *testing.T) {
 }
 
 func Test_bandits_sdkTestData(t *testing.T) {
-	ufc := readJsonFile[ufcResponse]("test-data/ufc/bandit-flags-v1.json")
+	flags := readJsonFile[configResponse]("test-data/ufc/bandit-flags-v1.json")
 	bandits := readJsonFile[banditResponse]("test-data/ufc/bandit-models-v1.json")
 	configStore := newConfigurationStore(configuration{
-		ufc:     ufc,
+		flags:   flags,
 		bandits: bandits,
 	})
 	logger := new(mockLogger)

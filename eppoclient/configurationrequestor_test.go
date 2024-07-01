@@ -11,7 +11,7 @@ import (
 )
 
 func Test_configurationRequestor_requestBandits(t *testing.T) {
-	flags := readJsonFile[ufcResponse]("test-data/ufc/bandit-flags-v1.json")
+	flags := readJsonFile[configResponse]("test-data/ufc/bandit-flags-v1.json")
 	bandits := readJsonFile[banditResponse]("test-data/ufc/bandit-models-v1.json")
 	server := newTestServer(flags, bandits)
 
@@ -30,7 +30,7 @@ func Test_configurationRequestor_requestBandits(t *testing.T) {
 func Test_configurationRequestor_shouldNotRequestBanditsIfNotPresentInFlags(t *testing.T) {
 	// flags-v1.json does not have a flag.Bandits field, so we
 	// don't need to fetch bandits.
-	flags := readJsonFile[ufcResponse]("test-data/ufc/flags-v1.json")
+	flags := readJsonFile[configResponse]("test-data/ufc/flags-v1.json")
 	bandits := readJsonFile[banditResponse]("test-data/ufc/bandit-models-v1.json")
 	server := newTestServer(flags, bandits)
 
@@ -46,11 +46,11 @@ func Test_configurationRequestor_shouldNotRequestBanditsIfNotPresentInFlags(t *t
 	assert.Empty(t, config.bandits.Bandits)
 }
 
-func newTestServer(ufcResponse ufcResponse, banditsResponse banditResponse) *httptest.Server {
+func newTestServer(configResponse configResponse, banditsResponse banditResponse) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/flag-config/v1/config":
-			err := json.NewEncoder(w).Encode(ufcResponse)
+			err := json.NewEncoder(w).Encode(configResponse)
 			if err != nil {
 				fmt.Println("Error encoding test response")
 			}

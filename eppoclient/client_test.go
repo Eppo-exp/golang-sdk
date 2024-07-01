@@ -35,7 +35,7 @@ func Test_LogAssignment(t *testing.T) {
 	var mockLogger = new(mockLogger)
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
-	config := ufcResponse{
+	config := configResponse{
 		Flags: map[string]flagConfiguration{
 			"experiment-key-1": flagConfiguration{
 				Key:           "experiment-key-1",
@@ -72,7 +72,7 @@ func Test_LogAssignment(t *testing.T) {
 			},
 		}}
 
-	client := newEppoClient(newConfigurationStore(configuration{ufc: config}), nil, nil, mockLogger)
+	client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger)
 
 	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
 	expected := "control"
@@ -87,7 +87,7 @@ func Test_client_loggerIsCalledWithProperBanditEvent(t *testing.T) {
 	logger.Mock.On("LogAssignment", mock.Anything).Return()
 	logger.Mock.On("LogBanditAction", mock.Anything).Return()
 
-	ufc := ufcResponse{
+	flags := configResponse{
 		Bandits: map[string][]banditVariation{
 			"bandit": []banditVariation{
 				banditVariation{
@@ -115,7 +115,7 @@ func Test_client_loggerIsCalledWithProperBanditEvent(t *testing.T) {
 		},
 	}
 
-	client := newEppoClient(newConfigurationStore(configuration{ufc: ufc, bandits: bandits}), nil, nil, logger)
+	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger)
 	actions := map[string]ContextAttributes{
 		"action1": {},
 	}
@@ -132,7 +132,7 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 	var mockLogger = new(mockLogger)
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Panic("logging panic")
 
-	config := ufcResponse{Flags: map[string]flagConfiguration{
+	config := configResponse{Flags: map[string]flagConfiguration{
 		"experiment-key-1": flagConfiguration{
 			Key:           "experiment-key-1",
 			Enabled:       true,
@@ -168,7 +168,7 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 		},
 	}}
 
-	client := newEppoClient(newConfigurationStore(configuration{ufc: config}), nil, nil, mockLogger)
+	client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger)
 
 	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
 	expected := "control"
@@ -182,7 +182,7 @@ func Test_client_handlesBanditLoggerPanic(t *testing.T) {
 	logger.Mock.On("LogAssignment", mock.Anything).Return()
 	logger.Mock.On("LogBanditAction", mock.Anything).Panic("logging panic")
 
-	ufc := ufcResponse{
+	flags := configResponse{
 		Bandits: map[string][]banditVariation{
 			"bandit": []banditVariation{
 				banditVariation{
@@ -210,7 +210,7 @@ func Test_client_handlesBanditLoggerPanic(t *testing.T) {
 		},
 	}
 
-	client := newEppoClient(newConfigurationStore(configuration{ufc: ufc, bandits: bandits}), nil, nil, logger)
+	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger)
 	actions := map[string]ContextAttributes{
 		"action1": {},
 	}
@@ -224,7 +224,7 @@ func Test_client_correctActionIsReturnedIfBanditLoggerPanics(t *testing.T) {
 	logger.Mock.On("LogAssignment", mock.Anything).Return()
 	logger.Mock.On("LogBanditAction", mock.Anything).Panic("logging panic")
 
-	ufc := ufcResponse{
+	flags := configResponse{
 		Bandits: map[string][]banditVariation{
 			"bandit": []banditVariation{
 				banditVariation{
@@ -252,7 +252,7 @@ func Test_client_correctActionIsReturnedIfBanditLoggerPanics(t *testing.T) {
 		},
 	}
 
-	client := newEppoClient(newConfigurationStore(configuration{ufc: ufc, bandits: bandits}), nil, nil, logger)
+	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger)
 	actions := map[string]ContextAttributes{
 		"action1": {},
 	}
