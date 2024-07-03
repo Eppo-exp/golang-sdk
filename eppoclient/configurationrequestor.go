@@ -1,6 +1,8 @@
 package eppoclient
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 )
@@ -13,11 +15,12 @@ type iConfigRequestor interface {
 }
 
 type configurationRequestor struct {
-	httpClient  httpClient
-	configStore *configurationStore
+	httpClient            HttpClientInterface
+	configStore           *configurationStore
+	storedFlagConfigsHash string
 }
 
-func newConfigurationRequestor(httpClient httpClient, configStore *configurationStore) *configurationRequestor {
+func newConfigurationRequestor(httpClient HttpClientInterface, configStore *configurationStore) *configurationRequestor {
 	return &configurationRequestor{
 		httpClient:  httpClient,
 		configStore: configStore,
@@ -25,11 +28,6 @@ func newConfigurationRequestor(httpClient httpClient, configStore *configuration
 }
 
 func (ecr *configurationRequestor) GetConfiguration(experimentKey string) (flagConfiguration, error) {
-	if ecr.httpClient.isUnauthorized {
-		// should we panic here or return an error?
-		panic("Unauthorized: please check your SDK key")
-	}
-
 	result, err := ecr.configStore.GetConfiguration(experimentKey)
 
 	return result, err
@@ -41,6 +39,23 @@ func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
 		fmt.Println("Failed to fetch UFC response", err)
 		return
 	}
+
+	// Calculate the hash of the current response
+	hash := sha256.New()
+	hash.Write([]byte(result))
+	receivedFlagConfigsHash := hex.EncodeToString(hash.Sum(nil))
+
+	fmt.Println("received flag configs:", result)
+	fmt.Println("received flag configs hash:", receivedFlagConfigsHash)
+	fmt.Println("stored flag configs hash:", ecr.storedFlagConfigsHash)
+
+	// Compare the current hash with the last saved hash
+	if receivedFlagConfigsHash == ecr.storedFlagConfigsHash {
+		fmt.Println("[EppoSDK] Response has not changed, skipping deserialization and cache update.")
+		return
+	}
+
+	ecr.storedFlagConfigsHash = receivedFlagConfigsHash
 
 	var wrapper ufcResponse
 	err = json.Unmarshal([]byte(result), &wrapper)

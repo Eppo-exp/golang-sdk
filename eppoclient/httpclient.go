@@ -10,11 +10,14 @@ import (
 
 const REQUEST_TIMEOUT_SECONDS = time.Duration(10 * time.Second)
 
+type HttpClientInterface interface {
+	get(resource string) (string, error)
+}
+
 type httpClient struct {
-	baseUrl        string
-	sdkParams      SDKParams
-	isUnauthorized bool
-	client         *http.Client
+	baseUrl   string
+	sdkParams SDKParams
+	client    *http.Client
 }
 
 type SDKParams struct {
@@ -23,12 +26,11 @@ type SDKParams struct {
 	sdkVersion string
 }
 
-func newHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) *httpClient {
+func newHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) HttpClientInterface {
 	var hc = &httpClient{
-		baseUrl:        baseUrl,
-		sdkParams:      sdkParams,
-		isUnauthorized: false,
-		client:         client,
+		baseUrl:   baseUrl,
+		sdkParams: sdkParams,
+		client:    client,
 	}
 	return hc
 }
@@ -64,7 +66,6 @@ func (hc *httpClient) get(resource string) (string, error) {
 	defer resp.Body.Close() // Ensure the response body is closed
 
 	if resp.StatusCode == 401 {
-		hc.isUnauthorized = true
 		return "", fmt.Errorf("unauthorized access") // Return an error indicating unauthorized access
 	}
 
