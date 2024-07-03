@@ -45,10 +45,6 @@ func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
 	hash.Write([]byte(result))
 	receivedFlagConfigsHash := hex.EncodeToString(hash.Sum(nil))
 
-	fmt.Println("received flag configs:", result)
-	fmt.Println("received flag configs hash:", receivedFlagConfigsHash)
-	fmt.Println("stored flag configs hash:", ecr.storedFlagConfigsHash)
-
 	// Compare the current hash with the last saved hash
 	if receivedFlagConfigsHash == ecr.storedFlagConfigsHash {
 		fmt.Println("[EppoSDK] Response has not changed, skipping deserialization and cache update.")
