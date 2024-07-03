@@ -50,6 +50,11 @@ func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
 		return
 	}
 
+	// Precompute
+	for _, flag := range wrapper.Flags {
+		flag.Precompute()
+	}
+
 	// Now wrapper.Flags contains all configurations mapped by their keys
 	// Pass this map directly to SetConfigurations
 	err = ecr.configStore.SetConfigurations(wrapper.Flags)

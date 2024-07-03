@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	semver "github.com/Masterminds/semver/v3"
 )
 
 type ufcResponse struct {
@@ -17,6 +19,12 @@ type flagConfiguration struct {
 	Variations    map[string]variation `json:"variations"`
 	Allocations   []allocation         `json:"allocations"`
 	TotalShards   int64                `json:"totalShards"`
+}
+
+func (f *flagConfiguration) Precompute() {
+	for i := range f.Allocations {
+		f.Allocations[i].Precompute()
+	}
 }
 
 type variation struct {
@@ -116,14 +124,52 @@ type allocation struct {
 	DoLog   *bool     `json:"doLog"`
 }
 
+func (a *allocation) Precompute() {
+	for i := range a.Rules {
+		a.Rules[i].Precompute()
+	}
+}
+
 type rule struct {
 	Conditions []condition `json:"conditions"`
+}
+
+func (r *rule) Precompute() {
+	for i := range r.Conditions {
+		r.Conditions[i].Precompute()
+	}
 }
 
 type condition struct {
 	Operator  string      `json:"operator"`
 	Attribute string      `json:"attribute"`
 	Value     interface{} `json:"value"`
+
+	NumericValue      float64
+	NumericValueValid bool
+	SemVerValue       *semver.Version
+	SemVerValueValid  bool
+}
+
+func (c *condition) Precompute() {
+	// Try to convert Value to a float64
+	if num, err := toFloat64(c.Value); err == nil {
+		c.NumericValue = num
+		c.NumericValueValid = true
+		return
+	}
+
+	// Try to convert Value to a string and then parse as semver
+	if str, ok := c.Value.(string); ok {
+		if semVer, err := semver.NewVersion(str); err == nil {
+			c.SemVerValue = semVer
+			c.SemVerValueValid = true
+			return
+		}
+	}
+
+	c.NumericValueValid = false
+	c.SemVerValueValid = false
 }
 
 type split struct {
