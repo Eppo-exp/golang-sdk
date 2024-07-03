@@ -1,7 +1,6 @@
 package eppoclient
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -90,7 +89,6 @@ func Test_FetchAndStoreConfigurations_DoesNotDeserializeTwice(t *testing.T) {
 
 	// assert that the new config is stored
 	assert.Equal(t, 1, len(mockConfigStore.configs))
-	fmt.Println(mockConfigStore.configs)
 	assert.Equal(t, "empty_flag_2", mockConfigStore.configs["empty_flag_2"].Key)
 	mockHttpClient.AssertNumberOfCalls(t, "get", 3)
 	mockCall.Unset()
