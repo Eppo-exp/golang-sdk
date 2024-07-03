@@ -1,8 +1,6 @@
 package eppoclient
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 )
@@ -15,15 +13,19 @@ type iConfigRequestor interface {
 }
 
 type configurationRequestor struct {
-	httpClient            HttpClientInterface
-	configStore           *configurationStore
-	storedFlagConfigsHash string
+	httpClient                                    HttpClientInterface
+	configStore                                   *configurationStore
+	storedUFCResponseETag                         string
+	deserializeCount                              int
+	skipDeserializeAndUpdateFlagConfigIfUnchanged bool
 }
 
-func newConfigurationRequestor(httpClient HttpClientInterface, configStore *configurationStore) *configurationRequestor {
+func newConfigurationRequestor(httpClient HttpClientInterface, configStore *configurationStore, skipDeserializeAndUpdateFlagConfigIfUnchanged bool) *configurationRequestor {
 	return &configurationRequestor{
-		httpClient:  httpClient,
-		configStore: configStore,
+		httpClient:       httpClient,
+		configStore:      configStore,
+		deserializeCount: 0,
+		skipDeserializeAndUpdateFlagConfigIfUnchanged: skipDeserializeAndUpdateFlagConfigIfUnchanged,
 	}
 }
 
@@ -34,29 +36,27 @@ func (ecr *configurationRequestor) GetConfiguration(experimentKey string) (flagC
 }
 
 func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
-	result, err := ecr.httpClient.get(UFC_ENDPOINT)
+	httpResponse, err := ecr.httpClient.get(UFC_ENDPOINT)
 	if err != nil {
 		fmt.Println("Failed to fetch UFC response", err)
 		return
 	}
 
-	// Calculate the hash of the current response
-	hash := sha256.New()
-	hash.Write([]byte(result))
-	receivedFlagConfigsHash := hex.EncodeToString(hash.Sum(nil))
+	if ecr.skipDeserializeAndUpdateFlagConfigIfUnchanged {
+		// Compare the current hash with the last saved hash
+		if httpResponse.ETag == ecr.storedUFCResponseETag {
+			fmt.Println("[EppoSDK] Response has not changed, skipping deserialization and cache update.")
+			return
+		}
 
-	// Compare the current hash with the last saved hash
-	if receivedFlagConfigsHash == ecr.storedFlagConfigsHash {
-		fmt.Println("[EppoSDK] Response has not changed, skipping deserialization and cache update.")
-		return
+		// Update the stored hash
+		ecr.storedUFCResponseETag = httpResponse.ETag
 	}
 
-	ecr.storedFlagConfigsHash = receivedFlagConfigsHash
-
 	var wrapper ufcResponse
-	err = json.Unmarshal([]byte(result), &wrapper)
+	err = json.Unmarshal([]byte(httpResponse.Body), &wrapper)
 	if err != nil {
-		fmt.Println("Failed to unmarshal UFC response JSON", result)
+		fmt.Println("Failed to unmarshal UFC response JSON", httpResponse.Body)
 		fmt.Println(err)
 		return
 	}

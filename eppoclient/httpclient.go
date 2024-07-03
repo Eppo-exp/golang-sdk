@@ -11,7 +11,7 @@ import (
 const REQUEST_TIMEOUT_SECONDS = time.Duration(10 * time.Second)
 
 type HttpClientInterface interface {
-	get(resource string) (string, error)
+	get(resource string) (HttpResponse, error)
 }
 
 type httpClient struct {
@@ -26,6 +26,11 @@ type SDKParams struct {
 	sdkVersion string
 }
 
+type HttpResponse struct {
+	Body string
+	ETag string
+}
+
 func newHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) HttpClientInterface {
 	var hc = &httpClient{
 		baseUrl:   baseUrl,
@@ -35,12 +40,12 @@ func newHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) Htt
 	return hc
 }
 
-func (hc *httpClient) get(resource string) (string, error) {
+func (hc *httpClient) get(resource string) (HttpResponse, error) {
 	url := hc.baseUrl + resource
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return "", err // Return an empty string and the error
+		return HttpResponse{}, err // Return empty strings and the error
 	}
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
@@ -61,21 +66,25 @@ func (hc *httpClient) get(resource string) (string, error) {
 		// error.
 		//
 		// We should almost never expect to see this condition be executed.
-		return "", err // Return an empty string and the error
+		return HttpResponse{}, err // Return empty strings and the error
 	}
 	defer resp.Body.Close() // Ensure the response body is closed
 
 	if resp.StatusCode == 401 {
-		return "", fmt.Errorf("unauthorized access") // Return an error indicating unauthorized access
+		return HttpResponse{}, fmt.Errorf("unauthorized access") // Return an error indicating unauthorized access
 	}
 
 	if resp.StatusCode >= 500 {
-		return "", fmt.Errorf("server error: %d", resp.StatusCode) // Handle server errors (status code > 500)
+		return HttpResponse{}, fmt.Errorf("server error: %d", resp.StatusCode) // Handle server errors (status code > 500)
 	}
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("server error: unreadable body") // Return an empty string and the error
+		return HttpResponse{}, fmt.Errorf("server error: unreadable body") // Return empty strings and the error
 	}
-	return string(b), nil // Return the response body as a string and nil for the error
+
+	return HttpResponse{
+		Body: string(b),
+		ETag: resp.Header.Get("ETag"), // Capture the ETag header
+	}, nil
 }
