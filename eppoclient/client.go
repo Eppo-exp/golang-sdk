@@ -2,6 +2,7 @@ package eppoclient
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Eppo-exp/golang-sdk/v4/eppoclient/applicationlogger"
 )
@@ -11,30 +12,31 @@ type Attributes map[string]interface{}
 // Client for eppo.cloud. Instance of this struct will be created on calling InitClient.
 // EppoClient will then immediately start polling experiments data from Eppo.
 type EppoClient struct {
-	configRequestor   iConfigRequestor
-	poller            poller
-	logger            IAssignmentLogger
-	applicationLogger applicationlogger.Logger
+	configurationStore *configurationStore
+	configRequestor    *configurationRequestor
+	poller             *poller
+	logger             IAssignmentLogger
+	applicationLogger  applicationlogger.Logger
 }
 
 func newEppoClient(
-	configRequestor iConfigRequestor,
+	configurationStore *configurationStore,
+	configRequestor *configurationRequestor,
 	poller *poller,
 	assignmentLogger IAssignmentLogger,
 	applicationLogger applicationlogger.Logger,
 ) *EppoClient {
-	var ec = &EppoClient{}
-
-	ec.poller = *poller
-	ec.configRequestor = configRequestor
-	ec.logger = assignmentLogger
-	ec.applicationLogger = applicationLogger
-
-	return ec
+	return &EppoClient{
+		configurationStore: configurationStore,
+		configRequestor:    configRequestor,
+		poller:             poller,
+		logger:             assignmentLogger,
+		applicationLogger:  applicationLogger,
+	}
 }
 
 func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue bool) (bool, error) {
-	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, booleanVariation)
+	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, booleanVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -47,7 +49,7 @@ func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subje
 }
 
 func (ec *EppoClient) GetNumericAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue float64) (float64, error) {
-	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, numericVariation)
+	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, numericVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -60,7 +62,7 @@ func (ec *EppoClient) GetNumericAssignment(flagKey string, subjectKey string, su
 }
 
 func (ec *EppoClient) GetIntegerAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue int64) (int64, error) {
-	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, integerVariation)
+	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, integerVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -73,7 +75,7 @@ func (ec *EppoClient) GetIntegerAssignment(flagKey string, subjectKey string, su
 }
 
 func (ec *EppoClient) GetStringAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue string) (string, error) {
-	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, stringVariation)
+	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, stringVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -86,14 +88,105 @@ func (ec *EppoClient) GetStringAssignment(flagKey string, subjectKey string, sub
 }
 
 func (ec *EppoClient) GetJSONAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue interface{}) (interface{}, error) {
-	variation, err := ec.getAssignment(flagKey, subjectKey, subjectAttributes, jsonVariation)
+	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, jsonVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
 	return variation, err
 }
 
-func (ec *EppoClient) getAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, variationType variationType) (interface{}, error) {
+type BanditResult struct {
+	Variation string
+	Action    *string
+}
+
+func (ec *EppoClient) GetBanditAction(flagKey string, subjectKey string, subjectAttributes ContextAttributes, actions map[string]ContextAttributes, defaultVariation string) BanditResult {
+	config := ec.configurationStore.getConfiguration()
+
+	isBanditFlag := config.isBanditFlag(flagKey)
+
+	if isBanditFlag && len(actions) == 0 {
+		// No actions passed for a flag known to have an
+		// active bandit, so we just return the default values
+		// so that we don't log a variation or bandit
+		// assignment.
+		return BanditResult{
+			Variation: defaultVariation,
+			Action:    nil,
+		}
+	}
+
+	// ignoring the error here as we can always proceed with default variation
+	assignmentValue, _ := ec.getAssignment(config, flagKey, subjectKey, subjectAttributes.toGenericAttributes(), stringVariation)
+	variation, ok := assignmentValue.(string)
+	if !ok {
+		variation = defaultVariation
+	}
+
+	banditVariation, ok := config.getBanditVariant(flagKey, variation)
+	if !ok {
+		return BanditResult{
+			Variation: variation,
+			Action:    nil,
+		}
+	}
+
+	bandit, err := config.getBanditConfiguration(banditVariation.Key)
+	if err != nil {
+		// no bandit configuration
+		return BanditResult{
+			Variation: variation,
+			Action:    nil,
+		}
+	}
+
+	evaluation := bandit.ModelData.evaluate(banditEvaluationContext{
+		flagKey:           flagKey,
+		subjectKey:        subjectKey,
+		subjectAttributes: subjectAttributes,
+		actions:           actions,
+	})
+
+	if logger, ok := ec.logger.(BanditActionLogger); ok {
+		event := BanditEvent{
+			FlagKey:                      flagKey,
+			BanditKey:                    bandit.BanditKey,
+			Subject:                      subjectKey,
+			Action:                       evaluation.actionKey,
+			ActionProbability:            evaluation.actionWeight,
+			OptimalityGap:                evaluation.optimalityGap,
+			ModelVersion:                 bandit.ModelVersion,
+			Timestamp:                    time.Now().UTC().Format(time.RFC3339),
+			SubjectNumericAttributes:     evaluation.subjectAttributes.Numeric,
+			SubjectCategoricalAttributes: evaluation.subjectAttributes.Categorical,
+			ActionNumericAttributes:      evaluation.actionAttributes.Numeric,
+			ActionCategoricalAttributes:  evaluation.actionAttributes.Categorical,
+			MetaData: map[string]string{
+				"sdkLanguage": "go",
+				"sdkVersion":  __version__,
+			},
+		}
+
+		func() {
+			// need to catch panics from Logger and continue
+			defer func() {
+				r := recover()
+				if r != nil {
+					fmt.Println("panic occurred:", r)
+				}
+			}()
+
+			logger.LogBanditAction(event)
+		}()
+	}
+
+	return BanditResult{
+		Variation: variation,
+		Action:    &evaluation.actionKey,
+	}
+}
+
+func (ec *EppoClient) getAssignment(config configuration, flagKey string, subjectKey string, subjectAttributes Attributes, variationType variationType) (interface{}, error) {
 	if subjectKey == "" {
 		ec.applicationLogger.Error("no subject key provided")
 		panic("no subject key provided")
@@ -104,7 +197,11 @@ func (ec *EppoClient) getAssignment(flagKey string, subjectKey string, subjectAt
 		panic("no flag key provided")
 	}
 
-	flag, err := ec.configRequestor.GetConfiguration(flagKey)
+	if ec.configRequestor != nil && !ec.configRequestor.IsAuthorized() {
+		panic("Unauthorized: please check your SDK key")
+	}
+
+	flag, err := config.getFlagConfiguration(flagKey)
 	if err != nil {
 		ec.applicationLogger.Info("failed to get flag configuration: %v", err)
 		return nil, err

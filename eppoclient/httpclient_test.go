@@ -1,6 +1,7 @@
 package eppoclient
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -39,12 +40,12 @@ func TestHttpClientGet(t *testing.T) {
 		name           string
 		resource       string
 		expectedError  string
-		expectedResult string
+		expectedResult []byte
 	}{
 		{
 			name:           "api returns http 200",
 			resource:       "/test",
-			expectedResult: "OK",
+			expectedResult: []byte("OK"),
 		},
 		{
 			name:          "api returns 401 unauthorized error",
@@ -70,14 +71,14 @@ func TestHttpClientGet(t *testing.T) {
 				if err.Error() != tc.expectedError {
 					t.Errorf("Expected error %v, got %v", tc.expectedError, err)
 				}
-				if result != "" { // Check if result is not an empty string when an error is expected
+				if result != nil { // Check if result is not an empty []byte when an error is expected
 					t.Errorf("Expected result to be an empty string when there is an error, got %v", result)
 				}
 			} else {
 				if tc.expectedError != "" {
 					t.Errorf("Expected error %v, got nil", tc.expectedError)
 				}
-				if result != tc.expectedResult {
+				if !bytes.Equal(result, tc.expectedResult) {
 					t.Errorf("Expected result %v, got %v", tc.expectedResult, result)
 				}
 			}

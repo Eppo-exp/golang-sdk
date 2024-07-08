@@ -11,15 +11,16 @@ var __version__ = "4.1.0"
 func InitClient(config Config) *EppoClient {
 	config.validate()
 	sdkParams := SDKParams{sdkKey: config.SdkKey, sdkName: "go", sdkVersion: __version__}
+	applicationLogger := config.ApplicationLogger
 
 	httpClient := newHttpClient(config.BaseUrl, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
-	configStore := newConfigurationStore()
-	requestor := newConfigurationRequestor(*httpClient, configStore, config.ApplicationLogger)
+	configStore := newConfigurationStore(configuration{})
+	requestor := newConfigurationRequestor(*httpClient, configStore, applicationLogger)
+
 	assignmentLogger := config.AssignmentLogger
 
-	poller := newPoller(config.PollerInterval, requestor.FetchAndStoreConfigurations, config.ApplicationLogger)
-
-	client := newEppoClient(requestor, poller, assignmentLogger, config.ApplicationLogger)
+	poller := newPoller(config.PollerInterval, requestor.FetchAndStoreConfigurations, applicationLogger)
+	client := newEppoClient(configStore, requestor, poller, assignmentLogger, applicationLogger)
 
 	client.poller.Start()
 
