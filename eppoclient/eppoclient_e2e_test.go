@@ -16,7 +16,7 @@ import (
 )
 
 const TEST_DATA_DIR = "test-data/ufc/tests"
-const MOCK_UFC_RESPONSE_FILE = "test-data/ufc/flags-v1.json"
+const MOCK_CONFIG_RESPONSE_FILE = "test-data/ufc/flags-v1.json"
 
 type testData struct {
 	Flag          string        `json:"flag"`
@@ -90,7 +90,7 @@ func initFixture() string {
 	return server.URL
 }
 
-func getTestData() ufcResponse {
+func getTestData() configResponse {
 	files, err := os.ReadDir(TEST_DATA_DIR)
 
 	if err != nil {
@@ -115,17 +115,13 @@ func getTestData() ufcResponse {
 		tstData[file.Name()] = testCaseDict
 	}
 
-	var ufcResponse ufcResponse
-	ufcResponseJsonFile, _ := os.Open(MOCK_UFC_RESPONSE_FILE)
-	byteValue, _ := io.ReadAll(ufcResponseJsonFile)
-	err = json.Unmarshal(byteValue, &ufcResponse)
+	var configResponse configResponse
+	configResponseJsonFile, _ := os.Open(MOCK_CONFIG_RESPONSE_FILE)
+	byteValue, _ := io.ReadAll(configResponseJsonFile)
+	err = json.Unmarshal(byteValue, &configResponse)
 	if err != nil {
-		fmt.Println("Error reading mock UFC response file")
+		fmt.Println("Error reading mock config response file")
 	}
 
-	if err != nil {
-		fmt.Println("Error reading mock UFC response file")
-	}
-
-	return ufcResponse
+	return configResponse
 }
