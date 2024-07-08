@@ -9,7 +9,7 @@ import (
 
 func Test_AssignBlankExperiment(t *testing.T) {
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(&configurationStore{}, nil, nil, mockLogger)
+	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger)
 
 	_, err := client.GetStringAssignment("", "subject-1", Attributes{}, "")
 	assert.Error(t, err)
@@ -17,7 +17,7 @@ func Test_AssignBlankExperiment(t *testing.T) {
 
 func Test_AssignBlankSubject(t *testing.T) {
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(&configurationStore{}, nil, nil, mockLogger)
+	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger)
 
 	_, err := client.GetStringAssignment("experiment-1", "", Attributes{}, "")
 	assert.Error(t, err)
