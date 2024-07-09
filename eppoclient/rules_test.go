@@ -23,6 +23,12 @@ var textRule = rule{Conditions: []condition{
 
 var ruleWithEmptyConditions = rule{Conditions: []condition{}}
 
+func init() {
+	numericRule.Precompute()
+	semverRule.Precompute()
+	textRule.Precompute()
+}
+
 func Test_TextRule_NoMatch(t *testing.T) {
 	subjectAttributes := make(Attributes)
 	subjectAttributes["age"] = 99
@@ -284,42 +290,46 @@ func Test_isNotNull_attributePresent(t *testing.T) {
 
 func Test_handles_all_numeric_types(t *testing.T) {
 	condition := condition{Operator: "GT", Attribute: "powerLevel", Value: "9000"}
+	condition.Precompute()
+
 	// Floats
-	assert.True(t, condition.matches(Attributes{ "powerLevel": 9001.0}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": 9000.0}) )
-	assert.True(t, condition.matches(Attributes{ "powerLevel": float64(9001)}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": float64(-9001.0)}) )
-	assert.True(t, condition.matches(Attributes{ "powerLevel": float32(9001)}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": float32(8999)}) )
+	assert.True(t, condition.matches(Attributes{"powerLevel": 9001.0}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": 9000.0}))
+	assert.True(t, condition.matches(Attributes{"powerLevel": float64(9001)}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": float64(-9001.0)}))
+	assert.True(t, condition.matches(Attributes{"powerLevel": float32(9001)}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": float32(8999)}))
 	// Signed Integers
-	assert.True(t, condition.matches(Attributes{ "powerLevel": 9001}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": 9000}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": int8(1)}) )
-	assert.True(t, condition.matches(Attributes{ "powerLevel": int16(9001)}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": int16(-9002)}) )
-	assert.True(t, condition.matches(Attributes{ "powerLevel": int32(10000)}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": int32(0)}) )
-	assert.True(t, condition.matches(Attributes{ "powerLevel": int64(9001)}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": int64(8999)}) )
+	assert.True(t, condition.matches(Attributes{"powerLevel": 9001}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": 9000}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": int8(1)}))
+	assert.True(t, condition.matches(Attributes{"powerLevel": int16(9001)}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": int16(-9002)}))
+	assert.True(t, condition.matches(Attributes{"powerLevel": int32(10000)}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": int32(0)}))
+	assert.True(t, condition.matches(Attributes{"powerLevel": int64(9001)}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": int64(8999)}))
 	// Unsigned Integers
-	assert.False(t, condition.matches(Attributes{ "powerLevel": uint8(1)}) )
-	assert.True(t, condition.matches(Attributes{ "powerLevel": uint16(9001)}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": uint16(8999)}) )
-	assert.True(t, condition.matches(Attributes{ "powerLevel": uint32(10000)}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": uint32(0)}) )
-	assert.True(t, condition.matches(Attributes{ "powerLevel": uint64(9001)}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": uint64(8999)}) )
+	assert.False(t, condition.matches(Attributes{"powerLevel": uint8(1)}))
+	assert.True(t, condition.matches(Attributes{"powerLevel": uint16(9001)}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": uint16(8999)}))
+	assert.True(t, condition.matches(Attributes{"powerLevel": uint32(10000)}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": uint32(0)}))
+	assert.True(t, condition.matches(Attributes{"powerLevel": uint64(9001)}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": uint64(8999)}))
 	// Strings
-	assert.True(t, condition.matches(Attributes{ "powerLevel": "9001"}) )
-	assert.True(t, condition.matches(Attributes{ "powerLevel": "9000.1"}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": "9000"}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": ".2"}) )
+	assert.True(t, condition.matches(Attributes{"powerLevel": "9001"}))
+	assert.True(t, condition.matches(Attributes{"powerLevel": "9000.1"}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": "9000"}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": ".2"}))
 }
 
 func Test_invalid_numeric_types(t *testing.T) {
 	condition := condition{Operator: "GT", Attribute: "powerLevel", Value: "9000"}
-	assert.False(t, condition.matches(Attributes{ "powerLevel": "empty"}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": ""}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": false}) )
-	assert.False(t, condition.matches(Attributes{ "powerLevel": true}) )
+	condition.Precompute()
+
+	assert.False(t, condition.matches(Attributes{"powerLevel": "empty"}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": ""}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": false}))
+	assert.False(t, condition.matches(Attributes{"powerLevel": true}))
 }
