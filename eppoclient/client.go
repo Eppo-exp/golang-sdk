@@ -181,10 +181,6 @@ func (ec *EppoClient) getAssignment(config configuration, flagKey string, subjec
 		panic("no flag key provided")
 	}
 
-	if ec.configRequestor != nil && !ec.configRequestor.IsAuthorized() {
-		panic("Unauthorized: please check your SDK key")
-	}
-
 	flag, err := config.getFlagConfiguration(flagKey)
 	if err != nil {
 		return nil, err

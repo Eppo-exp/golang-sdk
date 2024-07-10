@@ -18,7 +18,7 @@ func Test_configurationRequestor_requestBandits(t *testing.T) {
 	sdkParams := SDKParams{sdkKey: "blah", sdkName: "go", sdkVersion: __version__}
 	httpClient := newHttpClient(server.URL, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
 	configurationStore := newConfigurationStore(configuration{})
-	configurationRequestor := newConfigurationRequestor(*httpClient, configurationStore)
+	configurationRequestor := newConfigurationRequestor(httpClient, configurationStore, false)
 
 	configurationRequestor.FetchAndStoreConfigurations()
 
@@ -37,7 +37,7 @@ func Test_configurationRequestor_shouldNotRequestBanditsIfNotPresentInFlags(t *t
 	sdkParams := SDKParams{sdkKey: "blah", sdkName: "go", sdkVersion: __version__}
 	httpClient := newHttpClient(server.URL, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
 	configurationStore := newConfigurationStore(configuration{})
-	configurationRequestor := newConfigurationRequestor(*httpClient, configurationStore)
+	configurationRequestor := newConfigurationRequestor(httpClient, configurationStore, false)
 
 	configurationRequestor.FetchAndStoreConfigurations()
 
