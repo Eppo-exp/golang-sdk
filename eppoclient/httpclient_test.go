@@ -1,7 +1,6 @@
 package eppoclient
 
 import (
-	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,6 +10,7 @@ func TestHttpClientGet(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/test":
+			w.Header().Set("ETag", "testETag")
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(`OK`))
 		case "/unauthorized":
@@ -40,12 +40,14 @@ func TestHttpClientGet(t *testing.T) {
 		name           string
 		resource       string
 		expectedError  string
-		expectedResult []byte
+		expectedResult string
+		expectedETag   string
 	}{
 		{
 			name:           "api returns http 200",
 			resource:       "/test",
-			expectedResult: []byte("OK"),
+			expectedResult: "OK",
+			expectedETag:   "testETag",
 		},
 		{
 			name:          "api returns 401 unauthorized error",
@@ -71,15 +73,21 @@ func TestHttpClientGet(t *testing.T) {
 				if err.Error() != tc.expectedError {
 					t.Errorf("Expected error %v, got %v", tc.expectedError, err)
 				}
-				if result != nil { // Check if result is not an empty []byte when an error is expected
-					t.Errorf("Expected result to be an empty string when there is an error, got %v", result)
+				if result.Body != "" { // Check if result is not an empty string when an error is expected
+					t.Errorf("Expected result to be an empty string when there is an error, got %v", result.Body)
+				}
+				if result.ETag != "" { // Check if result is not an empty string when an error is expected
+					t.Errorf("Expected ETag to be an empty string when there is an error, got %v", result.ETag)
 				}
 			} else {
 				if tc.expectedError != "" {
 					t.Errorf("Expected error %v, got nil", tc.expectedError)
 				}
-				if !bytes.Equal(result, tc.expectedResult) {
-					t.Errorf("Expected result %v, got %v", tc.expectedResult, result)
+				if result.Body != tc.expectedResult {
+					t.Errorf("Expected result %v, got %v", tc.expectedResult, result.Body)
+				}
+				if result.ETag != tc.expectedETag {
+					t.Errorf("Expected ETag %v, got %v", tc.expectedETag, result.ETag)
 				}
 			}
 		})

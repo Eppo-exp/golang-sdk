@@ -14,7 +14,7 @@ func InitClient(config Config) *EppoClient {
 
 	httpClient := newHttpClient(config.BaseUrl, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
 	configStore := newConfigurationStore(configuration{})
-	requestor := newConfigurationRequestor(*httpClient, configStore)
+	requestor := newConfigurationRequestor(httpClient, configStore, config.SkipDeserializeAndUpdateFlagConfigIfUnchanged)
 	assignmentLogger := config.AssignmentLogger
 
 	poller := newPoller(config.PollerInterval, requestor.FetchAndStoreConfigurations)

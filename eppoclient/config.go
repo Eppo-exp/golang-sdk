@@ -5,10 +5,11 @@ import "time"
 const default_base_url = "https://fscdn.eppo.cloud/api"
 
 type Config struct {
-	BaseUrl          string
-	SdkKey           string
-	AssignmentLogger IAssignmentLogger
-	PollerInterval   time.Duration
+	BaseUrl                                       string
+	SdkKey                                        string
+	AssignmentLogger                              IAssignmentLogger
+	PollerInterval                                time.Duration
+	SkipDeserializeAndUpdateFlagConfigIfUnchanged bool // default false
 }
 
 func (cfg *Config) validate() {

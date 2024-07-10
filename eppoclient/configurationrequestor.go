@@ -9,19 +9,20 @@ const CONFIG_ENDPOINT = "/flag-config/v1/config"
 const BANDIT_ENDPOINT = "/flag-config/v1/bandits"
 
 type configurationRequestor struct {
-	httpClient  httpClient
-	configStore *configurationStore
+	httpClient                                    HttpClientInterface
+	configStore                                   *configurationStore
+	storedUFCResponseETag                         string
+	deserializeCount                              int
+	skipDeserializeAndUpdateFlagConfigIfUnchanged bool
 }
 
-func newConfigurationRequestor(httpClient httpClient, configStore *configurationStore) *configurationRequestor {
+func newConfigurationRequestor(httpClient HttpClientInterface, configStore *configurationStore, skipDeserializeAndUpdateFlagConfigIfUnchanged bool) *configurationRequestor {
 	return &configurationRequestor{
-		httpClient:  httpClient,
-		configStore: configStore,
+		httpClient:       httpClient,
+		configStore:      configStore,
+		deserializeCount: 0,
+		skipDeserializeAndUpdateFlagConfigIfUnchanged: skipDeserializeAndUpdateFlagConfigIfUnchanged,
 	}
-}
-
-func (cr *configurationRequestor) IsAuthorized() bool {
-	return !cr.httpClient.isUnauthorized
 }
 
 func (cr *configurationRequestor) FetchAndStoreConfigurations() {
@@ -59,8 +60,19 @@ func (cr *configurationRequestor) fetchConfig() (configResponse, error) {
 		return configResponse{}, err
 	}
 
+	if cr.skipDeserializeAndUpdateFlagConfigIfUnchanged {
+		if result.ETag == cr.storedUFCResponseETag {
+			fmt.Println("[EppoSDK] Response has not changed, skipping deserialization and cache update.")
+			// Returning an empty configResponse and an error to indicate that the response has not changed
+			// which prevents the flag config from being updated with an empty configResponse
+			return configResponse{}, fmt.Errorf("config response has not changed")
+		}
+		cr.storedUFCResponseETag = result.ETag
+	}
+
 	var response configResponse
-	err = json.Unmarshal(result, &response)
+	cr.deserializeCount++
+	err = json.Unmarshal([]byte(result.Body), &response)
 	if err != nil {
 		fmt.Println("Failed to unmarshal config response JSON", result)
 		fmt.Println(err)
@@ -83,7 +95,7 @@ func (cr *configurationRequestor) fetchBandits() (banditResponse, error) {
 	}
 
 	var response banditResponse
-	err = json.Unmarshal(result, &response)
+	err = json.Unmarshal([]byte(result.Body), &response)
 	if err != nil {
 		fmt.Println("Failed to unmarshal bandit response JSON", result)
 		fmt.Println(err)

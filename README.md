@@ -55,7 +55,6 @@ func main() {
 }
 ```
 
-
 #### Assign anywhere
 
 ```go
@@ -130,6 +129,18 @@ func main() {
   }
 }
 ```
+
+## Configuration
+
+The `Config` struct in `config.go` contains the following options:
+
+| Option Name                                     | Description                                                                 |
+|-------------------------------------------------|-----------------------------------------------------------------------------|
+| `BaseUrl`                                       | The base URL for the Eppo API. Defaults to `https://fscdn.eppo.cloud/api`.  |
+| `SdkKey`                                        | The SDK key for authenticating requests.                                    |
+| `AssignmentLogger`                              | An implementation of the `IAssignmentLogger` interface for logging assignments. |
+| `PollerInterval`                                | The interval at which the SDK polls for updates. Defaults to 10 seconds.    |
+| `SkipDeserializeAndUpdateFlagConfigIfUnchanged` | A boolean flag to skip deserialization and update if the configuration has not changed. Defaults to false. |
 
 ## Philosophy
 

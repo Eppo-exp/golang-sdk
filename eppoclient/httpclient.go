@@ -10,11 +10,14 @@ import (
 
 const REQUEST_TIMEOUT_SECONDS = time.Duration(10 * time.Second)
 
+type HttpClientInterface interface {
+	get(resource string) (HttpResponse, error)
+}
+
 type httpClient struct {
-	baseUrl        string
-	sdkParams      SDKParams
-	isUnauthorized bool
-	client         *http.Client
+	baseUrl   string
+	sdkParams SDKParams
+	client    *http.Client
 }
 
 type SDKParams struct {
@@ -23,22 +26,26 @@ type SDKParams struct {
 	sdkVersion string
 }
 
-func newHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) *httpClient {
+type HttpResponse struct {
+	Body string
+	ETag string
+}
+
+func newHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) HttpClientInterface {
 	var hc = &httpClient{
-		baseUrl:        baseUrl,
-		sdkParams:      sdkParams,
-		isUnauthorized: false,
-		client:         client,
+		baseUrl:   baseUrl,
+		sdkParams: sdkParams,
+		client:    client,
 	}
 	return hc
 }
 
-func (hc *httpClient) get(resource string) ([]byte, error) {
+func (hc *httpClient) get(resource string) (HttpResponse, error) {
 	url := hc.baseUrl + resource
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return HttpResponse{}, err // Return empty strings and the error
 	}
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
@@ -59,22 +66,25 @@ func (hc *httpClient) get(resource string) ([]byte, error) {
 		// error.
 		//
 		// We should almost never expect to see this condition be executed.
-		return nil, err
+		return HttpResponse{}, err // Return empty strings and the error
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 401 {
-		hc.isUnauthorized = true
-		return nil, fmt.Errorf("unauthorized access")
+		return HttpResponse{}, fmt.Errorf("unauthorized access") // Return an error indicating unauthorized access
 	}
 
 	if resp.StatusCode >= 500 {
-		return nil, fmt.Errorf("server error: %d", resp.StatusCode)
+		return HttpResponse{}, fmt.Errorf("server error: %d", resp.StatusCode) // Handle server errors (status code > 500)
 	}
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("server error: unreadable body")
+		return HttpResponse{}, fmt.Errorf("server error: unreadable body") // Return empty strings and the error
 	}
-	return b, nil
+
+	return HttpResponse{
+		Body: string(b),
+		ETag: resp.Header.Get("ETag"), // Capture the ETag header
+	}, nil
 }
