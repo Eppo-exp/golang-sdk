@@ -60,7 +60,18 @@ func (cr *configurationRequestor) fetchConfig() (configResponse, error) {
 		return configResponse{}, err
 	}
 
+	if cr.skipDeserializeAndUpdateFlagConfigIfUnchanged {
+		if result.ETag == cr.storedUFCResponseETag {
+			fmt.Println("[EppoSDK] Response has not changed, skipping deserialization and cache update.")
+			// Returning an empty configResponse and an error to indicate that the response has not changed
+			// which prevents the flag config from being updated with an empty configResponse
+			return configResponse{}, fmt.Errorf("config response has not changed")
+		}
+		cr.storedUFCResponseETag = result.ETag
+	}
+
 	var response configResponse
+	cr.deserializeCount++
 	err = json.Unmarshal([]byte(result.Body), &response)
 	if err != nil {
 		fmt.Println("Failed to unmarshal config response JSON", result)
