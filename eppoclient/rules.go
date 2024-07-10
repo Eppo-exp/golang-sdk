@@ -46,11 +46,11 @@ func (condition condition) matches(subjectAttributes Attributes) bool {
 	case "NOT_ONE_OF":
 		return !isOneOf(subjectValue, convertToStringArray(condition.Value))
 	case "GTE", "GT", "LTE", "LT":
-		// Attempt to coerce both values to float64 and compare them.
+		// Attempt to coerce the subject value to float64 and compare it
+		// against the condition value.
 		subjectValueNumeric, isNumericSubjectErr := toFloat64(subjectValue)
-		conditionValueNumeric, isNumericConditionErr := toFloat64(condition.Value)
-		if isNumericSubjectErr == nil && isNumericConditionErr == nil {
-			result, err := evaluateNumericCondition(subjectValueNumeric, conditionValueNumeric, condition)
+		if isNumericSubjectErr == nil && condition.NumericValueValid {
+			result, err := evaluateNumericCondition(subjectValueNumeric, condition.NumericValue, condition)
 			if err != nil {
 				// Decision: Should we swallow the error here and return false?
 				// Alternatively, we could log the error and return false.
@@ -59,17 +59,16 @@ func (condition condition) matches(subjectAttributes Attributes) bool {
 			return result
 		}
 
-		// Attempt to compare using semantic versioning if both values are strings.
+		// Attempt to compare using semantic versioning if the subject value is a string.
+		// and the condition value is a valid semantic version.
 		subjectValueStr, isStringSubject := subjectValue.(string)
-		conditionValueStr, isStringCondition := condition.Value.(string)
-		if isStringSubject && isStringCondition {
-			// Attempt to parse both values as semantic versions.
+		if isStringSubject && condition.SemVerValueValid {
+			// Attempt to parse the subject value as a semantic version.
 			subjectSemVer, errSubject := semver.NewVersion(subjectValueStr)
-			conditionSemVer, errCondition := semver.NewVersion(conditionValueStr)
 
 			// If parsing succeeds, evaluate the semver condition.
-			if errSubject == nil && errCondition == nil {
-				result, err := evaluateSemVerCondition(subjectSemVer, conditionSemVer, condition)
+			if errSubject == nil {
+				result, err := evaluateSemVerCondition(subjectSemVer, condition.SemVerValue, condition)
 				if err != nil {
 					// Decision: Should we swallow the error here and return false?
 					// Alternatively, we could log the error and return false.
