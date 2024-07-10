@@ -46,24 +46,23 @@ func (condition condition) matches(subjectAttributes Attributes) bool {
 	case "NOT_ONE_OF":
 		return !isOneOf(subjectValue, convertToStringArray(condition.Value))
 	case "GTE", "GT", "LTE", "LT":
-		// Attempt to coerce both values to float64 and compare them.
+		// Attempt to coerce the subject value to float64 and compare it
+		// against the condition value.
 		subjectValueNumeric, isNumericSubjectErr := toFloat64(subjectValue)
-		conditionValueNumeric, isNumericConditionErr := toFloat64(condition.Value)
-		if isNumericSubjectErr == nil && isNumericConditionErr == nil {
-			return evaluateNumericCondition(subjectValueNumeric, conditionValueNumeric, condition)
+		if isNumericSubjectErr == nil && condition.NumericValueValid {
+			return evaluateNumericCondition(subjectValueNumeric, condition.NumericValue, condition)
 		}
 
-		// Attempt to compare using semantic versioning if both values are strings.
+		// Attempt to compare using semantic versioning if the subject value is a string.
+		// and the condition value is a valid semantic version.
 		subjectValueStr, isStringSubject := subjectValue.(string)
-		conditionValueStr, isStringCondition := condition.Value.(string)
-		if isStringSubject && isStringCondition {
-			// Attempt to parse both values as semantic versions.
+		if isStringSubject && condition.SemVerValueValid {
+			// Attempt to parse the subject value as a semantic version.
 			subjectSemVer, errSubject := semver.NewVersion(subjectValueStr)
-			conditionSemVer, errCondition := semver.NewVersion(conditionValueStr)
 
 			// If parsing succeeds, evaluate the semver condition.
-			if errSubject == nil && errCondition == nil {
-				return evaluateSemVerCondition(subjectSemVer, conditionSemVer, condition)
+			if errSubject == nil {
+				return evaluateSemVerCondition(subjectSemVer, condition.SemVerValue, condition)
 			}
 		}
 
@@ -196,7 +195,7 @@ func evaluateNumericCondition(subjectValue float64, conditionValue float64, cond
 func toFloat64(val interface{}) (float64, error) {
 	switch v := val.(type) {
 	case float32, float64:
-		return promoteFloat(v), nil 
+		return promoteFloat(v), nil
 	case int, int8, int16, int32, int64:
 		return float64(promoteInt(v)), nil
 	case uint, uint8, uint16, uint32, uint64:

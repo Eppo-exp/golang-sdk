@@ -68,7 +68,7 @@ func (hc *httpClient) get(resource string) (HttpResponse, error) {
 		// We should almost never expect to see this condition be executed.
 		return HttpResponse{}, err // Return empty strings and the error
 	}
-	defer resp.Body.Close() // Ensure the response body is closed
+	defer resp.Body.Close()
 
 	if resp.StatusCode == 401 {
 		return HttpResponse{}, fmt.Errorf("unauthorized access") // Return an error indicating unauthorized access

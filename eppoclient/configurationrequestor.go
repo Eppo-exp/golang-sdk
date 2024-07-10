@@ -5,12 +5,8 @@ import (
 	"fmt"
 )
 
-const UFC_ENDPOINT = "/flag-config/v1/config"
-
-type iConfigRequestor interface {
-	GetConfiguration(key string) (flagConfiguration, error)
-	FetchAndStoreConfigurations()
-}
+const CONFIG_ENDPOINT = "/flag-config/v1/config"
+const BANDIT_ENDPOINT = "/flag-config/v1/bandits"
 
 type configurationRequestor struct {
 	httpClient                                    HttpClientInterface
@@ -29,42 +25,71 @@ func newConfigurationRequestor(httpClient HttpClientInterface, configStore *conf
 	}
 }
 
-func (ecr *configurationRequestor) GetConfiguration(experimentKey string) (flagConfiguration, error) {
-	result, err := ecr.configStore.GetConfiguration(experimentKey)
+func (cr *configurationRequestor) FetchAndStoreConfigurations() {
+	configuration, err := cr.fetchConfiguration()
+	if err != nil {
+		return
+	}
 
-	return result, err
+	cr.configStore.setConfiguration(configuration)
 }
 
-func (ecr *configurationRequestor) FetchAndStoreConfigurations() {
-	httpResponse, err := ecr.httpClient.get(UFC_ENDPOINT)
+func (cr *configurationRequestor) fetchConfiguration() (configuration, error) {
+	var config configuration
+	var err error
+
+	config.flags, err = cr.fetchConfig()
 	if err != nil {
-		fmt.Println("Failed to fetch UFC response", err)
-		return
+		return configuration{}, err
 	}
 
-	if ecr.skipDeserializeAndUpdateFlagConfigIfUnchanged {
-		// Compare the current hash with the last saved hash
-		if httpResponse.ETag == ecr.storedUFCResponseETag {
-			fmt.Println("[EppoSDK] Response has not changed, skipping deserialization and cache update.")
-			return
+	if config.flags.Bandits != nil {
+		config.bandits, err = cr.fetchBandits()
+		if err != nil {
+			return configuration{}, err
 		}
-
-		// Update the stored hash
-		ecr.storedUFCResponseETag = httpResponse.ETag
 	}
 
-	var wrapper ufcResponse
-	err = json.Unmarshal([]byte(httpResponse.Body), &wrapper)
+	return config, nil
+}
+
+func (cr *configurationRequestor) fetchConfig() (configResponse, error) {
+	result, err := cr.httpClient.get(CONFIG_ENDPOINT)
 	if err != nil {
-		fmt.Println("Failed to unmarshal UFC response JSON", httpResponse.Body)
+		fmt.Println("Failed to fetch config response", err)
+		return configResponse{}, err
+	}
+
+	var response configResponse
+	err = json.Unmarshal([]byte(result.Body), &response)
+	if err != nil {
+		fmt.Println("Failed to unmarshal config response JSON", result)
 		fmt.Println(err)
-		return
+		return configResponse{}, err
 	}
 
-	// Now wrapper.Flags contains all configurations mapped by their keys
-	// Pass this map directly to SetConfigurations
-	err = ecr.configStore.SetConfigurations(wrapper.Flags)
-	if err != nil {
-		fmt.Println("Failed to set configurations in configuration store", err)
+	// Precompute flag values
+	for _, flag := range response.Flags {
+		flag.Precompute()
 	}
+
+	return response, nil
+}
+
+func (cr *configurationRequestor) fetchBandits() (banditResponse, error) {
+	result, err := cr.httpClient.get(BANDIT_ENDPOINT)
+	if err != nil {
+		fmt.Println("Failed to fetch bandit response", err)
+		return banditResponse{}, err
+	}
+
+	var response banditResponse
+	err = json.Unmarshal([]byte(result.Body), &response)
+	if err != nil {
+		fmt.Println("Failed to unmarshal bandit response JSON", result)
+		fmt.Println(err)
+		return banditResponse{}, err
+	}
+
+	return response, nil
 }
