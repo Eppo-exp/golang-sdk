@@ -4,12 +4,15 @@ package eppoclient
 
 import "net/http"
 
-var __version__ = "4.1.0"
+var __version__ = "5.0.0"
 
 // InitClient is required to start polling of experiments configurations and create
 // an instance of EppoClient, which could be used to get assignments information.
-func InitClient(config Config) *EppoClient {
-	config.validate()
+func InitClient(config Config) (*EppoClient, error) {
+	err := config.validate()
+	if err != nil {
+		return nil, err
+	}
 	sdkParams := SDKParams{sdkKey: config.SdkKey, sdkName: "go", sdkVersion: __version__}
 	applicationLogger := config.ApplicationLogger
 
@@ -24,5 +27,5 @@ func InitClient(config Config) *EppoClient {
 
 	client.poller.Start()
 
-	return client
+	return client, nil
 }

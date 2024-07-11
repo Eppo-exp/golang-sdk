@@ -1,6 +1,7 @@
 package eppoclient
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/Eppo-exp/golang-sdk/v4/eppoclient/applicationlogger"
@@ -17,9 +18,9 @@ type Config struct {
 	ApplicationLogger applicationlogger.Logger
 }
 
-func (cfg *Config) validate() {
+func (cfg *Config) validate() error {
 	if cfg.SdkKey == "" {
-		panic("sdk key not set")
+		return fmt.Errorf("SDK key not set")
 	}
 
 	if cfg.BaseUrl == "" {
@@ -34,4 +35,6 @@ func (cfg *Config) validate() {
 		defaultLogger, _ := zap.NewProduction()
 		cfg.ApplicationLogger = applicationlogger.NewZapLogger(defaultLogger)
 	}
+
+	return nil
 }

@@ -23,10 +23,6 @@ func newConfigurationRequestor(httpClient httpClient, configStore *configuration
 	}
 }
 
-func (cr *configurationRequestor) IsAuthorized() bool {
-	return !cr.httpClient.isUnauthorized
-}
-
 func (cr *configurationRequestor) FetchAndStoreConfigurations() {
 	configuration, err := cr.fetchConfiguration()
 	if err != nil {
@@ -69,6 +65,11 @@ func (cr *configurationRequestor) fetchConfig() (configResponse, error) {
 		cr.applicationLogger.Error("Failed to unmarshal config response JSON", result)
 		cr.applicationLogger.Error(err)
 		return configResponse{}, err
+	}
+
+	// Precompute flag values
+	for _, flag := range response.Flags {
+		flag.Precompute()
 	}
 
 	return response, nil

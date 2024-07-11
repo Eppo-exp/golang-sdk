@@ -11,7 +11,8 @@ func Test_LruAssignmentLogger_cacheAssignment(t *testing.T) {
 	innerLogger := new(mockLogger)
 	innerLogger.On("LogAssignment", mock.Anything).Return()
 
-	logger := NewLruAssignmentLogger(innerLogger, 1000)
+	logger, err := NewLruAssignmentLogger(innerLogger, 1000)
+	assert.NoError(t, err)
 
 	event := AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -33,7 +34,8 @@ func Test_LruAssignmentLogger_timestampAndAttributesAreNotImportant(t *testing.T
 	innerLogger := new(mockLogger)
 	innerLogger.On("LogAssignment", mock.Anything).Return()
 
-	logger := NewLruAssignmentLogger(innerLogger, 1000)
+	logger, err := NewLruAssignmentLogger(innerLogger, 1000)
+	assert.NoError(t, err)
 
 	logger.LogAssignment(AssignmentEvent{
 		FeatureFlag:       "testFeatureFlag",
@@ -61,7 +63,8 @@ func Test_LruAssignmentLogger_panicsAreNotCached(t *testing.T) {
 	innerLogger := new(mockLogger)
 	innerLogger.On("LogAssignment", mock.Anything).Panic("test panic")
 
-	logger := NewLruAssignmentLogger(innerLogger, 1000)
+	logger, err := NewLruAssignmentLogger(innerLogger, 1000)
+	assert.NoError(t, err)
 
 	event := AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -87,7 +90,8 @@ func Test_LruAssignmentLogger_changeInAllocationCausesLogging(t *testing.T) {
 	innerLogger := new(mockLogger)
 	innerLogger.On("LogAssignment", mock.Anything).Return()
 
-	logger := NewLruAssignmentLogger(innerLogger, 1000)
+	logger, err := NewLruAssignmentLogger(innerLogger, 1000)
+	assert.NoError(t, err)
 
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -115,7 +119,8 @@ func Test_LruAssignmentLogger_changeInVariationCausesLogging(t *testing.T) {
 	innerLogger := new(mockLogger)
 	innerLogger.On("LogAssignment", mock.Anything).Return()
 
-	logger := NewLruAssignmentLogger(innerLogger, 1000)
+	logger, err := NewLruAssignmentLogger(innerLogger, 1000)
+	assert.NoError(t, err)
 
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -143,7 +148,8 @@ func Test_LruAssignmentLogger_allocationOscillationLogsAll(t *testing.T) {
 	innerLogger := new(mockLogger)
 	innerLogger.On("LogAssignment", mock.Anything).Return()
 
-	logger := NewLruAssignmentLogger(innerLogger, 1000)
+	logger, err := NewLruAssignmentLogger(innerLogger, 1000)
+	assert.NoError(t, err)
 
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
@@ -189,7 +195,8 @@ func Test_LruAssignmentLogger_variationOscillationLogsAll(t *testing.T) {
 	innerLogger := new(mockLogger)
 	innerLogger.On("LogAssignment", mock.Anything).Return()
 
-	logger := NewLruAssignmentLogger(innerLogger, 1000)
+	logger, err := NewLruAssignmentLogger(innerLogger, 1000)
+	assert.NoError(t, err)
 
 	logger.LogAssignment(AssignmentEvent{
 		Experiment:        "testExperiment",
