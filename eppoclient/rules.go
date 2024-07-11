@@ -147,21 +147,21 @@ func isOne(attributeValue interface{}, s string) bool {
 		if err != nil {
 			return false
 		}
-		promotedValue, err := promoteInt(attributeValue)
+		promotedAttributeValue, err := promoteInt(attributeValue)
 		if err != nil {
 			return false
 		}
-		return promotedValue == value
+		return promotedAttributeValue == value
 	case uint, uint8, uint16, uint32, uint64:
 		value, err := strconv.ParseUint(s, 0, 64)
 		if err != nil {
 			return false
 		}
-		promotedValue, err := promoteUint(attributeValue)
+		promotedAttributeValue, err := promoteUint(attributeValue)
 		if err != nil {
 			return false
 		}
-		return promotedValue == value
+		return promotedAttributeValue == value
 	case bool:
 		value, err := strconv.ParseBool(s)
 		if err != nil {
