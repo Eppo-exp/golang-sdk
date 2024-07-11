@@ -187,7 +187,7 @@ func main() {
   scrubbingLogger := eppoclient.NewScrubbingLogger(applicationLogger)
 
   // Initialize the Eppo client
-  eppoClient = eppoclient.InitClient(eppoclient.Config{
+  eppoClient, _ = eppoclient.InitClient(eppoclient.Config{
       SdkKey:            "<your_sdk_key>",
       AssignmentLogger:  assignmentLogger,
       ApplicationLogger: scrubbingLogger
@@ -215,7 +215,7 @@ var eppoClient *eppoclient.EppoClient
 func main() {
   assignmentLogger := NewExampleAssignmentLogger()
 
-  eppoClient = eppoclient.InitClient(eppoclient.Config{
+  eppoClient, _ = eppoclient.InitClient(eppoclient.Config{
     ApiKey:           "<your_sdk_key>",
     // 10000 is the maximum number of assignments to cache
     // Depending on the length of your flag and subject keys, taking a median
