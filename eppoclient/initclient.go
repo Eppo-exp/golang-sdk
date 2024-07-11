@@ -14,15 +14,16 @@ func InitClient(config Config) (*EppoClient, error) {
 		return nil, err
 	}
 	sdkParams := SDKParams{sdkKey: config.SdkKey, sdkName: "go", sdkVersion: __version__}
+	applicationLogger := config.ApplicationLogger
 
 	httpClient := newHttpClient(config.BaseUrl, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
 	configStore := newConfigurationStore(configuration{})
-	requestor := newConfigurationRequestor(*httpClient, configStore)
+	requestor := newConfigurationRequestor(*httpClient, configStore, applicationLogger)
+
 	assignmentLogger := config.AssignmentLogger
 
-	poller := newPoller(config.PollerInterval, requestor.FetchAndStoreConfigurations)
-
-	client := newEppoClient(configStore, requestor, poller, assignmentLogger)
+	poller := newPoller(config.PollerInterval, requestor.FetchAndStoreConfigurations, applicationLogger)
+	client := newEppoClient(configStore, requestor, poller, assignmentLogger, applicationLogger)
 
 	client.poller.Start()
 

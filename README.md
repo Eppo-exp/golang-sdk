@@ -22,14 +22,14 @@ In your `go.mod`, add the SDK package as a dependency:
 
 ```
 require (
-    github.com/Eppo-exp/golang-sdk/v4
+    github.com/Eppo-exp/golang-sdk/v5
 )
 ```
 
 Or you can install the SDK from the command line with:
 
 ```
-go get github.com/Eppo-exp/golang-sdk/v4
+go get github.com/Eppo-exp/golang-sdk/v5
 ```
 
 ## Quick start
@@ -40,7 +40,7 @@ Begin by initializing a singleton instance of Eppo's client. Once initialized, t
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
 )
 
 var eppoClient *eppoclient.EppoClient
@@ -62,7 +62,7 @@ func main() {
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
 )
 
 var eppoClient *eppoclient.EppoClient
@@ -107,7 +107,7 @@ The code below illustrates an example implementation of a logging callback using
 
 ```go
 import (
-  "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
+  "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
   "gopkg.in/segmentio/analytics-go.v3"
 )
 
@@ -133,6 +133,68 @@ func main() {
 }
 ```
 
+## Provide a custom logger
+
+If you want to provide a logging implementation to the SDK to capture errors and other application logs, you can do so by passing in an implementation of the `ApplicationLogger` interface to the `InitClient` function.
+
+You can use the `eppoclient.ScrubbingLogger` to scrub PII from the logs.
+
+```go
+import (
+    "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
+    "github.com/sirupsen/logrus"
+)
+
+type LogrusApplicationLogger struct {
+    logger *logrus.Logger
+    logLevel logrus.Level
+}
+
+func NewLogrusApplicationLogger(logLevel logrus.Level) *LogrusApplicationLogger {
+    logger := logrus.New()
+    logger.SetFormatter(&logrus.JSONFormatter{})
+    return &LogrusApplicationLogger{logger: logger, logLevel: logLevel}
+}
+
+func (l *LogrusApplicationLogger) Debug(args ...interface{}) {
+    if l.logLevel <= logrus.DebugLevel {
+        l.logger.Debug(args...)
+    }
+}
+
+func (l *LogrusApplicationLogger) Info(args ...interface{}) {
+    if l.logLevel <= logrus.InfoLevel {
+        l.logger.Info(args...)
+    }
+}
+
+func (l *LogrusApplicationLogger) Warn(args ...interface{}) {
+    if l.logLevel <= logrus.WarnLevel {
+        l.logger.Warn(args...)
+    }
+}
+
+func (l *LogrusApplicationLogger) Error(args ...interface{}) {
+    if l.logLevel <= logrus.ErrorLevel {
+        l.logger.Error(args...)
+    }
+}
+
+func main() {
+  // Initialize a custom logger; example using logrus
+  // Set log level to Info
+  applicationLogger := NewLogrusApplicationLogger(logrus.InfoLevel)
+  scrubbingLogger := eppoclient.NewScrubbingLogger(applicationLogger)
+
+  // Initialize the Eppo client
+  eppoClient, _ = eppoclient.InitClient(eppoclient.Config{
+      SdkKey:            "<your_sdk_key>",
+      AssignmentLogger:  assignmentLogger,
+      ApplicationLogger: scrubbingLogger
+  })
+}
+```
+
 ### De-duplication of assignments
 
 The SDK may see many duplicate assignments in a short period of time, and if you
@@ -145,7 +207,7 @@ It can be configured with a maximum size to fit your desired memory allocation.
 
 ```go
 import (
-  "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
+  "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
 )
 
 var eppoClient *eppoclient.EppoClient
@@ -153,7 +215,7 @@ var eppoClient *eppoclient.EppoClient
 func main() {
   assignmentLogger := NewExampleAssignmentLogger()
 
-  eppoClient = eppoclient.InitClient(eppoclient.Config{
+  eppoClient, _ = eppoclient.InitClient(eppoclient.Config{
     ApiKey:           "<your_sdk_key>",
     // 10000 is the maximum number of assignments to cache
     // Depending on the length of your flag and subject keys, taking a median

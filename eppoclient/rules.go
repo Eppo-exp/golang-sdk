@@ -7,12 +7,13 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/Eppo-exp/golang-sdk/v5/eppoclient/applicationlogger"
 	semver "github.com/Masterminds/semver/v3"
 )
 
-func (rule rule) matches(subjectAttributes Attributes) bool {
+func (rule rule) matches(subjectAttributes Attributes, applicationLogger ...applicationlogger.Logger) bool {
 	for _, condition := range rule.Conditions {
-		if !condition.matches(subjectAttributes) {
+		if !condition.matches(subjectAttributes, applicationLogger...) {
 			return false
 		}
 	}
@@ -20,7 +21,7 @@ func (rule rule) matches(subjectAttributes Attributes) bool {
 	return true
 }
 
-func (condition condition) matches(subjectAttributes Attributes) bool {
+func (condition condition) matches(subjectAttributes Attributes, applicationLogger ...applicationlogger.Logger) bool {
 	subjectValue, exists := subjectAttributes[condition.Attribute]
 	if condition.Operator == "IS_NULL" {
 		isNull := !exists || subjectValue == nil
@@ -77,7 +78,9 @@ func (condition condition) matches(subjectAttributes Attributes) bool {
 		// Fallback logic if neither numeric nor semver comparison is applicable.
 		return false
 	default:
-		fmt.Printf("unknown condition operator: %s", condition.Operator)
+		if len(applicationLogger) > 0 {
+			applicationLogger[0].Error("unknown condition operator: %s", condition.Operator)
+		}
 		return false
 	}
 }

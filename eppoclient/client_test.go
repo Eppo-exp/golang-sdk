@@ -5,11 +5,19 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
+
+	"github.com/Eppo-exp/golang-sdk/v5/eppoclient/applicationlogger"
+)
+
+var (
+	zapLogger, _      = zap.NewDevelopment()
+	applicationLogger = applicationlogger.NewZapLogger(zapLogger)
 )
 
 func Test_AssignBlankExperiment(t *testing.T) {
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger)
+	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger, applicationLogger)
 
 	_, err := client.GetStringAssignment("", "subject-1", Attributes{}, "")
 	assert.Error(t, err)
@@ -17,7 +25,7 @@ func Test_AssignBlankExperiment(t *testing.T) {
 
 func Test_AssignBlankSubject(t *testing.T) {
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger)
+	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger, applicationLogger)
 
 	_, err := client.GetStringAssignment("experiment-1", "", Attributes{}, "")
 	assert.Error(t, err)
@@ -63,7 +71,7 @@ func Test_LogAssignment(t *testing.T) {
 			},
 		}}
 
-	client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger)
+	client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger, applicationLogger)
 
 	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
 	expected := "control"
@@ -106,7 +114,7 @@ func Test_client_loggerIsCalledWithProperBanditEvent(t *testing.T) {
 		},
 	}
 
-	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger)
+	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger, applicationLogger)
 	actions := map[string]ContextAttributes{
 		"action1": {},
 	}
@@ -159,7 +167,7 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 		},
 	}}
 
-	client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger)
+	client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger, applicationLogger)
 
 	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
 	expected := "control"
@@ -201,7 +209,7 @@ func Test_client_handlesBanditLoggerPanic(t *testing.T) {
 		},
 	}
 
-	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger)
+	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger, applicationLogger)
 	actions := map[string]ContextAttributes{
 		"action1": {},
 	}
@@ -243,7 +251,7 @@ func Test_client_correctActionIsReturnedIfBanditLoggerPanics(t *testing.T) {
 		},
 	}
 
-	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger)
+	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger, applicationLogger)
 	actions := map[string]ContextAttributes{
 		"action1": {},
 	}
