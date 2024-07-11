@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Eppo-exp/golang-sdk/v4/eppoclient/applicationlogger"
+	"github.com/Eppo-exp/golang-sdk/v5/eppoclient/applicationlogger"
 )
 
 func (flag flagConfiguration) verifyType(ty variationType) error {

@@ -22,14 +22,14 @@ In your `go.mod`, add the SDK package as a dependency:
 
 ```
 require (
-    github.com/Eppo-exp/golang-sdk/v4
+    github.com/Eppo-exp/golang-sdk/v5
 )
 ```
 
 Or you can install the SDK from the command line with:
 
 ```
-go get github.com/Eppo-exp/golang-sdk/v4
+go get github.com/Eppo-exp/golang-sdk/v5
 ```
 
 ## Quick start
@@ -40,7 +40,7 @@ Begin by initializing a singleton instance of Eppo's client. Once initialized, t
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
 )
 
 var eppoClient *eppoclient.EppoClient
@@ -62,7 +62,7 @@ func main() {
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
 )
 
 var eppoClient *eppoclient.EppoClient
@@ -107,7 +107,7 @@ The code below illustrates an example implementation of a logging callback using
 
 ```go
 import (
-  "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
+  "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
   "gopkg.in/segmentio/analytics-go.v3"
 )
 
@@ -141,7 +141,7 @@ You can use the `eppoclient.ScrubbingLogger` to scrub PII from the logs.
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
     "github.com/sirupsen/logrus"
 )
 
@@ -207,7 +207,7 @@ It can be configured with a maximum size to fit your desired memory allocation.
 
 ```go
 import (
-  "github.com/Eppo-exp/golang-sdk/v4/eppoclient"
+  "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
 )
 
 var eppoClient *eppoclient.EppoClient

@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/Eppo-exp/golang-sdk/v4/eppoclient/applicationlogger"
+	"github.com/Eppo-exp/golang-sdk/v5/eppoclient/applicationlogger"
 	semver "github.com/Masterminds/semver/v3"
 )
 
