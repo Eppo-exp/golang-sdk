@@ -61,7 +61,7 @@ func Test_bandits_sdkTestData(t *testing.T) {
 	logger := new(mockLogger)
 	logger.Mock.On("LogAssignment", mock.Anything).Return()
 	logger.Mock.On("LogBanditAction", mock.Anything).Return()
-	client := newEppoClient(configStore, nil, nil, logger)
+	client := newEppoClient(configStore, nil, nil, logger, applicationLogger)
 
 	tests := readJsonDirectory[banditTest]("test-data/ufc/bandit-tests/")
 	for file, test := range tests {

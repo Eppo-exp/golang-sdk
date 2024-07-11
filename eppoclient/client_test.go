@@ -17,7 +17,7 @@ var (
 
 func Test_AssignBlankExperiment(t *testing.T) {
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger)
+	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger, applicationLogger)
 
 	_, err := client.GetStringAssignment("", "subject-1", Attributes{}, "")
 	assert.Error(t, err)
@@ -25,7 +25,7 @@ func Test_AssignBlankExperiment(t *testing.T) {
 
 func Test_AssignBlankSubject(t *testing.T) {
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger)
+	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger, applicationLogger)
 
 	_, err := client.GetStringAssignment("experiment-1", "", Attributes{}, "")
 	assert.Error(t, err)
@@ -71,7 +71,7 @@ func Test_LogAssignment(t *testing.T) {
 			},
 		}}
 
-	client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger)
+	client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger, applicationLogger)
 
 	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
 	expected := "control"
