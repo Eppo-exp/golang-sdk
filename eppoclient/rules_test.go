@@ -233,20 +233,22 @@ func Test_isNotOneOf_Fail(t *testing.T) {
 
 func Test_evaluateNumericcondition_Fail(t *testing.T) {
 	expected := false
-	result := evaluateNumericCondition(40, 30.0, condition{Operator: "LT", Value: 30.0})
-
+	result, err := evaluateNumericCondition(40, 30.0, condition{Operator: "LT", Value: 30.0})
+	assert.NoError(t, err)
 	assert.Equal(t, expected, result)
 }
 
 func Test_evaluateNumericcondition_Success(t *testing.T) {
 	expected := true
-	result := evaluateNumericCondition(25, 30.0, condition{Operator: "LT", Value: 30.0})
-
+	result, err := evaluateNumericCondition(25, 30.0, condition{Operator: "LT", Value: 30.0})
+	assert.NoError(t, err)
 	assert.Equal(t, expected, result)
 }
 
 func Test_evaluateNumericcondition_IncorrectOperator(t *testing.T) {
-	assert.Panics(t, func() { evaluateNumericCondition(25, 30.0, condition{Operator: "LTGT", Value: 30.0}) })
+	result, err := evaluateNumericCondition(25, 30.0, condition{Operator: "LTGT", Value: 30.0})
+	assert.Error(t, err)
+	assert.False(t, result)
 }
 
 func Test_isNull_missingAttribute(t *testing.T) {

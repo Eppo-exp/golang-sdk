@@ -20,10 +20,6 @@ func newConfigurationRequestor(httpClient httpClient, configStore *configuration
 	}
 }
 
-func (cr *configurationRequestor) IsAuthorized() bool {
-	return !cr.httpClient.isUnauthorized
-}
-
 func (cr *configurationRequestor) FetchAndStoreConfigurations() {
 	configuration, err := cr.fetchConfiguration()
 	if err != nil {

@@ -50,7 +50,11 @@ func (condition condition) matches(subjectAttributes Attributes) bool {
 		// against the condition value.
 		subjectValueNumeric, isNumericSubjectErr := toFloat64(subjectValue)
 		if isNumericSubjectErr == nil && condition.NumericValueValid {
-			return evaluateNumericCondition(subjectValueNumeric, condition.NumericValue, condition)
+			result, err := evaluateNumericCondition(subjectValueNumeric, condition.NumericValue, condition)
+			if err != nil {
+				return false
+			}
+			return result
 		}
 
 		// Attempt to compare using semantic versioning if the subject value is a string.
@@ -62,7 +66,11 @@ func (condition condition) matches(subjectAttributes Attributes) bool {
 
 			// If parsing succeeds, evaluate the semver condition.
 			if errSubject == nil {
-				return evaluateSemVerCondition(subjectSemVer, condition.SemVerValue, condition)
+				result, err := evaluateSemVerCondition(subjectSemVer, condition.SemVerValue, condition)
+				if err != nil {
+					return false
+				}
+				return result
 			}
 		}
 
@@ -139,13 +147,21 @@ func isOne(attributeValue interface{}, s string) bool {
 		if err != nil {
 			return false
 		}
-		return promoteInt(attributeValue) == value
+		promotedAttributeValue, err := promoteInt(attributeValue)
+		if err != nil {
+			return false
+		}
+		return promotedAttributeValue == value
 	case uint, uint8, uint16, uint32, uint64:
 		value, err := strconv.ParseUint(s, 0, 64)
 		if err != nil {
 			return false
 		}
-		return promoteUint(attributeValue) == value
+		promotedAttributeValue, err := promoteUint(attributeValue)
+		if err != nil {
+			return false
+		}
+		return promotedAttributeValue == value
 	case bool:
 		value, err := strconv.ParseBool(s)
 		if err != nil {
@@ -158,34 +174,34 @@ func isOne(attributeValue interface{}, s string) bool {
 	}
 }
 
-func evaluateSemVerCondition(subjectValue *semver.Version, conditionValue *semver.Version, condition condition) bool {
+func evaluateSemVerCondition(subjectValue *semver.Version, conditionValue *semver.Version, condition condition) (bool, error) {
 	comp := subjectValue.Compare(conditionValue)
 	switch condition.Operator {
 	case "GT":
-		return comp > 0
+		return comp > 0, nil
 	case "GTE":
-		return comp >= 0
+		return comp >= 0, nil
 	case "LT":
-		return comp < 0
+		return comp < 0, nil
 	case "LTE":
-		return comp <= 0
+		return comp <= 0, nil
 	default:
-		panic("Incorrect condition operator")
+		return false, fmt.Errorf("incorrect condition operator: %s", condition.Operator)
 	}
 }
 
-func evaluateNumericCondition(subjectValue float64, conditionValue float64, condition condition) bool {
+func evaluateNumericCondition(subjectValue float64, conditionValue float64, condition condition) (bool, error) {
 	switch condition.Operator {
 	case "GT":
-		return subjectValue > conditionValue
+		return subjectValue > conditionValue, nil
 	case "GTE":
-		return subjectValue >= conditionValue
+		return subjectValue >= conditionValue, nil
 	case "LT":
-		return subjectValue < conditionValue
+		return subjectValue < conditionValue, nil
 	case "LTE":
-		return subjectValue <= conditionValue
+		return subjectValue <= conditionValue, nil
 	default:
-		panic("Incorrect condition operator")
+		return false, fmt.Errorf("incorrect condition operator: %s", condition.Operator)
 	}
 }
 
@@ -195,11 +211,19 @@ func evaluateNumericCondition(subjectValue float64, conditionValue float64, cond
 func toFloat64(val interface{}) (float64, error) {
 	switch v := val.(type) {
 	case float32, float64:
-		return promoteFloat(v), nil
+		return promoteFloat(v)
 	case int, int8, int16, int32, int64:
-		return float64(promoteInt(v)), nil
+		promotedInt, err := promoteInt(v)
+		if err != nil {
+			return 0, err
+		}
+		return float64(promotedInt), nil
 	case uint, uint8, uint16, uint32, uint64:
-		return float64(promoteUint(v)), nil
+		promotedUint, err := promoteUint(v)
+		if err != nil {
+			return 0, err
+		}
+		return float64(promotedUint), nil
 	case string:
 		floatVal, err := strconv.ParseFloat(v, 64)
 		if err != nil {
@@ -211,44 +235,44 @@ func toFloat64(val interface{}) (float64, error) {
 	}
 }
 
-func promoteInt(i interface{}) int64 {
+func promoteInt(i interface{}) (int64, error) {
 	switch i := i.(type) {
 	case int:
-		return int64(i)
+		return int64(i), nil
 	case int8:
-		return int64(i)
+		return int64(i), nil
 	case int16:
-		return int64(i)
+		return int64(i), nil
 	case int32:
-		return int64(i)
+		return int64(i), nil
 	case int64:
-		return i
+		return i, nil
 	}
-	panic(fmt.Errorf("unexpected type passed to promoteInt: %T", i))
+	return 0, fmt.Errorf("unexpected type passed to promoteInt: %T", i)
 }
 
-func promoteUint(i interface{}) uint64 {
+func promoteUint(i interface{}) (uint64, error) {
 	switch i := i.(type) {
 	case uint:
-		return uint64(i)
+		return uint64(i), nil
 	case uint8:
-		return uint64(i)
+		return uint64(i), nil
 	case uint16:
-		return uint64(i)
+		return uint64(i), nil
 	case uint32:
-		return uint64(i)
+		return uint64(i), nil
 	case uint64:
-		return i
+		return i, nil
 	}
-	panic(fmt.Errorf("unexpected type passed to promoteUint: %T", i))
+	return 0, fmt.Errorf("unexpected type passed to promoteUint: %T", i)
 }
 
-func promoteFloat(f interface{}) float64 {
+func promoteFloat(f interface{}) (float64, error) {
 	switch f := f.(type) {
 	case float32:
-		return float64(f)
+		return float64(f), nil
 	case float64:
-		return f
+		return f, nil
 	}
-	panic(fmt.Errorf("unexpected type passed to promoteFloat: %T", f))
+	return 0, fmt.Errorf("unexpected type passed to promoteFloat: %T", f)
 }

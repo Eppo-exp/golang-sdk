@@ -174,15 +174,11 @@ func (ec *EppoClient) GetBanditAction(flagKey string, subjectKey string, subject
 
 func (ec *EppoClient) getAssignment(config configuration, flagKey string, subjectKey string, subjectAttributes Attributes, variationType variationType) (interface{}, error) {
 	if subjectKey == "" {
-		panic("no subject key provided")
+		return nil, fmt.Errorf("no subject key provided")
 	}
 
 	if flagKey == "" {
-		panic("no flag key provided")
-	}
-
-	if ec.configRequestor != nil && !ec.configRequestor.IsAuthorized() {
-		panic("Unauthorized: please check your SDK key")
+		return nil, fmt.Errorf("no flag key provided")
 	}
 
 	flag, err := config.getFlagConfiguration(flagKey)
