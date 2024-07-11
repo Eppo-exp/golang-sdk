@@ -52,8 +52,6 @@ func (condition condition) matches(subjectAttributes Attributes) bool {
 		if isNumericSubjectErr == nil && condition.NumericValueValid {
 			result, err := evaluateNumericCondition(subjectValueNumeric, condition.NumericValue, condition)
 			if err != nil {
-				// Decision: Should we swallow the error here and return false?
-				// Alternatively, we could log the error and return false.
 				return false
 			}
 			return result
@@ -70,8 +68,6 @@ func (condition condition) matches(subjectAttributes Attributes) bool {
 			if errSubject == nil {
 				result, err := evaluateSemVerCondition(subjectSemVer, condition.SemVerValue, condition)
 				if err != nil {
-					// Decision: Should we swallow the error here and return false?
-					// Alternatively, we could log the error and return false.
 					return false
 				}
 				return result
