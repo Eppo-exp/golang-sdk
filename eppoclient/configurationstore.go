@@ -1,7 +1,6 @@
 package eppoclient
 
 import (
-	"errors"
 	"sync/atomic"
 )
 
@@ -50,7 +49,7 @@ func (c configuration) getBanditVariant(flagKey, variation string) (result bandi
 func (c configuration) getFlagConfiguration(key string) (flagConfiguration, error) {
 	flag, ok := c.flags.Flags[key]
 	if !ok {
-		return flag, errors.New("flag configuration not found")
+		return flag, ErrFlagConfigurationNotFound
 	}
 
 	return flag, nil
@@ -59,7 +58,7 @@ func (c configuration) getFlagConfiguration(key string) (flagConfiguration, erro
 func (c configuration) getBanditConfiguration(key string) (banditConfiguration, error) {
 	bandit, ok := c.bandits.Bandits[key]
 	if !ok {
-		return bandit, errors.New("bandit configuration not found")
+		return bandit, ErrBanditConfigurationNotFound
 	}
 
 	return bandit, nil

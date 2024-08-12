@@ -1,7 +1,6 @@
 package eppoclient
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -18,7 +17,7 @@ func (flag flagConfiguration) verifyType(ty variationType) error {
 
 func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attributes, applicationLogger applicationlogger.Logger) (interface{}, *AssignmentEvent, error) {
 	if !flag.Enabled {
-		return nil, nil, errors.New("the experiment or flag is not enabled")
+		return nil, nil, ErrFlagNotEnabled
 	}
 
 	now := time.Now()
@@ -34,7 +33,7 @@ func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attribut
 		}
 	}
 	if allocation == nil || split == nil {
-		return nil, nil, errors.New("subject is not part of any allocation")
+		return nil, nil, ErrSubjectAllocation
 	}
 
 	variation, ok := flag.Variations[split.VariationKey]
