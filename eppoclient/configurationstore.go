@@ -31,12 +31,6 @@ func (c *configuration) refreshBanditFlagAssociations() {
 	c.banditFlagAssociations = associations
 }
 
-// Return `true` if `flagKey` has associated bandits.
-func (c configuration) isBanditFlag(flagKey string) bool {
-	_, ok := c.banditFlagAssociations[flagKey]
-	return ok
-}
-
 func (c configuration) getBanditVariant(flagKey, variation string) (result banditVariation, ok bool) {
 	byVariation, ok := c.banditFlagAssociations[flagKey]
 	if !ok {

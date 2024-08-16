@@ -103,24 +103,19 @@ type BanditResult struct {
 func (ec *EppoClient) GetBanditAction(flagKey string, subjectKey string, subjectAttributes ContextAttributes, actions map[string]ContextAttributes, defaultVariation string) BanditResult {
 	config := ec.configurationStore.getConfiguration()
 
-	isBanditFlag := config.isBanditFlag(flagKey)
-
-	if isBanditFlag && len(actions) == 0 {
-		// No actions passed for a flag known to have an
-		// active bandit, so we just return the default values
-		// so that we don't log a variation or bandit
-		// assignment.
-		return BanditResult{
-			Variation: defaultVariation,
-			Action:    nil,
-		}
-	}
-
 	// ignoring the error here as we can always proceed with default variation
 	assignmentValue, _ := ec.getAssignment(config, flagKey, subjectKey, subjectAttributes.toGenericAttributes(), stringVariation)
 	variation, ok := assignmentValue.(string)
 	if !ok {
 		variation = defaultVariation
+	}
+
+	// If no acctions have been passed, we will return the variation, even if it is a bandit key
+	if len(actions) == 0 {
+		return BanditResult{
+			Variation: variation,
+			Action:    nil,
+		}
 	}
 
 	banditVariation, ok := config.getBanditVariant(flagKey, variation)

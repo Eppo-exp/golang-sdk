@@ -103,7 +103,7 @@ func (model *banditModelData) evaluate(ctx banditEvaluationContext) banditEvalua
 
 	bestAction, bestScore := "", math.Inf(-1)
 	for actionKey, score := range scores {
-		if score > bestScore {
+		if score > bestScore || (score == bestScore && actionKey < bestAction) {
 			bestAction, bestScore = actionKey, score
 		}
 	}
