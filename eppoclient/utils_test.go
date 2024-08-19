@@ -37,7 +37,7 @@ func TestToFloat64(t *testing.T) {
 				t.Errorf("ToFloat64(%v) error = %v, expectErr %v", tt.input, err, tt.expectErr)
 				return
 			}
-			closeEnough := math.Abs(result - tt.expected)/tt.expected < 0.00001
+			closeEnough := math.Abs(result-tt.expected)/tt.expected < 0.00001
 			if !tt.expectErr && !closeEnough {
 				t.Errorf("ToFloat64(%v) = %v, want %v", tt.input, result, tt.expected)
 			}

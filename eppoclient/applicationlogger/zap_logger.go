@@ -4,9 +4,7 @@ import (
 	"go.uber.org/zap"
 )
 
-/**
- * The default logger for the SDK.
- */
+// ZapLogger The default logger for the Eppo SDK
 type ZapLogger struct {
 	logger *zap.Logger
 }
@@ -23,10 +21,22 @@ func (z *ZapLogger) Info(args ...interface{}) {
 	z.logger.Sugar().Info(args...)
 }
 
+func (z *ZapLogger) Infof(template string, args ...interface{}) {
+	z.logger.Sugar().Infof(template, args...)
+}
+
 func (z *ZapLogger) Warn(args ...interface{}) {
 	z.logger.Sugar().Warn(args...)
 }
 
+func (z *ZapLogger) Warnf(template string, args ...interface{}) {
+	z.logger.Sugar().Warnf(template, args...)
+}
+
 func (z *ZapLogger) Error(args ...interface{}) {
 	z.logger.Sugar().Error(args...)
+}
+
+func (z *ZapLogger) Errorf(template string, args ...interface{}) {
+	z.logger.Sugar().Errorf(template, args...)
 }

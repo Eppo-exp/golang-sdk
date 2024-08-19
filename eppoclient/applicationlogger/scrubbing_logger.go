@@ -44,10 +44,22 @@ func (s *ScrubbingLogger) Info(args ...interface{}) {
 	s.innerLogger.Info(s.scrub(args...)...)
 }
 
+func (s *ScrubbingLogger) Infof(template string, args ...interface{}) {
+	s.innerLogger.Infof(maskSensitiveInfo(template), s.scrub(args...)...)
+}
+
 func (s *ScrubbingLogger) Warn(args ...interface{}) {
 	s.innerLogger.Warn(s.scrub(args...)...)
 }
 
+func (s *ScrubbingLogger) Warnf(template string, args ...interface{}) {
+	s.innerLogger.Warnf(maskSensitiveInfo(template), s.scrub(args...)...)
+}
+
 func (s *ScrubbingLogger) Error(args ...interface{}) {
 	s.innerLogger.Error(s.scrub(args...)...)
+}
+
+func (s *ScrubbingLogger) Errorf(template string, args ...interface{}) {
+	s.innerLogger.Errorf(maskSensitiveInfo(template), s.scrub(args...)...)
 }
