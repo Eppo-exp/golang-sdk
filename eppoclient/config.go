@@ -8,7 +8,8 @@ import (
 	"go.uber.org/zap"
 )
 
-const default_base_url = "https://fscdn.eppo.cloud/api"
+const defaultBaseUrl = "https://fscdn.eppo.cloud/api"
+const defaultPollerInterval = 10 * time.Second
 
 type Config struct {
 	BaseUrl           string
@@ -24,15 +25,18 @@ func (cfg *Config) validate() error {
 	}
 
 	if cfg.BaseUrl == "" {
-		cfg.BaseUrl = default_base_url
+		cfg.BaseUrl = defaultBaseUrl
 	}
 
 	if cfg.PollerInterval <= 0 {
-		cfg.PollerInterval = 10 * time.Second
+		cfg.PollerInterval = defaultPollerInterval
 	}
 
 	if cfg.ApplicationLogger == nil {
-		defaultLogger, _ := zap.NewProduction()
+		defaultLogger, err := zap.NewProduction(zap.IncreaseLevel(zap.WarnLevel))
+		if err != nil {
+			return fmt.Errorf("failed to create default logger: %v", err)
+		}
 		cfg.ApplicationLogger = applicationlogger.NewZapLogger(defaultLogger)
 	}
 
