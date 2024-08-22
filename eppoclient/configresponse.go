@@ -22,9 +22,9 @@ type flagConfiguration struct {
 	TotalShards   int64                `json:"totalShards"`
 }
 
-func (f *flagConfiguration) Precompute() {
-	for i := range f.Allocations {
-		f.Allocations[i].Precompute()
+func (flag *flagConfiguration) Precompute() {
+	for i := range flag.Allocations {
+		flag.Allocations[i].Precompute()
 	}
 }
 
