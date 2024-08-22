@@ -47,7 +47,7 @@ func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attribut
 	}
 
 	var assignmentEvent *AssignmentEvent
-	if allocation.DoLog == nil || *allocation.DoLog {
+	if allocation.DoLog != nil && *allocation.DoLog {
 		assignmentEvent = &AssignmentEvent{
 			FeatureFlag:       flag.Key,
 			Allocation:        allocation.Key,
