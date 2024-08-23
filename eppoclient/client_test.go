@@ -30,36 +30,64 @@ func Test_AssignBlankSubject(t *testing.T) {
 	_, err := client.GetStringAssignment("experiment-1", "", Attributes{}, "")
 	assert.Error(t, err)
 }
-func Test_LogAssignment(t *testing.T) {
-	var mockLogger = new(mockLogger)
-	mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
-	config := configResponse{
-		Flags: map[string]flagConfiguration{
-			"experiment-key-1": flagConfiguration{
-				Key:           "experiment-key-1",
-				Enabled:       true,
-				TotalShards:   10000,
-				VariationType: stringVariation,
-				Variations: map[string]variation{
-					"control": variation{
-						Key:   "control",
-						Value: "control",
-					},
-				},
-				Allocations: []allocation{
-					{
-						Key: "allocation-key",
-						Splits: []split{
+func Test_LogAssignment(t *testing.T) {
+	tests := []struct {
+		name          string
+		doLog         *bool
+		expectedCalls int
+	}{
+		{
+			name:          "DoLog key is absent",
+			doLog:         nil,
+			expectedCalls: 1,
+		},
+		{
+			name:          "DoLog key is present but false",
+			doLog:         &[]bool{false}[0],
+			expectedCalls: 0,
+		},
+		{
+			name:          "DoLog key is present and true",
+			doLog:         &[]bool{true}[0],
+			expectedCalls: 1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var mockLogger = new(mockLogger)
+			mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
+
+			config := configResponse{
+				Flags: map[string]flagConfiguration{
+					"experiment-key-1": flagConfiguration{
+						Key:           "experiment-key-1",
+						Enabled:       true,
+						TotalShards:   10000,
+						VariationType: stringVariation,
+						Variations: map[string]variation{
+							"control": variation{
+								Key:   "control",
+								Value: "control",
+							},
+						},
+						Allocations: []allocation{
 							{
-								VariationKey: "control",
-								Shards: []shard{
+								Key:   "allocation-key",
+								DoLog: tt.doLog,
+								Splits: []split{
 									{
-										Salt: "",
-										Ranges: []shardRange{
+										VariationKey: "control",
+										Shards: []shard{
 											{
-												Start: 0,
-												End:   10000,
+												Salt: "",
+												Ranges: []shardRange{
+													{
+														Start: 0,
+														End:   10000,
+													},
+												},
 											},
 										},
 									},
@@ -68,17 +96,18 @@ func Test_LogAssignment(t *testing.T) {
 						},
 					},
 				},
-			},
-		}}
+			}
 
-	client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger, applicationLogger)
+			client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger, applicationLogger)
 
-	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
-	expected := "control"
+			assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
+			expected := "control"
 
-	assert.Nil(t, err)
-	assert.Equal(t, expected, assignment)
-	mockLogger.AssertNumberOfCalls(t, "LogAssignment", 1)
+			assert.Nil(t, err)
+			assert.Equal(t, expected, assignment)
+			mockLogger.AssertNumberOfCalls(t, "LogAssignment", tt.expectedCalls)
+		})
+	}
 }
 
 func Test_client_loggerIsCalledWithProperBanditEvent(t *testing.T) {
