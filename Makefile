@@ -32,7 +32,7 @@ profile-memory: test-data
 	@cd eppoclient && \
 	{ \
 	echo "Using OUTFILE_SUFFIX: $$OUTFILE_SUFFIX"; \
-	go test -run Test_e2e -memprofile ../memprofile$$OUTFILE_SUFFIX.out ./...; \
+	go test -run Test_e2e -memprofile ../memprofile$$OUTFILE_SUFFIX.out .; \
 	go tool pprof -text -nodecount=50 ../memprofile$$OUTFILE_SUFFIX.out > ../memprofile$$OUTFILE_SUFFIX.text; \
 	}
 
