@@ -11,10 +11,6 @@ type LruAssignmentLogger struct {
 	inner IAssignmentLogger
 }
 
-// We are only interested in whether a subject was ever a part of an
-// assignment. We are not interested in the order of assignments or
-// knowing the latest assignment. Therefore, both allocation and
-// variation are part of the cacheKey.
 type cacheKey struct {
 	flag    string
 	subject string
@@ -52,5 +48,11 @@ func (lal *LruAssignmentLogger) LogAssignment(event AssignmentEvent) {
 		// Adding to cache after `LogAssignment` returned in
 		// case it panics.
 		lal.cache.Add(key, value)
+	}
+}
+
+func (lal *LruAssignmentLogger) LogBanditAction(event BanditEvent) {
+	if logger, ok := lal.inner.(BanditActionLogger); ok {
+		logger.LogBanditAction(event)
 	}
 }
