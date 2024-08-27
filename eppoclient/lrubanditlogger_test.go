@@ -38,6 +38,48 @@ func Test_LruBanditLogger_cacheBanditAction(t *testing.T) {
 	innerLogger.AssertNumberOfCalls(t, "LogBanditAction", 1)
 }
 
+func Test_LruBanditLogger_flipFlopAction(t *testing.T) {
+	innerLogger := new(mockLogger)
+	innerLogger.On("LogAssignment", mock.Anything).Return()
+	innerLogger.On("LogBanditAction", mock.Anything).Return()
+
+	logger, err := NewLruBanditLogger(innerLogger, 1000)
+	assert.NoError(t, err)
+	banditLogger := logger.(BanditActionLogger)
+
+	event := BanditEvent{
+		FlagKey:                      "flag",
+		BanditKey:                    "bandit",
+		Subject:                      "subject",
+		Action:                       "action1",
+		ActionProbability:            0.1,
+		OptimalityGap:                0.1,
+		ModelVersion:                 "model-version",
+		Timestamp:                    "timestamp",
+		SubjectNumericAttributes:     map[string]float64{},
+		SubjectCategoricalAttributes: map[string]string{},
+		ActionNumericAttributes:      map[string]float64{},
+		ActionCategoricalAttributes:  map[string]string{},
+		MetaData:                     map[string]string{},
+	}
+
+	event.Action = "action1"
+	banditLogger.LogBanditAction(event)
+	banditLogger.LogBanditAction(event)
+
+	innerLogger.AssertNumberOfCalls(t, "LogBanditAction", 1)
+
+	event.Action = "action2"
+	banditLogger.LogBanditAction(event)
+
+	innerLogger.AssertNumberOfCalls(t, "LogBanditAction", 2)
+
+	event.Action = "action1"
+	banditLogger.LogBanditAction(event)
+
+	innerLogger.AssertNumberOfCalls(t, "LogBanditAction", 3)
+}
+
 func Test_LruBanditLogger_okIfInnerLoggerIsNotBandit(t *testing.T) {
 	innerLogger := new(mockNonBanditLogger)
 	innerLogger.On("LogAssignment", mock.Anything).Return()
