@@ -237,3 +237,35 @@ func Test_LruAssignmentLogger_variationOscillationLogsAll(t *testing.T) {
 
 	innerLogger.AssertNumberOfCalls(t, "LogAssignment", 4)
 }
+
+func Test_LruAssignmentLogger_proxyLogBanditAction(t *testing.T) {
+	innerLogger := new(mockLogger)
+	innerLogger.On("LogAssignment", mock.Anything).Return()
+	innerLogger.On("LogBanditAction", mock.Anything).Return()
+
+	logger, err := NewLruAssignmentLogger(innerLogger, 1000)
+	assert.NoError(t, err)
+
+	event := BanditEvent{
+		FlagKey:                      "flag",
+		BanditKey:                    "bandit",
+		Subject:                      "subject",
+		Action:                       "action",
+		ActionProbability:            0.1,
+		OptimalityGap:                0.1,
+		ModelVersion:                 "model-version",
+		Timestamp:                    "timestamp",
+		SubjectNumericAttributes:     map[string]float64{},
+		SubjectCategoricalAttributes: map[string]string{},
+		ActionNumericAttributes:      map[string]float64{},
+		ActionCategoricalAttributes:  map[string]string{},
+		MetaData:                     map[string]string{},
+	}
+
+	banditLogger := logger.(BanditActionLogger)
+
+	banditLogger.LogBanditAction(event)
+	banditLogger.LogBanditAction(event)
+
+	innerLogger.AssertNumberOfCalls(t, "LogBanditAction", 2)
+}
