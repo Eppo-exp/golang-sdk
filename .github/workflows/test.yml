@@ -37,7 +37,5 @@ jobs:
           go-version: 1.19
       - name: Build
         run: go build -v ./...
-      - name: 'Set up GCP SDK for downloading test data'
-        uses: 'google-github-actions/setup-gcloud@v0'
       - name: Test
         run: make test branchName=${{env.TEST_DATA_BRANCH_NAME}}
