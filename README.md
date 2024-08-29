@@ -203,29 +203,31 @@ event store. This increases the cost of storage as well as warehouse costs durin
 
 To mitigate this, an in-memory assignment cache is optionally available with expiration based on the least recently accessed time.
 
-It can be configured with a maximum size to fit your desired memory allocation.
+The caching can be configured individually for assignment logs and bandit action logs using `LruAssignmentLogger` and `LruBanditLogger` respectively.
+Both loggers are configured with a maximum size to fit your desired memory allocation.
 
 ```go
 import (
-  "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
+	"github.com/Eppo-exp/golang-sdk/v5/eppoclient"
 )
 
 var eppoClient *eppoclient.EppoClient
 
 func main() {
-  assignmentLogger := NewExampleAssignmentLogger()
+	assignmentLogger := NewExampleAssignmentLogger()
 
-  eppoClient, _ = eppoclient.InitClient(eppoclient.Config{
-    ApiKey:           "<your_sdk_key>",
-    // 10000 is the maximum number of assignments to cache
-    // Depending on the length of your flag and subject keys, taking a median
-    // length of 32 characters, each assignment cache entry uses approximately 112 bytes.
-    // Use this calculation to determine the maximum number of assignments to cache
-    // for the memory you wish to allocate.
-    AssignmentLogger: eppoclient.NewLruAssignmentLogger(assignmentLogger, 10000),
-  })
+	// 10000 is the maximum number of assignments to cache.
+	assignmentLogger = eppoclient.NewLruAssignmentLogger(assignmentLogger, 10000)
+	assignmentLogger = eppoclient.NewLruBanditLogger(assignmentLogger, 10000)
+
+	eppoClient, _ = eppoclient.InitClient(eppoclient.Config{
+		ApiKey:           "<your_sdk_key>",
+		AssignmentLogger: assignmentLogger,
+	})
 }
 ```
+
+Internally, both loggers are simple proxying wrappers around [`lru.TwoQueueCache`](https://pkg.go.dev/github.com/hashicorp/golang-lru/v2#TwoQueueCache). If you require more customized caching behavior, you can copy the implementation and modify it to suit your needs. (We’d love to hear about your use case if you do!)
 
 ## Philosophy
 
