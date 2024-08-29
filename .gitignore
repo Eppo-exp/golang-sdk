@@ -19,3 +19,5 @@ eppoclient/test-data
 
 .DS_Store
 memprofile*
+.idea/
+pkg/
