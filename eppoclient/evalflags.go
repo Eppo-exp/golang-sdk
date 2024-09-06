@@ -15,7 +15,7 @@ func (flag flagConfiguration) verifyType(ty variationType) error {
 	}
 }
 
-func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attributes, applicationLogger applicationlogger.Logger) (AssignmentValue, *AssignmentEvent, error) {
+func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attributes, applicationLogger applicationlogger.Logger, unmarshalJson bool) (AssignmentValue, *AssignmentEvent, error) {
 	if !flag.Enabled {
 		return AssignmentValue{}, nil, ErrFlagNotEnabled
 	}
@@ -41,7 +41,7 @@ func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attribut
 		return AssignmentValue{}, nil, fmt.Errorf("cannot find variation: %v", split.VariationKey)
 	}
 
-	assignmentValue, err := flag.VariationType.valueToAssignmentValue(variation.Value)
+	assignmentValue, err := flag.VariationType.valueToAssignmentValue(variation.Value, unmarshalJson)
 	if err != nil {
 		return AssignmentValue{}, nil, err
 	}

@@ -90,44 +90,41 @@ func (v *variationType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (ty variationType) valueToAssignmentValue(value interface{}) (AssignmentValue, error) {
-	var av AssignmentValue
-	var err error
-
+func (ty variationType) valueToAssignmentValue(value interface{}, unmarshalJson bool) (AssignmentValue, error) {
 	switch ty {
 	case stringVariation:
 		s := value.(string)
-		av.Parsed = s
-		av.Raw = []byte(s)
+		return AssignmentValue{Parsed: s, Raw: []byte(s)}, nil
 	case integerVariation:
 		f64 := value.(float64)
 		i64 := int64(f64)
 		if f64 == float64(i64) {
-			av.Parsed = i64
-			av.Raw = []byte(strconv.FormatInt(i64, 10))
+			return AssignmentValue{Parsed: i64, Raw: []byte(strconv.FormatInt(i64, 10))}, nil
 		} else {
-			return av, fmt.Errorf("failed to convert number to integer")
+			return AssignmentValue{}, fmt.Errorf("failed to convert number to integer")
 		}
 	case numericVariation:
 		number := value.(float64)
-		av.Parsed = number
-		av.Raw = []byte(strconv.FormatFloat(number, 'f', -1, 64))
+		return AssignmentValue{Parsed: number, Raw: []byte(strconv.FormatFloat(number, 'f', -1, 64))}, nil
 	case booleanVariation:
 		v := value.(bool)
-		av.Parsed = v
-		av.Raw = []byte(strconv.FormatBool(v))
+		return AssignmentValue{Parsed: v, Raw: []byte(strconv.FormatBool(v))}, nil
 	case jsonVariation:
 		v := value.(string)
-		av.Raw = []byte(v)
-		err = json.Unmarshal(av.Raw, &av.Parsed)
-		if err != nil {
-			return av, err
-		}
-	default:
-		return av, fmt.Errorf("unexpected variation type: %v", ty)
-	}
 
-	return av, nil
+		if unmarshalJson {
+			var result interface{}
+			err := json.Unmarshal([]byte(v), &result)
+			if err != nil {
+				return AssignmentValue{}, err
+			}
+			return AssignmentValue{Parsed: result, Raw: []byte(v)}, nil
+		}
+
+		return AssignmentValue{Parsed: v, Raw: []byte(v)}, nil
+	default:
+		return AssignmentValue{}, fmt.Errorf("unexpected variation type: %v", ty)
+	}
 }
 
 type allocation struct {
