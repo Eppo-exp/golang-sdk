@@ -9,7 +9,7 @@ jobs:
     - name: Checkout main branch
       uses: actions/checkout@v2
       with:
-        ref: 'main'
+        ref: ff-3110-fix-perf-test
     
     - name: Set up Go (main branch)
       uses: actions/setup-go@v2
