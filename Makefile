@@ -30,7 +30,7 @@ lint:
 ## profile-memory - Run test and generate memory profile
 profile-memory: test-data
 	@echo "Using OUTFILE_SUFFIX: $(OUTFILE_SUFFIX)"
-	go test -v ./... -run=Test_e2e -memprofile=memprofile$(OUTFILE_SUFFIX).out
+	go test -v ./... -run=Test_e2e -count=5 -memprofile=memprofile$(OUTFILE_SUFFIX).out
 	go tool pprof -text memprofile$(OUTFILE_SUFFIX).out > memprofile$(OUTFILE_SUFFIX).text
 
 ## profile-memory-compare - Compare two memory profiles
