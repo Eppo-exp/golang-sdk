@@ -6,62 +6,41 @@ jobs:
   compare-memory-profiles:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout main branch
+    - name: Checkout code
       uses: actions/checkout@v3
       with:
-        ref: 'main'
-    
+        fetch-depth: 0
+
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.21'
-    
-    - name: Generate memory profile for main branch
-      run: make profile-memory OUTFILE_SUFFIX=.main
-      
-    - name: Save main branch memory profile
-      uses: actions/upload-artifact@v3
-      with:
-        name: memprofile-main
-        path: | 
-          memprofile.main.out
-          memprofile.main.text 
-    
-    - name: Checkout feature branch
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.head_ref }}
-    
-    - name: Generate memory profile for feature branch
-      run: make profile-memory OUTFILE_SUFFIX=.feat
-      
-    - name: Save feat branch memory profile
-      uses: actions/upload-artifact@v3
-      with:
-        name: memprofile-feat
-        path: | 
-          memprofile.feat.out
-          memprofile.feat.text 
 
-    - name: Download main branch memory profile
-      uses: actions/download-artifact@v3
-      with:
-        name: memprofile-main
-        path: .
-    
+    - name: Generate memory profiles
+      run: |
+        git checkout main
+        make profile-memory OUTFILE_SUFFIX=.main
+        git checkout ${{ github.head_ref }}
+        make profile-memory OUTFILE_SUFFIX=.feat
+
     - name: Compare memory profiles
       run: |
         if [ ! -f memprofile.main.out ] || [ ! -f memprofile.feat.out ]; then
           echo "Error: One or both memory profile files are missing."
+          ls -l
           exit 1
         fi
         make profile-memory-compare BASE_FILE=memprofile.main.out FEAT_FILE=memprofile.feat.out > memory-profile-comparison.text
-      
-    - name: Show memory profile comparison
-      run: cat memory-profile-comparison.text
+        echo "Memory Profile Comparison:"
+        cat memory-profile-comparison.text
 
-    - name: Upload comparison result
+    - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: memory-profile-comparison
-        path: memory-profile-comparison.text
+        name: memory-profiles
+        path: |
+          memprofile.main.out
+          memprofile.main.text
+          memprofile.feat.out
+          memprofile.feat.text
+          memory-profile-comparison.text
