@@ -33,7 +33,7 @@ type flagConfiguration struct {
 	// - NUMERIC -> float64
 	// - INTEGER -> int64
 	// - BOOLEAN -> bool
-	// - JSON -> interface{}
+	// - JSON -> jsonVariationValue
 	ParsedVariations map[string]interface{} `json:"-"`
 }
 
@@ -54,6 +54,11 @@ func (flag *flagConfiguration) precompute() {
 type variation struct {
 	Key   string          `json:"key"`
 	Value json.RawMessage `json:"value"`
+}
+
+type jsonVariationValue struct {
+	Raw    []byte
+	Parsed interface{}
 }
 
 type variationType int
@@ -152,7 +157,7 @@ func (ty variationType) parseVariationValue(value json.RawMessage) (interface{},
 			return nil, err
 		}
 
-		return parsed, nil
+		return jsonVariationValue{raw, parsed}, nil
 	default:
 		return nil, fmt.Errorf("unexpected variation type: %v", ty)
 	}

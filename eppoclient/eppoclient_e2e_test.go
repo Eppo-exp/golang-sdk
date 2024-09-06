@@ -60,6 +60,14 @@ func Test_e2e(t *testing.T) {
 					case jsonVariation:
 						value, _ := client.GetJSONAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, test.DefaultValue)
 						assert.Equal(t, subject.Assignment, value)
+
+						// Convert DefaultValue to []byte for GetJSONBytesAssignment
+						defaultValueBytes, _ := json.Marshal(test.DefaultValue)
+						valueBytes, _ := client.GetJSONBytesAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, defaultValueBytes)
+
+						var parsedValueBytes interface{}
+						_ = json.Unmarshal(valueBytes, &parsedValueBytes)
+						assert.Equal(t, subject.Assignment, parsedValueBytes)
 					case stringVariation:
 						value, _ := client.GetStringAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, test.DefaultValue.(string))
 						assert.Equal(t, subject.Assignment, value)
