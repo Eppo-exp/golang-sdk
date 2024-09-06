@@ -60,8 +60,8 @@ func Test_LogAssignment(t *testing.T) {
 			mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
 			config := configResponse{
-				Flags: map[string]flagConfiguration{
-					"experiment-key-1": flagConfiguration{
+				Flags: map[string]*flagConfiguration{
+					"experiment-key-1": &flagConfiguration{
 						Key:           "experiment-key-1",
 						Enabled:       true,
 						TotalShards:   10000,
@@ -69,7 +69,7 @@ func Test_LogAssignment(t *testing.T) {
 						Variations: map[string]variation{
 							"control": variation{
 								Key:   "control",
-								Value: "control",
+								Value: []byte("\"control\""),
 							},
 						},
 						Allocations: []allocation{
@@ -160,8 +160,8 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 	var mockLogger = new(mockLogger)
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Panic("logging panic")
 
-	config := configResponse{Flags: map[string]flagConfiguration{
-		"experiment-key-1": flagConfiguration{
+	config := configResponse{Flags: map[string]*flagConfiguration{
+		"experiment-key-1": &flagConfiguration{
 			Key:           "experiment-key-1",
 			Enabled:       true,
 			TotalShards:   10000,
@@ -169,7 +169,7 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 			Variations: map[string]variation{
 				"control": variation{
 					Key:   "control",
-					Value: "control",
+					Value: []byte("\"control\""),
 				},
 			},
 			Allocations: []allocation{

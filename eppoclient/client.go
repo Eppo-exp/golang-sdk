@@ -92,7 +92,7 @@ func (ec *EppoClient) GetJSONAssignment(flagKey string, subjectKey string, subje
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
-	return variation, err
+	return variation, nil
 }
 
 type BanditResult struct {

@@ -13,13 +13,13 @@ func Test_GetConfiguration_unknownKey(t *testing.T) {
 	result, err := config.getFlagConfiguration("unknown_exp")
 
 	assert.Error(t, err)
-	assert.Equal(t, flagConfiguration{}, result)
+	assert.Nil(t, result)
 }
 
 func Test_GetConfiguration_knownKey(t *testing.T) {
 	flags := configResponse{
-		Flags: map[string]flagConfiguration{
-			"experiment-key-1": flagConfiguration{
+		Flags: map[string]*flagConfiguration{
+			"experiment-key-1": &flagConfiguration{
 				Key:           "experiment-key-1",
 				Enabled:       false,
 				VariationType: stringVariation,

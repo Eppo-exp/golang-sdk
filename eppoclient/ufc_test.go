@@ -46,7 +46,7 @@ func TestConditionPrecompute(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			tc.condition.Precompute()
+			tc.condition.precompute()
 			assert.Equal(t, tc.expectedNumVal, tc.condition.NumericValue)
 			assert.Equal(t, tc.expectedNumValValid, tc.condition.NumericValueValid)
 			assert.Equal(t, tc.expectedSemVerVal, tc.condition.SemVerValue)
