@@ -3,10 +3,16 @@ package eppoclient
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	semver "github.com/Masterminds/semver/v3"
 )
+
+type AssignmentValue struct {
+	Parsed interface{}
+	Raw    []byte
+}
 
 type configResponse struct {
 	Flags   map[string]flagConfiguration `json:"flags"`
@@ -84,36 +90,44 @@ func (v *variationType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (ty variationType) valueToAssignmentValue(value interface{}) (interface{}, error) {
+func (ty variationType) valueToAssignmentValue(value interface{}) (AssignmentValue, error) {
+	var av AssignmentValue
+	var err error
+
 	switch ty {
 	case stringVariation:
 		s := value.(string)
-		return s, nil
+		av.Parsed = s
+		av.Raw = []byte(s)
 	case integerVariation:
 		f64 := value.(float64)
 		i64 := int64(f64)
 		if f64 == float64(i64) {
-			return i64, nil
+			av.Parsed = i64
+			av.Raw = []byte(strconv.FormatInt(i64, 10))
 		} else {
-			return nil, fmt.Errorf("failed to convert number to integer")
+			return av, fmt.Errorf("failed to convert number to integer")
 		}
 	case numericVariation:
 		number := value.(float64)
-		return number, nil
+		av.Parsed = number
+		av.Raw = []byte(strconv.FormatFloat(number, 'f', -1, 64))
 	case booleanVariation:
 		v := value.(bool)
-		return v, nil
+		av.Parsed = v
+		av.Raw = []byte(strconv.FormatBool(v))
 	case jsonVariation:
 		v := value.(string)
-		var result interface{}
-		err := json.Unmarshal([]byte(v), &result)
+		av.Raw = []byte(v)
+		err = json.Unmarshal(av.Raw, &av.Parsed)
 		if err != nil {
-			return nil, err
+			return av, err
 		}
-		return result, nil
 	default:
-		return nil, fmt.Errorf("unexpected variation type: %v", ty)
+		return av, fmt.Errorf("unexpected variation type: %v", ty)
 	}
+
+	return av, nil
 }
 
 type allocation struct {

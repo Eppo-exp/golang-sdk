@@ -37,10 +37,10 @@ func newEppoClient(
 
 func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue bool) (bool, error) {
 	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, booleanVariation)
-	if err != nil || variation == nil {
+	if err != nil || variation.Raw == nil {
 		return defaultValue, err
 	}
-	result, ok := variation.(bool)
+	result, ok := variation.Parsed.(bool)
 	if !ok {
 		ec.applicationLogger.Errorf("failed to cast %v to bool", variation)
 		return defaultValue, fmt.Errorf("failed to cast %v to bool", variation)
@@ -50,10 +50,10 @@ func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subje
 
 func (ec *EppoClient) GetNumericAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue float64) (float64, error) {
 	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, numericVariation)
-	if err != nil || variation == nil {
+	if err != nil || variation.Raw == nil {
 		return defaultValue, err
 	}
-	result, ok := variation.(float64)
+	result, ok := variation.Parsed.(float64)
 	if !ok {
 		ec.applicationLogger.Errorf("failed to cast %v to float64", variation)
 		return defaultValue, fmt.Errorf("failed to cast %v to float64", variation)
@@ -63,10 +63,10 @@ func (ec *EppoClient) GetNumericAssignment(flagKey string, subjectKey string, su
 
 func (ec *EppoClient) GetIntegerAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue int64) (int64, error) {
 	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, integerVariation)
-	if err != nil || variation == nil {
+	if err != nil || variation.Raw == nil {
 		return defaultValue, err
 	}
-	result, ok := variation.(int64)
+	result, ok := variation.Parsed.(int64)
 	if !ok {
 		ec.applicationLogger.Errorf("failed to cast %v to int64", variation)
 		return defaultValue, fmt.Errorf("failed to cast %v to int64", variation)
@@ -76,10 +76,10 @@ func (ec *EppoClient) GetIntegerAssignment(flagKey string, subjectKey string, su
 
 func (ec *EppoClient) GetStringAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue string) (string, error) {
 	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, stringVariation)
-	if err != nil || variation == nil {
+	if err != nil || variation.Raw == nil {
 		return defaultValue, err
 	}
-	result, ok := variation.(string)
+	result, ok := variation.Parsed.(string)
 	if !ok {
 		ec.applicationLogger.Errorf("failed to cast %v to string", variation)
 		return defaultValue, fmt.Errorf("failed to cast %v to string", variation)
@@ -89,10 +89,18 @@ func (ec *EppoClient) GetStringAssignment(flagKey string, subjectKey string, sub
 
 func (ec *EppoClient) GetJSONAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue interface{}) (interface{}, error) {
 	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, jsonVariation)
-	if err != nil || variation == nil {
+	if err != nil || variation.Raw == nil {
 		return defaultValue, err
 	}
 	return variation, err
+}
+
+func (ec *EppoClient) GetJSONBytesAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue []byte) ([]byte, error) {
+	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, jsonVariation)
+	if err != nil || variation.Raw == nil {
+		return defaultValue, err
+	}
+	return variation.Raw, err
 }
 
 type BanditResult struct {
@@ -105,7 +113,7 @@ func (ec *EppoClient) GetBanditAction(flagKey string, subjectKey string, subject
 
 	// ignoring the error here as we can always proceed with default variation
 	assignmentValue, _ := ec.getAssignment(config, flagKey, subjectKey, subjectAttributes.toGenericAttributes(), stringVariation)
-	variation, ok := assignmentValue.(string)
+	variation, ok := assignmentValue.Parsed.(string)
 	if !ok {
 		variation = defaultVariation
 	}
@@ -181,31 +189,31 @@ func (ec *EppoClient) GetBanditAction(flagKey string, subjectKey string, subject
 	}
 }
 
-func (ec *EppoClient) getAssignment(config configuration, flagKey string, subjectKey string, subjectAttributes Attributes, variationType variationType) (interface{}, error) {
+func (ec *EppoClient) getAssignment(config configuration, flagKey string, subjectKey string, subjectAttributes Attributes, variationType variationType) (AssignmentValue, error) {
 	if subjectKey == "" {
-		return nil, fmt.Errorf("no subject key provided")
+		return AssignmentValue{}, fmt.Errorf("no subject key provided")
 	}
 
 	if flagKey == "" {
-		return nil, fmt.Errorf("no flag key provided")
+		return AssignmentValue{}, fmt.Errorf("no flag key provided")
 	}
 
 	flag, err := config.getFlagConfiguration(flagKey)
 	if err != nil {
 		ec.applicationLogger.Infof("failed to get flag configuration: %v", err)
-		return nil, err
+		return AssignmentValue{}, err
 	}
 
 	err = flag.verifyType(variationType)
 	if err != nil {
 		ec.applicationLogger.Warnf("failed to verify flag type: %v", err)
-		return nil, err
+		return AssignmentValue{}, err
 	}
 
 	assignmentValue, assignmentEvent, err := flag.eval(subjectKey, subjectAttributes, ec.applicationLogger)
 	if err != nil {
 		ec.applicationLogger.Errorf("failed to evaluate flag: %v", err)
-		return nil, err
+		return AssignmentValue{}, err
 	}
 
 	if assignmentEvent != nil {

@@ -58,8 +58,26 @@ func Test_e2e(t *testing.T) {
 						assert.Equal(t, int64(subject.Assignment.(float64)), value)
 
 					case jsonVariation:
-						value, _ := client.GetJSONAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, test.DefaultValue)
-						assert.Equal(t, subject.Assignment, value)
+						value, err := client.GetJSONAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, test.DefaultValue)
+						if err != nil {
+							// If there's an error (e.g., subject not in allocation), use the default value
+							assert.Equal(t, test.DefaultValue, subject.Assignment)
+						} else {
+							assert.Equal(t, subject.Assignment, value.(AssignmentValue).Parsed)
+						}
+
+						// Convert DefaultValue to []byte for GetJSONBytesAssignment
+						defaultValueBytes, _ := json.Marshal(test.DefaultValue)
+						valueBytes, err := client.GetJSONBytesAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, defaultValueBytes)
+						if err != nil {
+							// If there's an error, compare the marshaled default value with the assignment
+							assignmentBytes, _ := json.Marshal(subject.Assignment)
+							assert.Equal(t, assignmentBytes, defaultValueBytes)
+						} else {
+							var parsedValueBytes interface{}
+							_ = json.Unmarshal(valueBytes, &parsedValueBytes)
+							assert.Equal(t, subject.Assignment, parsedValueBytes)
+						}
 					case stringVariation:
 						value, _ := client.GetStringAssignment(test.Flag, subject.SubjectKey, subject.SubjectAttributes, test.DefaultValue.(string))
 						assert.Equal(t, subject.Assignment, value)

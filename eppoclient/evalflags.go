@@ -15,9 +15,9 @@ func (flag flagConfiguration) verifyType(ty variationType) error {
 	}
 }
 
-func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attributes, applicationLogger applicationlogger.Logger) (interface{}, *AssignmentEvent, error) {
+func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attributes, applicationLogger applicationlogger.Logger) (AssignmentValue, *AssignmentEvent, error) {
 	if !flag.Enabled {
-		return nil, nil, ErrFlagNotEnabled
+		return AssignmentValue{}, nil, ErrFlagNotEnabled
 	}
 
 	now := time.Now()
@@ -33,17 +33,17 @@ func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attribut
 		}
 	}
 	if allocation == nil || split == nil {
-		return nil, nil, ErrSubjectAllocation
+		return AssignmentValue{}, nil, ErrSubjectAllocation
 	}
 
 	variation, ok := flag.Variations[split.VariationKey]
 	if !ok {
-		return nil, nil, fmt.Errorf("cannot find variation: %v", split.VariationKey)
+		return AssignmentValue{}, nil, fmt.Errorf("cannot find variation: %v", split.VariationKey)
 	}
 
 	assignmentValue, err := flag.VariationType.valueToAssignmentValue(variation.Value)
 	if err != nil {
-		return nil, nil, err
+		return AssignmentValue{}, nil, err
 	}
 
 	var assignmentEvent *AssignmentEvent
