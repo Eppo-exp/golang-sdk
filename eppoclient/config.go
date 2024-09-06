@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Eppo-exp/golang-sdk/v5/eppoclient/applicationlogger"
 	"go.uber.org/zap"
 )
 
@@ -16,7 +15,7 @@ type Config struct {
 	SdkKey            string
 	AssignmentLogger  IAssignmentLogger
 	PollerInterval    time.Duration
-	ApplicationLogger applicationlogger.Logger
+	ApplicationLogger ApplicationLogger
 }
 
 func (cfg *Config) validate() error {
@@ -37,7 +36,7 @@ func (cfg *Config) validate() error {
 		if err != nil {
 			return fmt.Errorf("failed to create default logger: %v", err)
 		}
-		cfg.ApplicationLogger = applicationlogger.NewZapLogger(defaultLogger)
+		cfg.ApplicationLogger = NewZapLogger(defaultLogger)
 	}
 
 	return nil
