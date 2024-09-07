@@ -3,8 +3,6 @@ package eppoclient
 import (
 	"fmt"
 	"time"
-
-	"github.com/Eppo-exp/golang-sdk/v5/eppoclient/applicationlogger"
 )
 
 type Attributes map[string]interface{}
@@ -16,7 +14,7 @@ type EppoClient struct {
 	configRequestor    *configurationRequestor
 	poller             *poller
 	logger             IAssignmentLogger
-	applicationLogger  applicationlogger.Logger
+	applicationLogger  ApplicationLogger
 }
 
 func newEppoClient(
@@ -24,7 +22,7 @@ func newEppoClient(
 	configRequestor *configurationRequestor,
 	poller *poller,
 	assignmentLogger IAssignmentLogger,
-	applicationLogger applicationlogger.Logger,
+	applicationLogger ApplicationLogger,
 ) *EppoClient {
 	return &EppoClient{
 		configurationStore: configurationStore,

@@ -1,14 +1,64 @@
-package applicationlogger
+package eppoclient
 
 import (
 	"regexp"
+
+	"go.uber.org/zap"
 )
 
-type ScrubbingLogger struct {
-	innerLogger Logger
+type ApplicationLogger interface {
+	Debug(args ...interface{})
+	Info(args ...interface{})
+	Infof(template string, args ...interface{})
+	Warn(args ...interface{})
+	Warnf(template string, args ...interface{})
+	Error(args ...interface{})
+	Errorf(template string, args ...interface{})
 }
 
-func NewScrubbingLogger(innerLogger Logger) *ScrubbingLogger {
+// ZapLogger The default logger for the Eppo SDK
+type ZapLogger struct {
+	logger *zap.Logger
+}
+
+func NewZapLogger(logger *zap.Logger) *ZapLogger {
+	return &ZapLogger{logger: logger}
+}
+
+func (z *ZapLogger) Debug(args ...interface{}) {
+	z.logger.Sugar().Debug(args...)
+}
+
+func (z *ZapLogger) Info(args ...interface{}) {
+	z.logger.Sugar().Info(args...)
+}
+
+func (z *ZapLogger) Infof(template string, args ...interface{}) {
+	z.logger.Sugar().Infof(template, args...)
+}
+
+func (z *ZapLogger) Warn(args ...interface{}) {
+	z.logger.Sugar().Warn(args...)
+}
+
+func (z *ZapLogger) Warnf(template string, args ...interface{}) {
+	z.logger.Sugar().Warnf(template, args...)
+}
+
+func (z *ZapLogger) Error(args ...interface{}) {
+	z.logger.Sugar().Error(args...)
+}
+
+func (z *ZapLogger) Errorf(template string, args ...interface{}) {
+	z.logger.Sugar().Errorf(template, args...)
+}
+
+// ScrubbingLogger is an ApplicationLogger that scrubs sensitive information from logs
+type ScrubbingLogger struct {
+	innerLogger ApplicationLogger
+}
+
+func NewScrubbingLogger(innerLogger ApplicationLogger) *ScrubbingLogger {
 	return &ScrubbingLogger{innerLogger: innerLogger}
 }
 

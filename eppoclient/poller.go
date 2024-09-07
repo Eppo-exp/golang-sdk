@@ -2,18 +2,16 @@ package eppoclient
 
 import (
 	"time"
-
-	"github.com/Eppo-exp/golang-sdk/v5/eppoclient/applicationlogger"
 )
 
 type poller struct {
 	interval          time.Duration
 	callback          func()
 	isStopped         bool `default:"false"`
-	applicationLogger applicationlogger.Logger
+	applicationLogger ApplicationLogger
 }
 
-func newPoller(interval time.Duration, callback func(), applicationLogger applicationlogger.Logger) *poller {
+func newPoller(interval time.Duration, callback func(), applicationLogger ApplicationLogger) *poller {
 	var pl = &poller{}
 
 	pl.interval = interval

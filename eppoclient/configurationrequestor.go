@@ -2,8 +2,6 @@ package eppoclient
 
 import (
 	"encoding/json"
-
-	"github.com/Eppo-exp/golang-sdk/v5/eppoclient/applicationlogger"
 )
 
 const CONFIG_ENDPOINT = "/flag-config/v1/config"
@@ -12,10 +10,10 @@ const BANDIT_ENDPOINT = "/flag-config/v1/bandits"
 type configurationRequestor struct {
 	httpClient        httpClient
 	configStore       *configurationStore
-	applicationLogger applicationlogger.Logger
+	applicationLogger ApplicationLogger
 }
 
-func newConfigurationRequestor(httpClient httpClient, configStore *configurationStore, applicationLogger applicationlogger.Logger) *configurationRequestor {
+func newConfigurationRequestor(httpClient httpClient, configStore *configurationStore, applicationLogger ApplicationLogger) *configurationRequestor {
 	return &configurationRequestor{
 		httpClient:        httpClient,
 		configStore:       configStore,

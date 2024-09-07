@@ -3,8 +3,6 @@ package eppoclient
 import (
 	"fmt"
 	"time"
-
-	"github.com/Eppo-exp/golang-sdk/v5/eppoclient/applicationlogger"
 )
 
 func (flag flagConfiguration) verifyType(ty variationType) error {
@@ -15,7 +13,7 @@ func (flag flagConfiguration) verifyType(ty variationType) error {
 	}
 }
 
-func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attributes, applicationLogger applicationlogger.Logger) (interface{}, *AssignmentEvent, error) {
+func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attributes, applicationLogger ApplicationLogger) (interface{}, *AssignmentEvent, error) {
 	if !flag.Enabled {
 		return nil, nil, ErrFlagNotEnabled
 	}
@@ -81,7 +79,7 @@ func augmentWithSubjectKey(subjectAttributes Attributes, subjectKey string) Attr
 	return augmentedSubjectAttributes
 }
 
-func (allocation allocation) findMatchingSplit(subjectKey string, augmentedSubjectAttributes Attributes, totalShards int64, now time.Time, applicationLogger applicationlogger.Logger) *split {
+func (allocation allocation) findMatchingSplit(subjectKey string, augmentedSubjectAttributes Attributes, totalShards int64, now time.Time, applicationLogger ApplicationLogger) *split {
 	if !allocation.StartAt.IsZero() && now.Before(allocation.StartAt) {
 		return nil
 	}

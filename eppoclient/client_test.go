@@ -6,13 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
-
-	"github.com/Eppo-exp/golang-sdk/v5/eppoclient/applicationlogger"
 )
 
 var (
 	zapLogger, _      = zap.NewDevelopment()
-	applicationLogger = applicationlogger.NewZapLogger(zapLogger)
+	applicationLogger = NewZapLogger(zapLogger)
 )
 
 func Test_AssignBlankExperiment(t *testing.T) {
