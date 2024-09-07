@@ -18,19 +18,19 @@ jobs:
 
     - name: Generate memory profiles
       run: |
-        git checkout main
-        make profile-memory OUTFILE_SUFFIX=.main
         git checkout ${{ github.head_ref }}
-        make profile-memory OUTFILE_SUFFIX=.feat
+        make profile-memory OUTFILE_SUFFIX=.feat || { echo "Failed to generate feature profile"; ls -l; cat Makefile; exit 1; }
+        git checkout main
+        make profile-memory OUTFILE_SUFFIX=.main || { echo "Failed to generate main profile"; ls -l; cat Makefile; exit 1; }
 
     - name: Compare memory profiles
       run: |
+        ls -l
         if [ ! -f memprofile.main.out ] || [ ! -f memprofile.feat.out ]; then
           echo "Error: One or both memory profile files are missing."
-          ls -l
           exit 1
         fi
-        make profile-memory-compare BASE_FILE=memprofile.main.out FEAT_FILE=memprofile.feat.out > memory-profile-comparison.text
+        make profile-memory-compare BASE_FILE=memprofile.main.out FEAT_FILE=memprofile.feat.out > memory-profile-comparison.text || { echo "Failed to compare profiles"; cat Makefile; exit 1; }
         echo "Memory Profile Comparison:"
         cat memory-profile-comparison.text
 
