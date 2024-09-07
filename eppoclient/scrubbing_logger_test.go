@@ -1,4 +1,4 @@
-package applicationlogger
+package eppoclient
 
 import (
 	"testing"
