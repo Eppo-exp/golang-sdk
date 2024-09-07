@@ -7,11 +7,10 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/Eppo-exp/golang-sdk/v5/eppoclient/applicationlogger"
 	semver "github.com/Masterminds/semver/v3"
 )
 
-func (rule rule) matches(subjectAttributes Attributes, applicationLogger ...applicationlogger.Logger) bool {
+func (rule rule) matches(subjectAttributes Attributes, applicationLogger ...ApplicationLogger) bool {
 	for _, condition := range rule.Conditions {
 		if !condition.matches(subjectAttributes, applicationLogger...) {
 			return false
@@ -21,7 +20,7 @@ func (rule rule) matches(subjectAttributes Attributes, applicationLogger ...appl
 	return true
 }
 
-func (condition condition) matches(subjectAttributes Attributes, applicationLogger ...applicationlogger.Logger) bool {
+func (condition condition) matches(subjectAttributes Attributes, applicationLogger ...ApplicationLogger) bool {
 	subjectValue, exists := subjectAttributes[condition.Attribute]
 	if condition.Operator == "IS_NULL" {
 		isNull := !exists || subjectValue == nil
