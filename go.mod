@@ -1,4 +1,4 @@
-module github.com/Eppo-exp/golang-sdk/v5
+module github.com/Eppo-exp/golang-sdk/v6
 
 go 1.19
 
