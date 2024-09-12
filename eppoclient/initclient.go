@@ -4,8 +4,6 @@ package eppoclient
 
 import "net/http"
 
-var __version__ = "5.2.0"
-
 // InitClient is required to start polling of experiments configurations and create
 // an instance of EppoClient, which could be used to get assignments information.
 func InitClient(config Config) (*EppoClient, error) {

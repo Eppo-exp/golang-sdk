@@ -22,14 +22,14 @@ In your `go.mod`, add the SDK package as a dependency:
 
 ```
 require (
-    github.com/Eppo-exp/golang-sdk/v5
+    github.com/Eppo-exp/golang-sdk/v6
 )
 ```
 
 Or you can install the SDK from the command line with:
 
 ```
-go get github.com/Eppo-exp/golang-sdk/v5
+go get github.com/Eppo-exp/golang-sdk/v6
 ```
 
 ## Quick start
@@ -40,7 +40,7 @@ Begin by initializing a singleton instance of Eppo's client. Once initialized, t
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v6/eppoclient"
 )
 
 var eppoClient *eppoclient.EppoClient
@@ -62,7 +62,7 @@ func main() {
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v6/eppoclient"
 )
 
 var eppoClient *eppoclient.EppoClient
@@ -85,6 +85,7 @@ GetNumericAssignment(...)
 GetIntegerAssignment(...)
 GetStringAssignment(...)
 GetJSONAssignment(...)
+GetJSONBytesAssignment(...)
 ```
 
 Each function has the same signature, but returns the type in the function name. For booleans use `getBooleanAssignment`, which has the following signature:
@@ -107,7 +108,7 @@ The code below illustrates an example implementation of a logging callback using
 
 ```go
 import (
-  "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
+  "github.com/Eppo-exp/golang-sdk/v6/eppoclient"
   "gopkg.in/segmentio/analytics-go.v3"
 )
 
@@ -141,7 +142,7 @@ You can use the `eppoclient.ScrubbingLogger` to scrub PII from the logs.
 
 ```go
 import (
-    "github.com/Eppo-exp/golang-sdk/v5/eppoclient"
+    "github.com/Eppo-exp/golang-sdk/v6/eppoclient"
     "github.com/sirupsen/logrus"
 )
 
@@ -208,7 +209,7 @@ Both loggers are configured with a maximum size to fit your desired memory alloc
 
 ```go
 import (
-	"github.com/Eppo-exp/golang-sdk/v5/eppoclient"
+	"github.com/Eppo-exp/golang-sdk/v6/eppoclient"
 )
 
 var eppoClient *eppoclient.EppoClient
@@ -232,3 +233,8 @@ Internally, both loggers are simple proxying wrappers around [`lru.TwoQueueCache
 ## Philosophy
 
 Eppo's SDKs are built for simplicity, speed and reliability. Flag configurations are compressed and distributed over a global CDN (Fastly), typically reaching your servers in under 15ms. Server SDKs continue polling Eppo’s API at 10-second intervals. Configurations are then cached locally, ensuring that each assignment is made instantly. Evaluation logic within each SDK consists of a few lines of simple numeric and string comparisons. The typed functions listed above are all developers need to understand, abstracting away the complexity of the Eppo's underlying (and expanding) feature set.
+
+## Contributing
+
+We welcome contributions to the Eppo Go SDK! If you find a bug or have a feature request, please open an issue on GitHub. If you'd like to contribute code, please fork the repository and submit a pull request.
+
