@@ -238,3 +238,6 @@ Eppo's SDKs are built for simplicity, speed and reliability. Flag configurations
 
 We welcome contributions to the Eppo Go SDK! If you find a bug or have a feature request, please open an issue on GitHub. If you'd like to contribute code, please fork the repository and submit a pull request.
 
+* Bump version in `eppoclient/version.go`
+* Tag release as `vX.Y.Z`
+* Create a Github release with the tag
