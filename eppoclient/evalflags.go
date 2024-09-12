@@ -34,14 +34,9 @@ func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attribut
 		return nil, nil, ErrSubjectAllocation
 	}
 
-	variation, ok := flag.Variations[split.VariationKey]
+	assignmentValue, ok := flag.ParsedVariations[split.VariationKey]
 	if !ok {
 		return nil, nil, fmt.Errorf("cannot find variation: %v", split.VariationKey)
-	}
-
-	assignmentValue, err := flag.VariationType.valueToAssignmentValue(variation.Value)
-	if err != nil {
-		return nil, nil, err
 	}
 
 	var assignmentEvent *AssignmentEvent
@@ -50,7 +45,7 @@ func (flag flagConfiguration) eval(subjectKey string, subjectAttributes Attribut
 			FeatureFlag:       flag.Key,
 			Allocation:        allocation.Key,
 			Experiment:        flag.Key + "-" + allocation.Key,
-			Variation:         variation.Key,
+			Variation:         split.VariationKey,
 			Subject:           subjectKey,
 			SubjectAttributes: subjectAttributes,
 			Timestamp:         now.UTC().Format(time.RFC3339),

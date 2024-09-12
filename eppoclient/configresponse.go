@@ -9,8 +9,14 @@ import (
 )
 
 type configResponse struct {
-	Flags   map[string]flagConfiguration `json:"flags"`
-	Bandits map[string][]banditVariation `json:"bandits,omitempty"`
+	Flags   map[string]*flagConfiguration `json:"flags"`
+	Bandits map[string][]banditVariation  `json:"bandits,omitempty"`
+}
+
+func (response *configResponse) precompute() {
+	for i := range response.Flags {
+		response.Flags[i].precompute()
+	}
 }
 
 type flagConfiguration struct {
@@ -20,17 +26,39 @@ type flagConfiguration struct {
 	Variations    map[string]variation `json:"variations"`
 	Allocations   []allocation         `json:"allocations"`
 	TotalShards   int64                `json:"totalShards"`
+	// Cached Variations parsed according to `VariationType`.
+	//
+	// Types are as follows:
+	// - STRING -> string
+	// - NUMERIC -> float64
+	// - INTEGER -> int64
+	// - BOOLEAN -> bool
+	// - JSON -> jsonVariationValue
+	ParsedVariations map[string]interface{} `json:"-"`
 }
 
-func (flag *flagConfiguration) Precompute() {
+func (flag *flagConfiguration) precompute() {
 	for i := range flag.Allocations {
-		flag.Allocations[i].Precompute()
+		flag.Allocations[i].precompute()
+	}
+
+	flag.ParsedVariations = make(map[string]interface{}, len(flag.Variations))
+	for i := range flag.Variations {
+		value, err := flag.VariationType.parseVariationValue(flag.Variations[i].Value)
+		if err == nil {
+			flag.ParsedVariations[i] = value
+		}
 	}
 }
 
 type variation struct {
-	Key   string      `json:"key"`
-	Value interface{} `json:"value"`
+	Key   string          `json:"key"`
+	Value json.RawMessage `json:"value"`
+}
+
+type jsonVariationValue struct {
+	Raw    []byte
+	Parsed interface{}
 }
 
 type variationType int
@@ -84,33 +112,52 @@ func (v *variationType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (ty variationType) valueToAssignmentValue(value interface{}) (interface{}, error) {
+func (ty variationType) parseVariationValue(value json.RawMessage) (interface{}, error) {
 	switch ty {
 	case stringVariation:
-		s := value.(string)
-		return s, nil
-	case integerVariation:
-		f64 := value.(float64)
-		i64 := int64(f64)
-		if f64 == float64(i64) {
-			return i64, nil
-		} else {
-			return nil, fmt.Errorf("failed to convert number to integer")
-		}
-	case numericVariation:
-		number := value.(float64)
-		return number, nil
-	case booleanVariation:
-		v := value.(bool)
-		return v, nil
-	case jsonVariation:
-		v := value.(string)
-		var result interface{}
-		err := json.Unmarshal([]byte(v), &result)
+		var s string
+		err := json.Unmarshal(value, &s)
 		if err != nil {
 			return nil, err
 		}
-		return result, nil
+		return s, nil
+	case integerVariation:
+		var i int64
+		err := json.Unmarshal(value, &i)
+		if err != nil {
+			return nil, err
+		}
+		return i, nil
+	case numericVariation:
+		var f float64
+		err := json.Unmarshal(value, &f)
+		if err != nil {
+			return nil, err
+		}
+		return f, nil
+	case booleanVariation:
+		var b bool
+		err := json.Unmarshal(value, &b)
+		if err != nil {
+			return nil, err
+		}
+		return b, nil
+	case jsonVariation:
+		var s string
+		err := json.Unmarshal(value, &s)
+		if err != nil {
+			return nil, err
+		}
+
+		raw := []byte(s)
+
+		var parsed interface{}
+		err = json.Unmarshal(raw, &parsed)
+		if err != nil {
+			return nil, err
+		}
+
+		return jsonVariationValue{raw, parsed}, nil
 	default:
 		return nil, fmt.Errorf("unexpected variation type: %v", ty)
 	}
@@ -125,9 +172,9 @@ type allocation struct {
 	DoLog   *bool     `json:"doLog"`
 }
 
-func (a *allocation) Precompute() {
+func (a *allocation) precompute() {
 	for i := range a.Rules {
-		a.Rules[i].Precompute()
+		a.Rules[i].precompute()
 	}
 }
 
@@ -135,9 +182,9 @@ type rule struct {
 	Conditions []condition `json:"conditions"`
 }
 
-func (r *rule) Precompute() {
+func (r *rule) precompute() {
 	for i := range r.Conditions {
-		r.Conditions[i].Precompute()
+		r.Conditions[i].precompute()
 	}
 }
 
@@ -152,7 +199,7 @@ type condition struct {
 	SemVerValueValid  bool
 }
 
-func (c *condition) Precompute() {
+func (c *condition) precompute() {
 	// Try to convert Value to a float64
 	if num, err := toFloat64(c.Value); err == nil {
 		c.NumericValue = num

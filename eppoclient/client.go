@@ -90,7 +90,25 @@ func (ec *EppoClient) GetJSONAssignment(flagKey string, subjectKey string, subje
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
-	return variation, err
+	result, ok := variation.(jsonVariationValue)
+	if !ok {
+		ec.applicationLogger.Errorf("failed to cast %v to json. This should never happen. Please report bug to Eppo", variation)
+		return defaultValue, fmt.Errorf("failed to cast %v to json. This should never happen. Please report bug to Eppo", variation)
+	}
+	return result.Parsed, err
+}
+
+func (ec *EppoClient) GetJSONBytesAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue []byte) ([]byte, error) {
+	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, jsonVariation)
+	if err != nil || variation == nil {
+		return defaultValue, err
+	}
+	result, ok := variation.(jsonVariationValue)
+	if !ok {
+		ec.applicationLogger.Errorf("failed to cast %v to json. This should never happen. Please report bug to Eppo", variation)
+		return defaultValue, fmt.Errorf("failed to cast %v to json. This should never happen. Please report bug to Eppo", variation)
+	}
+	return result.Raw, err
 }
 
 type BanditResult struct {

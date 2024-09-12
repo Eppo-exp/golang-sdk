@@ -14,8 +14,10 @@ type configuration struct {
 	banditFlagAssociations map[string]map[string]banditVariation
 }
 
-func (c *configuration) refreshBanditFlagAssociations() {
+func (c *configuration) precompute() {
 	associations := make(map[string]map[string]banditVariation)
+
+	c.flags.precompute()
 
 	for _, banditVariations := range c.flags.Bandits {
 		for _, bandit := range banditVariations {
@@ -40,10 +42,10 @@ func (c configuration) getBanditVariant(flagKey, variation string) (result bandi
 	return result, ok
 }
 
-func (c configuration) getFlagConfiguration(key string) (flagConfiguration, error) {
+func (c configuration) getFlagConfiguration(key string) (*flagConfiguration, error) {
 	flag, ok := c.flags.Flags[key]
 	if !ok {
-		return flag, ErrFlagConfigurationNotFound
+		return nil, ErrFlagConfigurationNotFound
 	}
 
 	return flag, nil
@@ -78,6 +80,6 @@ func (cs *configurationStore) getConfiguration() configuration {
 }
 
 func (cs *configurationStore) setConfiguration(configuration configuration) {
-	configuration.refreshBanditFlagAssociations()
+	configuration.precompute()
 	cs.configuration.Store(&configuration)
 }

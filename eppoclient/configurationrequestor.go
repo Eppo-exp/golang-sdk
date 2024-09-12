@@ -65,11 +65,6 @@ func (cr *configurationRequestor) fetchConfig() (configResponse, error) {
 		return configResponse{}, err
 	}
 
-	// Precompute flag values
-	for _, flag := range response.Flags {
-		flag.Precompute()
-	}
-
 	return response, nil
 }
 

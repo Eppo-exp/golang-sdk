@@ -24,9 +24,9 @@ var textRule = rule{Conditions: []condition{
 var ruleWithEmptyConditions = rule{Conditions: []condition{}}
 
 func init() {
-	numericRule.Precompute()
-	semverRule.Precompute()
-	textRule.Precompute()
+	numericRule.precompute()
+	semverRule.precompute()
+	textRule.precompute()
 }
 
 func Test_TextRule_NoMatch(t *testing.T) {
@@ -292,7 +292,7 @@ func Test_isNotNull_attributePresent(t *testing.T) {
 
 func Test_handles_all_numeric_types(t *testing.T) {
 	condition := condition{Operator: "GT", Attribute: "powerLevel", Value: "9000"}
-	condition.Precompute()
+	condition.precompute()
 
 	// Floats
 	assert.True(t, condition.matches(Attributes{"powerLevel": 9001.0}))
@@ -328,7 +328,7 @@ func Test_handles_all_numeric_types(t *testing.T) {
 
 func Test_invalid_numeric_types(t *testing.T) {
 	condition := condition{Operator: "GT", Attribute: "powerLevel", Value: "9000"}
-	condition.Precompute()
+	condition.precompute()
 
 	assert.False(t, condition.matches(Attributes{"powerLevel": "empty"}))
 	assert.False(t, condition.matches(Attributes{"powerLevel": ""}))
