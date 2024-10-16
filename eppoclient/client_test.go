@@ -2,6 +2,7 @@ package eppoclient
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -15,7 +16,7 @@ var (
 
 func Test_AssignBlankExperiment(t *testing.T) {
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger, applicationLogger)
+	client := newEppoClient(newConfigurationStore(), nil, nil, mockLogger, applicationLogger)
 
 	_, err := client.GetStringAssignment("", "subject-1", Attributes{}, "")
 	assert.Error(t, err)
@@ -23,7 +24,7 @@ func Test_AssignBlankExperiment(t *testing.T) {
 
 func Test_AssignBlankSubject(t *testing.T) {
 	var mockLogger = new(mockLogger)
-	client := newEppoClient(newConfigurationStore(configuration{}), nil, nil, mockLogger, applicationLogger)
+	client := newEppoClient(newConfigurationStore(), nil, nil, mockLogger, applicationLogger)
 
 	_, err := client.GetStringAssignment("experiment-1", "", Attributes{}, "")
 	assert.Error(t, err)
@@ -96,7 +97,7 @@ func Test_LogAssignment(t *testing.T) {
 				},
 			}
 
-			client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger, applicationLogger)
+			client := newEppoClient(newConfigurationStoreWithConfig(configuration{flags: config}), nil, nil, mockLogger, applicationLogger)
 
 			assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
 			expected := "control"
@@ -141,7 +142,7 @@ func Test_client_loggerIsCalledWithProperBanditEvent(t *testing.T) {
 		},
 	}
 
-	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger, applicationLogger)
+	client := newEppoClient(newConfigurationStoreWithConfig(configuration{flags: flags, bandits: bandits}), nil, nil, logger, applicationLogger)
 	actions := map[string]ContextAttributes{
 		"action1": {},
 	}
@@ -194,7 +195,7 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 		},
 	}}
 
-	client := newEppoClient(newConfigurationStore(configuration{flags: config}), nil, nil, mockLogger, applicationLogger)
+	client := newEppoClient(newConfigurationStoreWithConfig(configuration{flags: config}), nil, nil, mockLogger, applicationLogger)
 
 	assignment, err := client.GetStringAssignment("experiment-key-1", "user-1", Attributes{}, "")
 	expected := "control"
@@ -236,7 +237,7 @@ func Test_client_handlesBanditLoggerPanic(t *testing.T) {
 		},
 	}
 
-	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger, applicationLogger)
+	client := newEppoClient(newConfigurationStoreWithConfig(configuration{flags: flags, bandits: bandits}), nil, nil, logger, applicationLogger)
 	actions := map[string]ContextAttributes{
 		"action1": {},
 	}
@@ -278,7 +279,7 @@ func Test_client_correctActionIsReturnedIfBanditLoggerPanics(t *testing.T) {
 		},
 	}
 
-	client := newEppoClient(newConfigurationStore(configuration{flags: flags, bandits: bandits}), nil, nil, logger, applicationLogger)
+	client := newEppoClient(newConfigurationStoreWithConfig(configuration{flags: flags, bandits: bandits}), nil, nil, logger, applicationLogger)
 	actions := map[string]ContextAttributes{
 		"action1": {},
 	}
@@ -289,4 +290,40 @@ func Test_client_correctActionIsReturnedIfBanditLoggerPanics(t *testing.T) {
 		Variation: "bandit",
 		Action:    &expectedAction,
 	}, result)
+}
+
+func Test_Initialized_timeout(t *testing.T) {
+	var mockLogger = new(mockLogger)
+	client := newEppoClient(newConfigurationStore(), nil, nil, mockLogger, applicationLogger)
+
+	timedOut := false
+	select {
+	case <-client.Initialized():
+		timedOut = false
+	case <-time.After(1 * time.Millisecond):
+		timedOut = true
+	}
+
+	assert.True(t, timedOut)
+}
+
+func Test_Initialized_success(t *testing.T) {
+	var mockLogger = new(mockLogger)
+	configurationStore := newConfigurationStore()
+	client := newEppoClient(configurationStore, nil, nil, mockLogger, applicationLogger)
+
+	go func() {
+		<-time.After(1 * time.Microsecond)
+		configurationStore.setConfiguration(configuration{})
+	}()
+
+	timedOut := false
+	select {
+	case <-client.Initialized():
+		timedOut = false
+	case <-time.After(1 * time.Millisecond):
+		timedOut = true
+	}
+
+	assert.False(t, timedOut)
 }

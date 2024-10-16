@@ -7,7 +7,7 @@ import (
 )
 
 func Test_GetConfiguration_unknownKey(t *testing.T) {
-	var store = newConfigurationStore(configuration{})
+	store := newConfigurationStore()
 
 	config := store.getConfiguration()
 	result, err := config.getFlagConfiguration("unknown_exp")
@@ -26,7 +26,7 @@ func Test_GetConfiguration_knownKey(t *testing.T) {
 			},
 		},
 	}
-	var store = newConfigurationStore(configuration{flags: flags})
+	store := newConfigurationStoreWithConfig(configuration{flags: flags})
 
 	config := store.getConfiguration()
 	result, err := config.getFlagConfiguration("experiment-key-1")

@@ -4,82 +4,59 @@ import (
 	"sync/atomic"
 )
 
-type configuration struct {
-	flags   configResponse
-	bandits banditResponse
-	// flag key -> variation value -> banditVariation.
-	//
-	// This is cached from `flags` field for easier access in
-	// evaluation.
-	banditFlagAssociations map[string]map[string]banditVariation
-}
-
-func (c *configuration) precompute() {
-	associations := make(map[string]map[string]banditVariation)
-
-	c.flags.precompute()
-
-	for _, banditVariations := range c.flags.Bandits {
-		for _, bandit := range banditVariations {
-			byVariation, ok := associations[bandit.FlagKey]
-			if !ok {
-				byVariation = make(map[string]banditVariation)
-				associations[bandit.FlagKey] = byVariation
-			}
-			byVariation[bandit.VariationValue] = bandit
-		}
-	}
-
-	c.banditFlagAssociations = associations
-}
-
-func (c configuration) getBanditVariant(flagKey, variation string) (result banditVariation, ok bool) {
-	byVariation, ok := c.banditFlagAssociations[flagKey]
-	if !ok {
-		return result, false
-	}
-	result, ok = byVariation[variation]
-	return result, ok
-}
-
-func (c configuration) getFlagConfiguration(key string) (*flagConfiguration, error) {
-	flag, ok := c.flags.Flags[key]
-	if !ok {
-		return nil, ErrFlagConfigurationNotFound
-	}
-
-	return flag, nil
-}
-
-func (c configuration) getBanditConfiguration(key string) (banditConfiguration, error) {
-	bandit, ok := c.bandits.Bandits[key]
-	if !ok {
-		return bandit, ErrBanditConfigurationNotFound
-	}
-
-	return bandit, nil
-}
-
 // `configurationStore` is a thread-safe in-memory storage. It stores
 // the currently active configuration and provides access to multiple
 // readers (e.g., flag/bandit evaluation) and writers (e.g.,
 // configuration requestor).
 type configurationStore struct {
 	configuration atomic.Pointer[configuration]
+
+	// `initializedCh` is closed when we receive a proper
+	// configuration.
+	initializedCh chan struct{}
+	// `isInitialized` is used to protect `initializedCh`, so we
+	// don’t double-close it (which is an error in Go).
+	isInitialized atomic.Bool
 }
 
-func newConfigurationStore(configuration configuration) *configurationStore {
-	store := &configurationStore{}
+func newConfigurationStore() *configurationStore {
+	return &configurationStore{
+		initializedCh: make(chan struct{}),
+	}
+}
+
+func newConfigurationStoreWithConfig(configuration configuration) *configurationStore {
+	store := newConfigurationStore()
 	store.setConfiguration(configuration)
 	return store
 }
 
 // Returns a snapshot of the currently active configuration.
 func (cs *configurationStore) getConfiguration() configuration {
-	return *cs.configuration.Load()
+	if config := cs.configuration.Load(); config != nil {
+		return *config
+	} else {
+		return configuration{}
+	}
 }
 
 func (cs *configurationStore) setConfiguration(configuration configuration) {
 	configuration.precompute()
 	cs.configuration.Store(&configuration)
+	cs.setInitialized()
+}
+
+// Set `initialized` flag to `true` notifying anyone waiting on it.
+func (cs *configurationStore) setInitialized() {
+	if cs.isInitialized.CompareAndSwap(false, true) {
+		// Channels can only be closed once, so we protect the
+		// call to `close` with a CAS.
+		close(cs.initializedCh)
+	}
+}
+
+// Returns a channel that gets closed after configuration store is
+// successfully initialized.
+func (cs *configurationStore) Initialized() <-chan struct{} {
+	return cs.initializedCh
 }

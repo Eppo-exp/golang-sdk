@@ -15,7 +15,7 @@ func InitClient(config Config) (*EppoClient, error) {
 	applicationLogger := config.ApplicationLogger
 
 	httpClient := newHttpClient(config.BaseUrl, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
-	configStore := newConfigurationStore(configuration{})
+	configStore := newConfigurationStore()
 	requestor := newConfigurationRequestor(*httpClient, configStore, applicationLogger)
 
 	assignmentLogger := config.AssignmentLogger

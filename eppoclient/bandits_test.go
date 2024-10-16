@@ -54,7 +54,7 @@ func Test_InferContextAttributes(t *testing.T) {
 func Test_bandits_sdkTestData(t *testing.T) {
 	flags := readJsonFile[configResponse]("test-data/ufc/bandit-flags-v1.json")
 	bandits := readJsonFile[banditResponse]("test-data/ufc/bandit-models-v1.json")
-	configStore := newConfigurationStore(configuration{
+	configStore := newConfigurationStoreWithConfig(configuration{
 		flags:   flags,
 		bandits: bandits,
 	})
