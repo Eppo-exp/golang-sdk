@@ -33,6 +33,20 @@ func newEppoClient(
 	}
 }
 
+// Returns a channel that gets closed after client has been
+// *successfully* initialized.
+//
+// It is recommended to apply a timeout to initialization as otherwise
+// it may hang up indefinitely.
+//
+//  select {
+//  case <-client.Initialized():
+//  case <-time.After(5 * time.Second):
+//  }
+func (ec *EppoClient) Initialized() <-chan struct{} {
+	return ec.configurationStore.Initialized()
+}
+
 func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue bool) (bool, error) {
 	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, booleanVariation)
 	if err != nil || variation == nil {
