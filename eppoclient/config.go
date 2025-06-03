@@ -2,6 +2,7 @@ package eppoclient
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"go.uber.org/zap"
@@ -16,6 +17,7 @@ type Config struct {
 	AssignmentLogger  IAssignmentLogger
 	PollerInterval    time.Duration
 	ApplicationLogger ApplicationLogger
+	HttpClient        *http.Client
 }
 
 func (cfg *Config) validate() error {
