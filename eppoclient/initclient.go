@@ -14,7 +14,13 @@ func InitClient(config Config) (*EppoClient, error) {
 	sdkParams := SDKParams{sdkKey: config.SdkKey, sdkName: "go", sdkVersion: __version__}
 	applicationLogger := config.ApplicationLogger
 
-	httpClient := newHttpClient(config.BaseUrl, &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}, sdkParams)
+	var httpClientInstance *http.Client
+	if config.HttpClient != nil {
+		httpClientInstance = config.HttpClient
+	} else {
+		httpClientInstance = &http.Client{Timeout: REQUEST_TIMEOUT_SECONDS}
+	}
+	httpClient := newHttpClient(config.BaseUrl, httpClientInstance, sdkParams)
 	configStore := newConfigurationStore()
 	requestor := newConfigurationRequestor(*httpClient, configStore, applicationLogger)
 
