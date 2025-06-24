@@ -1,6 +1,8 @@
 package eppoclient
 
 import (
+	"context"
+
 	"github.com/stretchr/testify/mock"
 )
 
@@ -14,6 +16,18 @@ func (ml *mockLogger) LogAssignment(event AssignmentEvent) {
 
 func (ml *mockLogger) LogBanditAction(event BanditEvent) {
 	ml.MethodCalled("LogBanditAction", event)
+}
+
+type mockLoggerContext struct {
+	mock.Mock
+}
+
+func (ml *mockLoggerContext) LogAssignment(ctx context.Context, event AssignmentEvent) {
+	ml.MethodCalled("LogAssignment", ctx, event)
+}
+
+func (ml *mockLoggerContext) LogBanditAction(ctx context.Context, event BanditEvent) {
+	ml.MethodCalled("LogBanditAction", ctx, event)
 }
 
 // `mockNonBanditLogger` is missing `LogBanditAction` and therefore

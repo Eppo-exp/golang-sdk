@@ -12,12 +12,13 @@ const defaultBaseUrl = "https://fscdn.eppo.cloud/api"
 const defaultPollerInterval = 10 * time.Second
 
 type Config struct {
-	BaseUrl           string
-	SdkKey            string
-	AssignmentLogger  IAssignmentLogger
-	PollerInterval    time.Duration
-	ApplicationLogger ApplicationLogger
-	HttpClient        *http.Client
+	BaseUrl                 string
+	SdkKey                  string
+	AssignmentLogger        IAssignmentLogger
+	AssignmentLoggerContext IAssignmentLoggerContext
+	PollerInterval          time.Duration
+	ApplicationLogger       ApplicationLogger
+	HttpClient              *http.Client
 }
 
 func (cfg *Config) validate() error {

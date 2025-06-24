@@ -1,9 +1,16 @@
 package eppoclient
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type IAssignmentLogger interface {
 	LogAssignment(event AssignmentEvent)
+}
+
+type IAssignmentLoggerContext interface {
+	LogAssignment(context.Context, AssignmentEvent)
 }
 
 // BanditActionLogger is going to be merged into IAssignmentLogger in
