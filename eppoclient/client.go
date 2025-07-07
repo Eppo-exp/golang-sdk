@@ -1,6 +1,7 @@
 package eppoclient
 
 import (
+	"context"
 	"fmt"
 	"time"
 )
@@ -14,6 +15,7 @@ type EppoClient struct {
 	configRequestor    *configurationRequestor
 	poller             *poller
 	logger             IAssignmentLogger
+	loggerContext      IAssignmentLoggerContext
 	applicationLogger  ApplicationLogger
 }
 
@@ -22,6 +24,7 @@ func newEppoClient(
 	configRequestor *configurationRequestor,
 	poller *poller,
 	assignmentLogger IAssignmentLogger,
+	assignmentLoggerContext IAssignmentLoggerContext,
 	applicationLogger ApplicationLogger,
 ) *EppoClient {
 	return &EppoClient{
@@ -29,6 +32,7 @@ func newEppoClient(
 		configRequestor:    configRequestor,
 		poller:             poller,
 		logger:             assignmentLogger,
+		loggerContext:      assignmentLoggerContext,
 		applicationLogger:  applicationLogger,
 	}
 }
@@ -39,16 +43,38 @@ func newEppoClient(
 // It is recommended to apply a timeout to initialization as otherwise
 // it may hang up indefinitely.
 //
-//  select {
-//  case <-client.Initialized():
-//  case <-time.After(5 * time.Second):
-//  }
+//	select {
+//	case <-client.Initialized():
+//	case <-time.After(5 * time.Second):
+//	}
 func (ec *EppoClient) Initialized() <-chan struct{} {
 	return ec.configurationStore.Initialized()
 }
 
-func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue bool) (bool, error) {
-	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, booleanVariation)
+func (ec *EppoClient) GetBoolAssignment(
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue bool,
+) (bool, error) {
+	return ec.getBoolAssignment(context.Background(), flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) GetBoolAssignmentContext(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue bool,
+) (bool, error) {
+	return ec.getBoolAssignment(ctx, flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) getBoolAssignment(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue bool,
+) (bool, error) {
+	variation, err := ec.getAssignment(ctx, ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, booleanVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -60,8 +86,30 @@ func (ec *EppoClient) GetBoolAssignment(flagKey string, subjectKey string, subje
 	return result, err
 }
 
-func (ec *EppoClient) GetNumericAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue float64) (float64, error) {
-	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, numericVariation)
+func (ec *EppoClient) GetNumericAssignment(
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue float64,
+) (float64, error) {
+	return ec.getNumericAssignment(context.Background(), flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) GetNumericAssignmentContext(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue float64,
+) (float64, error) {
+	return ec.getNumericAssignment(ctx, flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) getNumericAssignment(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue float64,
+) (float64, error) {
+	variation, err := ec.getAssignment(ctx, ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, numericVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -73,8 +121,30 @@ func (ec *EppoClient) GetNumericAssignment(flagKey string, subjectKey string, su
 	return result, err
 }
 
-func (ec *EppoClient) GetIntegerAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue int64) (int64, error) {
-	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, integerVariation)
+func (ec *EppoClient) GetIntegerAssignment(
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue int64,
+) (int64, error) {
+	return ec.getIntegerAssignment(context.Background(), flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) GetIntegerAssignmentContext(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue int64,
+) (int64, error) {
+	return ec.getIntegerAssignment(context.Background(), flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) getIntegerAssignment(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue int64,
+) (int64, error) {
+	variation, err := ec.getAssignment(ctx, ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, integerVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -86,8 +156,30 @@ func (ec *EppoClient) GetIntegerAssignment(flagKey string, subjectKey string, su
 	return result, err
 }
 
-func (ec *EppoClient) GetStringAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue string) (string, error) {
-	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, stringVariation)
+func (ec *EppoClient) GetStringAssignment(
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue string,
+) (string, error) {
+	return ec.getStringAssignment(context.Background(), flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) GetStringAssignmentContext(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue string,
+) (string, error) {
+	return ec.getStringAssignment(ctx, flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) getStringAssignment(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue string,
+) (string, error) {
+	variation, err := ec.getAssignment(ctx, ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, stringVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -99,8 +191,30 @@ func (ec *EppoClient) GetStringAssignment(flagKey string, subjectKey string, sub
 	return result, err
 }
 
-func (ec *EppoClient) GetJSONAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue interface{}) (interface{}, error) {
-	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, jsonVariation)
+func (ec *EppoClient) GetJSONAssignment(
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue any,
+) (any, error) {
+	return ec.getJSONAssignment(context.Background(), flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) GetJSONAssignmentContext(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue any,
+) (any, error) {
+	return ec.getJSONAssignment(ctx, flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) getJSONAssignment(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue any,
+) (any, error) {
+	variation, err := ec.getAssignment(ctx, ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, jsonVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -112,8 +226,30 @@ func (ec *EppoClient) GetJSONAssignment(flagKey string, subjectKey string, subje
 	return result.Parsed, err
 }
 
-func (ec *EppoClient) GetJSONBytesAssignment(flagKey string, subjectKey string, subjectAttributes Attributes, defaultValue []byte) ([]byte, error) {
-	variation, err := ec.getAssignment(ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, jsonVariation)
+func (ec *EppoClient) GetJSONBytesAssignment(
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue []byte,
+) ([]byte, error) {
+	return ec.getJSONBytesAssignment(context.Background(), flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) GetJSONBytesAssignmentContext(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue []byte,
+) ([]byte, error) {
+	return ec.getJSONBytesAssignment(ctx, flagKey, subjectKey, subjectAttributes, defaultValue)
+}
+
+func (ec *EppoClient) getJSONBytesAssignment(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes Attributes,
+	defaultValue []byte,
+) ([]byte, error) {
+	variation, err := ec.getAssignment(ctx, ec.configurationStore.getConfiguration(), flagKey, subjectKey, subjectAttributes, jsonVariation)
 	if err != nil || variation == nil {
 		return defaultValue, err
 	}
@@ -130,11 +266,36 @@ type BanditResult struct {
 	Action    *string
 }
 
-func (ec *EppoClient) GetBanditAction(flagKey string, subjectKey string, subjectAttributes ContextAttributes, actions map[string]ContextAttributes, defaultVariation string) BanditResult {
+func (ec *EppoClient) GetBanditAction(
+	flagKey, subjectKey string,
+	subjectAttributes ContextAttributes,
+	actions map[string]ContextAttributes,
+	defaultVariation string,
+) BanditResult {
+	return ec.getBanditAction(context.Background(), flagKey, subjectKey, subjectAttributes, actions, defaultVariation)
+}
+
+func (ec *EppoClient) GetBanditActionContext(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes ContextAttributes,
+	actions map[string]ContextAttributes,
+	defaultVariation string,
+) BanditResult {
+	return ec.getBanditAction(ctx, flagKey, subjectKey, subjectAttributes, actions, defaultVariation)
+}
+
+func (ec *EppoClient) getBanditAction(
+	ctx context.Context,
+	flagKey, subjectKey string,
+	subjectAttributes ContextAttributes,
+	actions map[string]ContextAttributes,
+	defaultVariation string,
+) BanditResult {
 	config := ec.configurationStore.getConfiguration()
 
 	// ignoring the error here as we can always proceed with default variation
-	assignmentValue, _ := ec.getAssignment(config, flagKey, subjectKey, subjectAttributes.toGenericAttributes(), stringVariation)
+	assignmentValue, _ := ec.getAssignment(ctx, config, flagKey, subjectKey, subjectAttributes.toGenericAttributes(), stringVariation)
 	variation, ok := assignmentValue.(string)
 	if !ok {
 		variation = defaultVariation
@@ -172,38 +333,24 @@ func (ec *EppoClient) GetBanditAction(flagKey string, subjectKey string, subject
 		actions:           actions,
 	})
 
-	if logger, ok := ec.logger.(BanditActionLogger); ok {
-		event := BanditEvent{
-			FlagKey:                      flagKey,
-			BanditKey:                    bandit.BanditKey,
-			Subject:                      subjectKey,
-			Action:                       evaluation.actionKey,
-			ActionProbability:            evaluation.actionWeight,
-			OptimalityGap:                evaluation.optimalityGap,
-			ModelVersion:                 bandit.ModelVersion,
-			Timestamp:                    time.Now().UTC().Format(time.RFC3339),
-			SubjectNumericAttributes:     evaluation.subjectAttributes.Numeric,
-			SubjectCategoricalAttributes: evaluation.subjectAttributes.Categorical,
-			ActionNumericAttributes:      evaluation.actionAttributes.Numeric,
-			ActionCategoricalAttributes:  evaluation.actionAttributes.Categorical,
-			MetaData: map[string]string{
-				"sdkLanguage": "go",
-				"sdkVersion":  __version__,
-			},
-		}
-
-		func() {
-			// need to catch panics from Logger and continue
-			defer func() {
-				r := recover()
-				if r != nil {
-					fmt.Println("panic occurred:", r)
-				}
-			}()
-
-			logger.LogBanditAction(event)
-		}()
-	}
+	ec.logBanditAction(ctx, BanditEvent{
+		FlagKey:                      flagKey,
+		BanditKey:                    bandit.BanditKey,
+		Subject:                      subjectKey,
+		Action:                       evaluation.actionKey,
+		ActionProbability:            evaluation.actionWeight,
+		OptimalityGap:                evaluation.optimalityGap,
+		ModelVersion:                 bandit.ModelVersion,
+		Timestamp:                    time.Now().UTC().Format(time.RFC3339),
+		SubjectNumericAttributes:     evaluation.subjectAttributes.Numeric,
+		SubjectCategoricalAttributes: evaluation.subjectAttributes.Categorical,
+		ActionNumericAttributes:      evaluation.actionAttributes.Numeric,
+		ActionCategoricalAttributes:  evaluation.actionAttributes.Categorical,
+		MetaData: map[string]string{
+			"sdkLanguage": "go",
+			"sdkVersion":  __version__,
+		},
+	})
 
 	return BanditResult{
 		Variation: variation,
@@ -211,7 +358,7 @@ func (ec *EppoClient) GetBanditAction(flagKey string, subjectKey string, subject
 	}
 }
 
-func (ec *EppoClient) getAssignment(config configuration, flagKey string, subjectKey string, subjectAttributes Attributes, variationType variationType) (interface{}, error) {
+func (ec *EppoClient) getAssignment(ctx context.Context, config configuration, flagKey string, subjectKey string, subjectAttributes Attributes, variationType variationType) (interface{}, error) {
 	if subjectKey == "" {
 		return nil, fmt.Errorf("no subject key provided")
 	}
@@ -238,20 +385,53 @@ func (ec *EppoClient) getAssignment(config configuration, flagKey string, subjec
 		return nil, err
 	}
 
-	if assignmentEvent != nil {
-		func() {
-			// need to catch panics from Logger and continue
-			defer func() {
-				r := recover()
-				if r != nil {
-					ec.applicationLogger.Errorf("panic occurred: %v", r)
-				}
-			}()
+	ec.logAssignment(ctx, assignmentEvent)
+	return assignmentValue, nil
+}
 
-			// Log assignment
-			ec.logger.LogAssignment(*assignmentEvent)
-		}()
+func (ec *EppoClient) logAssignment(ctx context.Context, event *AssignmentEvent) {
+	if event == nil {
+		return
 	}
 
-	return assignmentValue, nil
+	// need to catch panics from Logger and continue
+	defer func() {
+		r := recover()
+		if r != nil {
+			ec.applicationLogger.Errorf("panic occurred: %v", r)
+		}
+	}()
+
+	switch {
+	case ec.loggerContext != nil:
+		// prioritise logger context if it's defined in the config
+		ec.loggerContext.LogAssignment(ctx, *event)
+	case ec.logger != nil:
+		ec.logger.LogAssignment(*event)
+	default:
+		// no need to do anything if both logger are nil
+	}
+}
+
+func (ec *EppoClient) logBanditAction(ctx context.Context, event BanditEvent) {
+	// need to catch panics from Logger and continue
+	defer func() {
+		r := recover()
+		if r != nil {
+			fmt.Println("panic occurred:", r)
+		}
+	}()
+
+	switch {
+	case ec.loggerContext != nil:
+		if l, ok := ec.loggerContext.(interface {
+			LogBanditAction(context.Context, BanditEvent)
+		}); ok {
+			l.LogBanditAction(ctx, event)
+		}
+	case ec.logger != nil:
+		if l, ok := ec.logger.(BanditActionLogger); ok {
+			l.LogBanditAction(event)
+		}
+	}
 }

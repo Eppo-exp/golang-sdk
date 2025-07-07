@@ -1,9 +1,18 @@
 package eppoclient
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
+// IAssignmentLogger is be deprecated at next major version
+// and replaced by IAssignmentLoggerContext
 type IAssignmentLogger interface {
 	LogAssignment(event AssignmentEvent)
+}
+
+type IAssignmentLoggerContext interface {
+	LogAssignment(context.Context, AssignmentEvent)
 }
 
 // BanditActionLogger is going to be merged into IAssignmentLogger in

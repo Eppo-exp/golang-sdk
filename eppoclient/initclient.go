@@ -24,10 +24,15 @@ func InitClient(config Config) (*EppoClient, error) {
 	configStore := newConfigurationStore()
 	requestor := newConfigurationRequestor(*httpClient, configStore, applicationLogger)
 
-	assignmentLogger := config.AssignmentLogger
-
 	poller := newPoller(config.PollerInterval, requestor.FetchAndStoreConfigurations, applicationLogger)
-	client := newEppoClient(configStore, requestor, poller, assignmentLogger, applicationLogger)
+	client := newEppoClient(
+		configStore,
+		requestor,
+		poller,
+		config.AssignmentLogger,
+		config.AssignmentLoggerContext,
+		applicationLogger,
+	)
 
 	client.poller.Start()
 
