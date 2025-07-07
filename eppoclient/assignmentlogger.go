@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+// IAssignmentLogger is be deprecated at next major version
+// and replaced by IAssignmentLoggerContext
 type IAssignmentLogger interface {
 	LogAssignment(event AssignmentEvent)
 }
