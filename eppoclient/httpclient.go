@@ -3,7 +3,6 @@ package eppoclient
 import (
 	"fmt"
 	"io"
-	"regexp"
 	"time"
 
 	"net/http"
@@ -34,17 +33,6 @@ func newHttpClient(baseUrl string, client *http.Client, sdkParams SDKParams) *ht
 	return hc
 }
 
-// scrubError removes sensitive information (like apiKey or sdkKey) from error messages
-// to prevent exposure of these keys when errors are returned or logged.
-func scrubError(err error) error {
-	if err == nil {
-		return nil
-	}
-	re := regexp.MustCompile(`(apiKey|sdkKey)=[^&\s"]*`)
-	scrubbedMsg := re.ReplaceAllString(err.Error(), "$1=XXXXXX")
-	return fmt.Errorf("%s", scrubbedMsg)
-}
-
 func (hc *httpClient) get(resource string) ([]byte, error) {
 	url := hc.baseUrl + resource
 
@@ -72,7 +60,7 @@ func (hc *httpClient) get(resource string) ([]byte, error) {
 		//
 		// We should almost never expect to see this condition be executed.
 		// Scrub the error to prevent SDK key exposure in error messages.
-		return nil, scrubError(err)
+		return nil, fmt.Errorf("%s", maskSensitiveInfo(err.Error()))
 	}
 	defer resp.Body.Close()
 

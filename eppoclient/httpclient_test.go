@@ -2,7 +2,6 @@ package eppoclient
 
 import (
 	"bytes"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -84,55 +83,5 @@ func TestHttpClientGet(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-func TestScrubError(t *testing.T) {
-	tests := []struct {
-		name          string
-		inputError    error
-		expectedError string
-	}{
-		{
-			name:          "scrub apiKey from URL",
-			inputError:    errors.New("Get \"https://example.com/config?apiKey=secret123&sdkName=go\": connection refused"),
-			expectedError: "Get \"https://example.com/config?apiKey=XXXXXX&sdkName=go\": connection refused",
-		},
-		{
-			name:          "scrub sdkKey from URL",
-			inputError:    errors.New("Get \"https://example.com/config?sdkKey=secret456&sdkName=go\": connection refused"),
-			expectedError: "Get \"https://example.com/config?sdkKey=XXXXXX&sdkName=go\": connection refused",
-		},
-		{
-			name:          "scrub both apiKey and sdkKey",
-			inputError:    errors.New("Get \"https://example.com/config?apiKey=secret123&sdkKey=secret456\": connection refused"),
-			expectedError: "Get \"https://example.com/config?apiKey=XXXXXX&sdkKey=XXXXXX\": connection refused",
-		},
-		{
-			name:          "no sensitive info",
-			inputError:    errors.New("connection refused"),
-			expectedError: "connection refused",
-		},
-		{
-			name:          "apiKey at end of URL",
-			inputError:    errors.New("Get \"https://example.com/config?sdkName=go&apiKey=secret123\": timeout"),
-			expectedError: "Get \"https://example.com/config?sdkName=go&apiKey=XXXXXX\": timeout",
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			result := scrubError(tc.inputError)
-			if result.Error() != tc.expectedError {
-				t.Errorf("Expected %q, got %q", tc.expectedError, result.Error())
-			}
-		})
-	}
-}
-
-func TestScrubErrorNil(t *testing.T) {
-	result := scrubError(nil)
-	if result != nil {
-		t.Errorf("Expected nil, got %v", result)
 	}
 }
