@@ -7,6 +7,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// sensitiveInfoRe matches apiKey or sdkKey query parameters in URLs.
+// Compiled once at package init for performance.
+var sensitiveInfoRe = regexp.MustCompile(`(apiKey|sdkKey)=[^&\s"]*`)
+
 type ApplicationLogger interface {
 	Debug(args ...interface{})
 	Info(args ...interface{})
@@ -82,10 +86,7 @@ func (s *ScrubbingLogger) scrub(args ...interface{}) []interface{} {
 // in the error message with 'XXXXXX' to prevent exposure of these keys in
 // logs or error messages.
 func maskSensitiveInfo(errMsg string) string {
-	// Scrub apiKey and sdkKey from error messages containing URLs
-	// Matches any string that starts with apiKey or sdkKey followed by any characters until the next & or the end of the string
-	re := regexp.MustCompile(`(apiKey|sdkKey)=[^&]*`)
-	return re.ReplaceAllString(errMsg, "$1=XXXXXX")
+	return sensitiveInfoRe.ReplaceAllString(errMsg, "$1=XXXXXX")
 }
 
 func (s *ScrubbingLogger) Debug(args ...interface{}) {
