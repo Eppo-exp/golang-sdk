@@ -1,6 +1,7 @@
 package eppoclient
 
 import (
+	"fmt"
 	"regexp"
 
 	"go.uber.org/zap"
@@ -65,11 +66,12 @@ func NewScrubbingLogger(innerLogger ApplicationLogger) *ScrubbingLogger {
 func (s *ScrubbingLogger) scrub(args ...interface{}) []interface{} {
 	scrubbedArgs := make([]interface{}, len(args))
 	for i, arg := range args {
-		strArg, ok := arg.(string)
-		if ok {
-			strArg = maskSensitiveInfo(strArg)
-			scrubbedArgs[i] = strArg
-		} else {
+		switch v := arg.(type) {
+		case string:
+			scrubbedArgs[i] = maskSensitiveInfo(v)
+		case error:
+			scrubbedArgs[i] = fmt.Errorf("%s", maskSensitiveInfo(v.Error()))
+		default:
 			scrubbedArgs[i] = arg
 		}
 	}
