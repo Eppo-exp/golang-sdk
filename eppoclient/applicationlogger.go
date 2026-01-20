@@ -1,10 +1,15 @@
 package eppoclient
 
 import (
+	"fmt"
 	"regexp"
 
 	"go.uber.org/zap"
 )
+
+// sensitiveInfoRe matches apiKey or sdkKey query parameters in URLs.
+// Compiled once at package init for performance.
+var sensitiveInfoRe = regexp.MustCompile(`(apiKey|sdkKey)=[^&\s"]*`)
 
 type ApplicationLogger interface {
 	Debug(args ...interface{})
@@ -65,11 +70,12 @@ func NewScrubbingLogger(innerLogger ApplicationLogger) *ScrubbingLogger {
 func (s *ScrubbingLogger) scrub(args ...interface{}) []interface{} {
 	scrubbedArgs := make([]interface{}, len(args))
 	for i, arg := range args {
-		strArg, ok := arg.(string)
-		if ok {
-			strArg = maskSensitiveInfo(strArg)
-			scrubbedArgs[i] = strArg
-		} else {
+		switch v := arg.(type) {
+		case string:
+			scrubbedArgs[i] = maskSensitiveInfo(v)
+		case error:
+			scrubbedArgs[i] = fmt.Errorf("%s", maskSensitiveInfo(v.Error()))
+		default:
 			scrubbedArgs[i] = arg
 		}
 	}
@@ -80,10 +86,7 @@ func (s *ScrubbingLogger) scrub(args ...interface{}) []interface{} {
 // in the error message with 'XXXXXX' to prevent exposure of these keys in
 // logs or error messages.
 func maskSensitiveInfo(errMsg string) string {
-	// Scrub apiKey and sdkKey from error messages containing URLs
-	// Matches any string that starts with apiKey or sdkKey followed by any characters until the next & or the end of the string
-	re := regexp.MustCompile(`(apiKey|sdkKey)=[^&]*`)
-	return re.ReplaceAllString(errMsg, "$1=XXXXXX")
+	return sensitiveInfoRe.ReplaceAllString(errMsg, "$1=XXXXXX")
 }
 
 func (s *ScrubbingLogger) Debug(args ...interface{}) {

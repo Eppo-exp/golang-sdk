@@ -12,7 +12,12 @@ func InitClient(config Config) (*EppoClient, error) {
 		return nil, err
 	}
 	sdkParams := SDKParams{sdkKey: config.SdkKey, sdkName: "go", sdkVersion: __version__}
-	applicationLogger := config.ApplicationLogger
+
+	// Wrap the user's logger with ScrubbingLogger to prevent SDK key exposure in logs
+	var applicationLogger ApplicationLogger
+	if config.ApplicationLogger != nil {
+		applicationLogger = NewScrubbingLogger(config.ApplicationLogger)
+	}
 
 	var httpClientInstance *http.Client
 	if config.HttpClient != nil {

@@ -59,7 +59,8 @@ func (hc *httpClient) get(resource string) ([]byte, error) {
 		// error.
 		//
 		// We should almost never expect to see this condition be executed.
-		return nil, err
+		// Scrub the error to prevent SDK key exposure in error messages.
+		return nil, fmt.Errorf("%s", maskSensitiveInfo(err.Error()))
 	}
 	defer resp.Body.Close()
 
