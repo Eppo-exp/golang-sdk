@@ -359,10 +359,6 @@ func (ec *EppoClient) getBanditAction(
 }
 
 func (ec *EppoClient) getAssignment(ctx context.Context, config configuration, flagKey string, subjectKey string, subjectAttributes Attributes, variationType variationType) (interface{}, error) {
-	if subjectKey == "" {
-		return nil, fmt.Errorf("no subject key provided")
-	}
-
 	if flagKey == "" {
 		return nil, fmt.Errorf("no flag key provided")
 	}

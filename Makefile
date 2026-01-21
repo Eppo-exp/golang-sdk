@@ -14,7 +14,7 @@ help: Makefile
 
 ## test-data
 testDataDir := eppoclient/test-data/
-branchName := main
+branchName := lr/false
 githubRepoLink := https://github.com/Eppo-exp/sdk-test-data.git
 .PHONY: test-data
 test-data:
