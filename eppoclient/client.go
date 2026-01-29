@@ -135,7 +135,7 @@ func (ec *EppoClient) GetIntegerAssignmentContext(
 	subjectAttributes Attributes,
 	defaultValue int64,
 ) (int64, error) {
-	return ec.getIntegerAssignment(context.Background(), flagKey, subjectKey, subjectAttributes, defaultValue)
+	return ec.getIntegerAssignment(ctx, flagKey, subjectKey, subjectAttributes, defaultValue)
 }
 
 func (ec *EppoClient) getIntegerAssignment(

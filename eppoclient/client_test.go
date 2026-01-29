@@ -202,6 +202,72 @@ func Test_LogAssignmentContext(t *testing.T) {
 	}
 }
 
+func Test_GetIntegerAssignmentContextPassesContext(t *testing.T) {
+	var mockLoggerContext = new(mockLoggerContext)
+	mockLoggerContext.Mock.
+		On("LogAssignment", mock.Anything, mock.Anything).
+		Return()
+
+	config := configResponse{
+		Flags: map[string]*flagConfiguration{
+			"experiment-key-1": &flagConfiguration{
+				Key:           "experiment-key-1",
+				Enabled:       true,
+				TotalShards:   10000,
+				VariationType: integerVariation,
+				Variations: map[string]variation{
+					"control": variation{
+						Key:   "control",
+						Value: []byte("123"),
+					},
+				},
+				Allocations: []allocation{
+					{
+						Key:   "allocation-key",
+						DoLog: &[]bool{true}[0],
+						Splits: []split{
+							{
+								VariationKey: "control",
+								Shards: []shard{
+									{
+										Salt: "",
+										Ranges: []shardRange{
+											{
+												Start: 0,
+												End:   10000,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	client := newEppoClient(
+		newConfigurationStoreWithConfig(configuration{flags: config}),
+		nil,
+		nil,
+		nil,
+		mockLoggerContext,
+		applicationLogger,
+	)
+
+	//nolint:staticcheck // context key collisions are not a risk here since this is a test
+	ctx := context.WithValue(context.Background(), "ctx-key", "ctx-value")
+	assignment, err := client.GetIntegerAssignmentContext(ctx, "experiment-key-1", "user-1", Attributes{}, 0)
+
+	assert.NoError(t, err)
+	assert.Equal(t, int64(123), assignment)
+	mockLoggerContext.AssertNumberOfCalls(t, "LogAssignment", 1)
+
+	loggedCtx := mockLoggerContext.Calls[0].Arguments[0].(context.Context)
+	assert.Equal(t, ctx, loggedCtx)
+}
+
 func Test_client_loggerIsCalledWithProperBanditEvent(t *testing.T) {
 	var logger = new(mockLogger)
 	logger.Mock.On("LogAssignment", mock.Anything).Return()
