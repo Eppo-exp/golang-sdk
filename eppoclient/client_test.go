@@ -16,7 +16,7 @@ var (
 )
 
 func Test_AssignBlankExperiment(t *testing.T) {
-	mockLogger := new(mockLogger)
+	var mockLogger = new(mockLogger)
 	client := newEppoClient(newConfigurationStore(), nil, nil, mockLogger, nil, applicationLogger)
 
 	_, err := client.GetStringAssignment("", "subject-1", Attributes{}, "")
@@ -24,7 +24,7 @@ func Test_AssignBlankExperiment(t *testing.T) {
 }
 
 func Test_AssignBlankSubject(t *testing.T) {
-	mockLogger := new(mockLogger)
+	var mockLogger = new(mockLogger)
 	client := newEppoClient(newConfigurationStore(), nil, nil, mockLogger, nil, applicationLogger)
 
 	_, err := client.GetStringAssignment("experiment-1", "", Attributes{}, "")
@@ -56,18 +56,18 @@ func Test_LogAssignment(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockLogger := new(mockLogger)
+			var mockLogger = new(mockLogger)
 			mockLogger.Mock.On("LogAssignment", mock.Anything).Return()
 
 			config := configResponse{
 				Flags: map[string]*flagConfiguration{
-					"experiment-key-1": {
+					"experiment-key-1": &flagConfiguration{
 						Key:           "experiment-key-1",
 						Enabled:       true,
 						TotalShards:   10000,
 						VariationType: stringVariation,
 						Variations: map[string]variation{
-							"control": {
+							"control": variation{
 								Key:   "control",
 								Value: []byte("\"control\""),
 							},
@@ -145,13 +145,13 @@ func Test_LogAssignmentContext(t *testing.T) {
 
 			config := configResponse{
 				Flags: map[string]*flagConfiguration{
-					"experiment-key-1": {
+					"experiment-key-1": &flagConfiguration{
 						Key:           "experiment-key-1",
 						Enabled:       true,
 						TotalShards:   10000,
 						VariationType: stringVariation,
 						Variations: map[string]variation{
-							"control": {
+							"control": variation{
 								Key:   "control",
 								Value: []byte("\"control\""),
 							},
@@ -203,20 +203,20 @@ func Test_LogAssignmentContext(t *testing.T) {
 }
 
 func Test_GetIntegerAssignmentContextPassesContext(t *testing.T) {
-	mockLoggerContext := new(mockLoggerContext)
+	var mockLoggerContext = new(mockLoggerContext)
 	mockLoggerContext.Mock.
 		On("LogAssignment", mock.Anything, mock.Anything).
 		Return()
 
 	config := configResponse{
 		Flags: map[string]*flagConfiguration{
-			"experiment-key-1": {
+			"experiment-key-1": &flagConfiguration{
 				Key:           "experiment-key-1",
 				Enabled:       true,
 				TotalShards:   10000,
 				VariationType: integerVariation,
 				Variations: map[string]variation{
-					"control": {
+					"control": variation{
 						Key:   "control",
 						Value: []byte("123"),
 					},
@@ -257,7 +257,7 @@ func Test_GetIntegerAssignmentContextPassesContext(t *testing.T) {
 	)
 
 	//nolint:staticcheck // context key collisions are not a risk here since this is a test
-	ctx := context.WithValue(t.Context(), "ctx-key", "ctx-value")
+	ctx := context.WithValue(context.Background(), "ctx-key", "ctx-value")
 	assignment, err := client.GetIntegerAssignmentContext(ctx, "experiment-key-1", "user-1", Attributes{}, 0)
 
 	assert.NoError(t, err)
@@ -269,14 +269,14 @@ func Test_GetIntegerAssignmentContextPassesContext(t *testing.T) {
 }
 
 func Test_client_loggerIsCalledWithProperBanditEvent(t *testing.T) {
-	logger := new(mockLogger)
+	var logger = new(mockLogger)
 	logger.Mock.On("LogAssignment", mock.Anything).Return()
 	logger.Mock.On("LogBanditAction", mock.Anything).Return()
 
 	flags := configResponse{
 		Bandits: map[string][]banditVariation{
-			"bandit": {
-				{
+			"bandit": []banditVariation{
+				banditVariation{
 					Key:            "bandit",
 					FlagKey:        "testFlag",
 					VariationKey:   "bandit",
@@ -326,8 +326,8 @@ func Test_client_loggerContextIsCalledWithProperBanditEvent(t *testing.T) {
 
 	flags := configResponse{
 		Bandits: map[string][]banditVariation{
-			"bandit": {
-				{
+			"bandit": []banditVariation{
+				banditVariation{
 					Key:            "bandit",
 					FlagKey:        "testFlag",
 					VariationKey:   "bandit",
@@ -373,17 +373,17 @@ func Test_client_loggerContextIsCalledWithProperBanditEvent(t *testing.T) {
 }
 
 func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
-	mockLogger := new(mockLogger)
+	var mockLogger = new(mockLogger)
 	mockLogger.Mock.On("LogAssignment", mock.Anything).Panic("logging panic")
 
 	config := configResponse{Flags: map[string]*flagConfiguration{
-		"experiment-key-1": {
+		"experiment-key-1": &flagConfiguration{
 			Key:           "experiment-key-1",
 			Enabled:       true,
 			TotalShards:   10000,
 			VariationType: stringVariation,
 			Variations: map[string]variation{
-				"control": {
+				"control": variation{
 					Key:   "control",
 					Value: []byte("\"control\""),
 				},
@@ -422,14 +422,14 @@ func Test_GetStringAssignmentHandlesLoggingPanic(t *testing.T) {
 }
 
 func Test_client_handlesBanditLoggerPanic(t *testing.T) {
-	logger := new(mockLogger)
+	var logger = new(mockLogger)
 	logger.Mock.On("LogAssignment", mock.Anything).Return()
 	logger.Mock.On("LogBanditAction", mock.Anything).Panic("logging panic")
 
 	flags := configResponse{
 		Bandits: map[string][]banditVariation{
-			"bandit": {
-				{
+			"bandit": []banditVariation{
+				banditVariation{
 					Key:            "bandit",
 					FlagKey:        "testFlag",
 					VariationKey:   "bandit",
@@ -464,14 +464,14 @@ func Test_client_handlesBanditLoggerPanic(t *testing.T) {
 }
 
 func Test_client_correctActionIsReturnedIfBanditLoggerPanics(t *testing.T) {
-	logger := new(mockLogger)
+	var logger = new(mockLogger)
 	logger.Mock.On("LogAssignment", mock.Anything).Return()
 	logger.Mock.On("LogBanditAction", mock.Anything).Panic("logging panic")
 
 	flags := configResponse{
 		Bandits: map[string][]banditVariation{
-			"bandit": {
-				{
+			"bandit": []banditVariation{
+				banditVariation{
 					Key:            "bandit",
 					FlagKey:        "testFlag",
 					VariationKey:   "bandit",
@@ -510,7 +510,7 @@ func Test_client_correctActionIsReturnedIfBanditLoggerPanics(t *testing.T) {
 }
 
 func Test_Initialized_timeout(t *testing.T) {
-	mockLogger := new(mockLogger)
+	var mockLogger = new(mockLogger)
 	client := newEppoClient(newConfigurationStore(), nil, nil, mockLogger, nil, applicationLogger)
 
 	timedOut := false
@@ -525,7 +525,7 @@ func Test_Initialized_timeout(t *testing.T) {
 }
 
 func Test_Initialized_success(t *testing.T) {
-	mockLogger := new(mockLogger)
+	var mockLogger = new(mockLogger)
 	configurationStore := newConfigurationStore()
 	client := newEppoClient(configurationStore, nil, nil, mockLogger, nil, applicationLogger)
 
